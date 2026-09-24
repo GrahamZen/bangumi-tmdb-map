@@ -3,6 +3,7 @@
 # 工作流只另外负责装 JDK、存取 Gradle 缓存与提交.
 #
 # 用法: scripts/ci.sh <步骤>...
+#   jdk       装带 JCEF 的 JBR (版本写死在下面, 从 JetBrains 的 CDN 取并校验, 不经 GitHub API); 已装就跳过
 #   download  取 Bangumi 最新导出 (同名的已下载过就跳过)
 #   plan      挑本轮任务 (scripts/prepare.py); 输出 jobs=<个数>
 #   matcher   取 izuko-tv (matcher.ref), 拷入匹配器入口, 写 local.properties
@@ -14,7 +15,7 @@
 # 环境变量:
 #   WORK            工作目录; 默认 $RUNNER_TEMP/work, 本地为仓库下的 .work
 #   TMDB_API_TOKEN  TMDB 读取令牌 (matcher 写进 izuko-tv 的 local.properties)
-#   JAVA_HOME       带 JCEF 的 JBR 21 (izuko-tv 的构建要 JetBrains 厂商, 桌面端代码要 JCEF 的类)
+#   JAVA_HOME       带 JCEF 的 JBR 21 (izuko-tv 的构建要 JetBrains 厂商, 桌面端代码要 JCEF 的类); 用 jdk 步骤装的就不用设
 #   MAX_JOBS (20000) / ONLY_IDS (逗号分隔, 调试用) / MATCH_MINUTES (290)
 #   BGM_TMDB_CONCURRENCY (10) / BGM_TMDB_RPS (35)
 set -euo pipefail
@@ -28,9 +29,30 @@ MAX_JOBS=${MAX_JOBS:-20000}
 ONLY_IDS=${ONLY_IDS:-}
 MATCH_MINUTES=${MATCH_MINUTES:-290}
 
+# izuko-tv 的构建把工具链厂商定成 JetBrains, 桌面端代码还要 JCEF 的类.
+# 不用 actions/setup-java: 它的 jetbrains 发行版要匿名调 GitHub API 查版本, 共用出口 IP 常被限流.
+JBR_FILE=jbrsdk_jcef-21.0.11-linux-x64-b1163.116.tar.gz
+JBR_DIR=${JBR_DIR:-$HOME/jbr/${JBR_FILE%.tar.gz}}
+
 # 给后续 GitHub 步骤用的输出/环境变量; 本地跑时只打印
 gh_output() { echo "$1"; if [ -n "${GITHUB_OUTPUT:-}" ]; then echo "$1" >> "$GITHUB_OUTPUT"; fi; }
 gh_env() { if [ -n "${GITHUB_ENV:-}" ]; then echo "$1" >> "$GITHUB_ENV"; fi; }
+
+step_jdk() {
+  if [ ! -x "$JBR_DIR/bin/java" ]; then
+    local tmp
+    tmp=$(mktemp -d)
+    curl -fsSL "https://cache-redirector.jetbrains.com/intellij-jbr/$JBR_FILE" -o "$tmp/$JBR_FILE"
+    curl -fsSL "https://cache-redirector.jetbrains.com/intellij-jbr/$JBR_FILE.checksum" -o "$tmp/checksum"
+    (cd "$tmp" && sha512sum -c checksum)
+    mkdir -p "$JBR_DIR"
+    tar -xzf "$tmp/$JBR_FILE" -C "$JBR_DIR" --strip-components=1
+    rm -rf "$tmp"
+  fi
+  "$JBR_DIR/bin/java" -version 2>&1 | head -2
+  gh_env "JAVA_HOME=$JBR_DIR"
+  if [ -n "${GITHUB_PATH:-}" ]; then echo "$JBR_DIR/bin" >> "$GITHUB_PATH"; fi
+}
 
 step_download() {
   curl -fsSL https://raw.githubusercontent.com/bangumi/Archive/master/aux/latest.json -o "$WORK/latest.json"
@@ -48,6 +70,8 @@ step_download() {
 }
 
 step_plan() {
+  # 新的一轮任务, 上一轮的结果作废 (匹配器会把结果文件里已有的条目当成做完跳过)
+  rm -f "$WORK/results.jsonl" "$WORK/summary.txt"
   local args=(--dump "$WORK/dump.zip" --state "$ROOT/state/state.tsv" --overrides "$ROOT/overrides" --work "$WORK" --max-jobs "$MAX_JOBS")
   if [ -n "$ONLY_IDS" ]; then args+=(--ids "$ONLY_IDS"); fi
   python3 "$ROOT/scripts/prepare.py" "${args[@]}"
@@ -73,6 +97,7 @@ step_matcher() {
 }
 
 step_match() {
+  if [ -z "${JAVA_HOME:-}" ] && [ -x "$JBR_DIR/bin/java" ]; then export JAVA_HOME="$JBR_DIR"; fi
   cd "$WORK/izuko-tv"
   export BGM_TMDB_WORK="$WORK"
   export BGM_TMDB_OUT="$WORK/results.jsonl"
@@ -104,11 +129,11 @@ step_apply() {
     --meta "$ROOT/map/meta.json" --site "$ROOT/docs" --overrides "$ROOT/overrides" --summary-out "$WORK/summary.txt"
 }
 
-[ $# -gt 0 ] || { sed -n '2,22p' "$0"; exit 2; }
+[ $# -gt 0 ] || { sed -n '2,23p' "$0"; exit 2; }
 for s in "$@"; do
   case "$s" in
-    download | plan | matcher | match | merge | apply) echo "== $s"; "step_$s" ;;
-    local) for t in download plan matcher match merge; do echo "== $t"; "step_$t"; done ;;
+    jdk | download | plan | matcher | match | merge | apply) echo "== $s"; "step_$s" ;;
+    local) for t in jdk download plan matcher match merge; do echo "== $t"; "step_$t"; done ;;
     *) echo "未知步骤: $s" >&2; exit 2 ;;
   esac
 done

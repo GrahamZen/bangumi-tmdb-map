@@ -52,14 +52,9 @@ jobs:
           TMDB_API_TOKEN: ${{ secrets.TMDB_API_TOKEN }}
         run: scripts/ci.sh matcher
 
-      # izuko-tv 的构建把工具链厂商定成 JetBrains (gradle.properties 的 jvm.toolchain.vendor),
-      # 桌面端代码还要 JCEF 的类 —— 与它自己的发版工作流一样用带 JCEF 的 JBR
-      - uses: actions/setup-java@v4
+      - name: Install JBR
         if: steps.plan.outputs.jobs != '0'
-        with:
-          distribution: jetbrains
-          java-package: jdk+jcef
-          java-version: '21'
+        run: scripts/ci.sh jdk
 
       - uses: actions/cache/restore@v4
         if: steps.plan.outputs.jobs != '0'
