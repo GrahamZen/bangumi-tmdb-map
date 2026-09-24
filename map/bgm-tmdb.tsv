@@ -1,0 +1,1 @@
+# bangumi-tmdb-map v1. 列: bgm_id, backdrop (TMDB 条目), backdrop_path (图片路径), stills (分集剧照出处, 逗号分隔), source (auto 自动 / manual 人工). 说明见 README.
