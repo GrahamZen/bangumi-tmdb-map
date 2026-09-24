@@ -4,17 +4,17 @@
   "bangumi_dump": "dump-2026-09-22.210341Z.zip",
   "matcher": "363946539fbaf06a1fbc3afbd4a9784779b19fa6",
   "anime": 30924,
-  "checked": 0,
-  "entries": 0,
+  "checked": 10,
+  "entries": 10,
   "manual": 0,
-  "hit": 0,
+  "hit": 10,
   "miss": 0,
   "err": 0,
   "last_run": {
-    "processed": 0,
-    "hit": 0,
+    "processed": 10,
+    "hit": 10,
     "miss": 0,
     "err": 0,
-    "tmdb_requests": 0
+    "tmdb_requests": 138
   }
 }

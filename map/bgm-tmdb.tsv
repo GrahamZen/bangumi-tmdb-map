@@ -1,1 +1,11 @@
 # bangumi-tmdb-map v1. 列: bgm_id, backdrop (TMDB 条目), backdrop_path (图片路径), stills (分集剧照出处, 逗号分隔), source (auto 自动 / manual 人工). 说明见 README.
+237	movie/9323	/jIpagj2Dud9g3ZVJFvaWikEWsYz.jpg	movie/9323	auto
+311	movie/129	/6oaL4DP75yABrd5EbC4H2zq5ghc.jpg	movie/129	auto
+4213	tv/5660	/7CxsP8ThaLpLeyF9rma73dJAzjC.jpg	tv/5660/season/0,tv/5660/season/1	auto
+10639	tv/45845	/l6UO4qEHwUdjPyavbP6yGA06cS3.jpg	tv/45845/season/0,tv/45845/season/1,tv/45845/season/2	auto
+27832	tv/332355	/7HLnI1YP97m46cXeuuOwZNi7kTB.jpg	tv/20111/season/0,tv/20111/season/1,tv/20111/season/2	auto
+55770	tv/1429	/rqbCbjB19amtOtFQbb3K2lgm2zv.jpg	tv/1429/season/0,tv/1429/season/1,tv/1429/season/2,tv/1429/season/3,tv/1429/season/4	auto
+140001	tv/65942	/7ZruEnSnHD6Jx5mF0hBt1E306Vt.jpg	tv/65942/season/0,tv/65942/season/1	auto
+160209	movie/372058	/mMtUybQ6hL24FXo0F3Z4j2KG7kZ.jpg	movie/372058	auto
+296195	tv/330431	/hJwgKSIb5qNWbb98loQyjJFhwPC.jpg	tv/65942/season/0,tv/65942/season/1	auto
+425998	tv/65942	/7ZruEnSnHD6Jx5mF0hBt1E306Vt.jpg	tv/65942/season/0,tv/65942/season/1	auto
