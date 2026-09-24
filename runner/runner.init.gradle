@@ -1,0 +1,17 @@
+// 给 izuko-tv 的构建挂上匹配器需要的测试设置, 不改它的构建脚本.
+allprojects {
+    tasks.withType(Test).configureEach {
+        if (name == "desktopTest") {
+            maxHeapSize = "2g"
+            // app 每个 HTTP 请求都打一行 INFO, 全量跑下来是上百万行; 只留告警与匹配器自己的进度
+            systemProperty "org.slf4j.simpleLogger.defaultLogLevel", "warn"
+            // 输入 (导出、状态) 不在 Gradle 的视野里, 不能按"没变"跳过
+            outputs.upToDateWhen { false }
+            testLogging {
+                showStandardStreams = true
+                events "passed", "skipped", "failed"
+                exceptionFormat "full"
+            }
+        }
+    }
+}

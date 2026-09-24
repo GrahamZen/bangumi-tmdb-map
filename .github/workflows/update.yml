@@ -1,0 +1,155 @@
+# 每天跑一轮: 取 Bangumi 最新导出 → 挑出到期的条目 → 用 izuko-tv 的匹配器搜 TMDB → 结果提交回本仓库.
+# 没有到期条目时在构建前就结束 (只花下载导出的一两分钟).
+name: update
+
+on:
+  schedule:
+    # UTC 22:30 = 北京时间 06:30. Bangumi 导出每周三 05:00 (北京时间) 前后更新
+    - cron: '30 22 * * *'
+  workflow_dispatch:
+    inputs:
+      max_jobs:
+        description: '本轮最多跑多少个条目'
+        default: '20000'
+      ids:
+        description: '只跑这些 bgm id (逗号分隔, 忽略到期规则; 调试用)'
+        default: ''
+      minutes:
+        description: '匹配最多跑多少分钟 (之后不再开新任务, 剩下的下一轮接着跑)'
+        default: '290'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    permissions:
+      contents: write
+    env:
+      MAX_JOBS: ${{ inputs.max_jobs || '20000' }}
+      ONLY_IDS: ${{ inputs.ids || '' }}
+      MATCH_MINUTES: ${{ inputs.minutes || '290' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Bangumi Archive
+        run: |
+          set -euo pipefail
+          WORK="$RUNNER_TEMP/work"
+          echo "WORK=$WORK" >> "$GITHUB_ENV"
+          mkdir -p "$WORK"
+          curl -fsSL https://raw.githubusercontent.com/bangumi/Archive/master/aux/latest.json -o "$WORK/latest.json"
+          read -r url name digest < <(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d["browser_download_url"], d["name"], d.get("digest") or "-")' "$WORK/latest.json")
+          curl -fsSL "$url" -o "$WORK/dump.zip"
+          if [ "$digest" != "-" ]; then
+            echo "${digest#sha256:}  $WORK/dump.zip" | sha256sum -c -
+          fi
+          echo "DUMP_NAME=$name" >> "$GITHUB_ENV"
+
+      - name: Plan
+        id: plan
+        run: |
+          set -euo pipefail
+          args=(--dump "$WORK/dump.zip" --state state/state.tsv --work "$WORK" --max-jobs "$MAX_JOBS")
+          if [ -n "$ONLY_IDS" ]; then args+=(--ids "$ONLY_IDS"); fi
+          python3 scripts/prepare.py "${args[@]}"
+          jobs=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["jobs"])' "$WORK/plan.json")
+          echo "jobs=$jobs" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout matcher (izuko-tv)
+        if: steps.plan.outputs.jobs != '0'
+        run: |
+          set -euo pipefail
+          ref=$(tr -d '[:space:]' < matcher.ref)
+          git clone --depth 1 --branch "$ref" https://github.com/GrahamZen/izuko-tv.git "$WORK/izuko-tv"
+          echo "MATCHER_SHA=$(git -C "$WORK/izuko-tv" rev-parse HEAD)" >> "$GITHUB_ENV"
+          cp runner/BgmTmdbMapRunner.kt "$WORK/izuko-tv/app/shared/app-data/src/desktopTest/kotlin/data/network/"
+
+      - uses: actions/setup-java@v4
+        if: steps.plan.outputs.jobs != '0'
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: actions/cache@v4
+        if: steps.plan.outputs.jobs != '0'
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ env.MATCHER_SHA }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: Configure matcher build
+        if: steps.plan.outputs.jobs != '0'
+        env:
+          TMDB_API_TOKEN: ${{ secrets.TMDB_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$TMDB_API_TOKEN" || { echo "::error::缺少 secrets.TMDB_API_TOKEN"; exit 1; }
+          cd "$WORK/izuko-tv"
+          {
+            echo "sdk.dir=$ANDROID_HOME"
+            echo "ani.tmdb.api.token=$TMDB_API_TOKEN"
+            echo "ani.enable.firebase=false"
+            echo "jvm.toolchain.version=21"
+            echo "kotlin.native.ignoreDisabledTargets=true"
+          } > local.properties
+          (yes || true) | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-37.0" > /dev/null
+
+      - name: Match
+        if: steps.plan.outputs.jobs != '0'
+        continue-on-error: true
+        timeout-minutes: 330
+        run: |
+          set -euo pipefail
+          cd "$WORK/izuko-tv"
+          export BGM_TMDB_WORK="$WORK"
+          export BGM_TMDB_OUT="$WORK/results.jsonl"
+          export BGM_TMDB_DEADLINE=$(( $(date +%s) + MATCH_MINUTES * 60 ))
+          # TMDB 按 IP 限流 (约 40 次/秒); 平均每个条目 3 秒、十来个请求, 10 路并发刚好把 35 次/秒用满
+          export BGM_TMDB_CONCURRENCY=10
+          export BGM_TMDB_RPS=35
+          ./gradlew :app:shared:app-data:desktopTest --tests "*BgmTmdbMapRunner*" \
+            --init-script "$GITHUB_WORKSPACE/runner/runner.init.gradle" \
+            "-Dorg.gradle.jvmargs=-Xmx6g -Dfile.encoding=UTF-8" \
+            "-Dkotlin.daemon.jvm.options=-Xmx5g"
+
+      - name: Merge
+        if: steps.plan.outputs.jobs != '0'
+        run: |
+          set -euo pipefail
+          python3 scripts/merge.py --work "$WORK" --results "$WORK/results.jsonl" \
+            --state state/state.tsv --map map/bgm-tmdb.tsv --meta map/meta.json \
+            --dump-name "$DUMP_NAME" --matcher "${MATCHER_SHA:-}" --summary-out "$WORK/summary.txt"
+
+      - name: Commit
+        if: steps.plan.outputs.jobs != '0'
+        run: |
+          set -euo pipefail
+          git add map state
+          if git diff --cached --quiet; then echo "没有变化"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "update $(date -u +%F): $(cat "$WORK/summary.txt")"
+          git push
+          # jsDelivr 按分支缓存, 推完主动刷新
+          for f in map/bgm-tmdb.tsv map/meta.json; do
+            curl -fsS "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@main/$f" > /dev/null || true
+          done
+
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.plan.outputs.jobs != '0'
+        with:
+          name: run-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/work/plan.json
+            ${{ runner.temp }}/work/results.jsonl
+          retention-days: 14
+          if-no-files-found: ignore
