@@ -8,6 +8,7 @@
 """
 import argparse
 import datetime
+import glob
 import hashlib
 import io
 import json
@@ -59,12 +60,25 @@ def due_bucket(state_row, new_hash, subject_date, today, subject_id):
     return 4 if since >= 120 + subject_id % 45 else None
 
 
+def outdated_records(site):
+    """自动结果还是旧格式的条目 (没有 stillsSource 字段, 那时对应表的分集数据列另有含义), 要重跑."""
+    ids = set()
+    for path in glob.glob(os.path.join(site, "data", "s", "*.json")):
+        with open(path, encoding="utf-8") as f:
+            for sid, rec in json.load(f).items():
+                auto = rec.get("auto")
+                if auto is not None and "stillsSource" not in auto:
+                    ids.add(int(sid))
+    return ids
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dump", required=True, help="Bangumi Archive 的 zip")
     ap.add_argument("--state", required=True)
     ap.add_argument("--work", required=True)
     ap.add_argument("--overrides", default="overrides", help="人工修正目录; 有修正的条目不跑")
+    ap.add_argument("--site", default="docs", help="核对页面目录 (读条目记录, 找出旧格式的结果)")
     ap.add_argument("--today", default=datetime.datetime.now(datetime.timezone.utc).date().isoformat())
     ap.add_argument("--max-jobs", type=int, default=20000)
     ap.add_argument("--ids", help="只跑这些条目 (逗号分隔), 忽略到期规则; 调试用")
@@ -76,6 +90,7 @@ def main():
 
     state = load_state(args.state)
     manual = set(load_overrides(args.overrides)[0])
+    outdated = outdated_records(args.site)
     subjects = {}
     with zipfile.ZipFile(args.dump) as zf:
         with open_member(zf, "subject.jsonlines") as f:
@@ -112,6 +127,8 @@ def main():
             bucket = 0
         elif args.force:
             bucket = 0
+        elif sid in outdated:
+            bucket = 1
         else:
             bucket = due_bucket(state.get(sid), h, s.get("date") or "", args.today, sid)
             if bucket is None:

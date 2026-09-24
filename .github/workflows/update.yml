@@ -10,8 +10,8 @@ on:
   workflow_dispatch:
     inputs:
       max_jobs:
-        description: '本轮最多跑多少个条目'
-        default: '20000'
+        description: '本轮最多跑多少个条目 (实际由时限决定, 一轮约能跑四万)'
+        default: '40000'
       ids:
         description: '只跑这些 bgm id (逗号分隔, 忽略到期规则; 调试用)'
         default: ''
@@ -37,7 +37,7 @@ jobs:
     permissions:
       contents: write
     env:
-      MAX_JOBS: ${{ inputs.max_jobs || '20000' }}
+      MAX_JOBS: ${{ inputs.max_jobs || '40000' }}
       ONLY_IDS: ${{ inputs.ids || '' }}
       MATCH_MINUTES: ${{ inputs.minutes || '290' }}
       FORCE_ALL: ${{ inputs.force || false }}

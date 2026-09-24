@@ -16,7 +16,7 @@
 #   WORK            工作目录; 默认 $RUNNER_TEMP/work, 本地为仓库下的 .work
 #   TMDB_API_TOKEN  TMDB 读取令牌 (matcher 写进 izuko-tv 的 local.properties)
 #   JAVA_HOME       带 JCEF 的 JBR 21 (izuko-tv 的构建要 JetBrains 厂商, 桌面端代码要 JCEF 的类); 用 jdk 步骤装的就不用设
-#   MAX_JOBS (20000) / ONLY_IDS (逗号分隔, 调试用) / MATCH_MINUTES (290)
+#   MAX_JOBS (40000) / ONLY_IDS (逗号分隔, 调试用) / MATCH_MINUTES (290)
 #   FORCE_ALL (true = 全部重跑, 人工修正的除外; 匹配器或表的格式变了时用)
 #   BGM_TMDB_CONCURRENCY (10) / BGM_TMDB_RPS (35)
 set -euo pipefail
@@ -26,7 +26,7 @@ if [ -z "${WORK:-}" ]; then
   if [ -n "${RUNNER_TEMP:-}" ]; then WORK="$RUNNER_TEMP/work"; else WORK="$ROOT/.work"; fi
 fi
 mkdir -p "$WORK"
-MAX_JOBS=${MAX_JOBS:-20000}
+MAX_JOBS=${MAX_JOBS:-40000}
 ONLY_IDS=${ONLY_IDS:-}
 MATCH_MINUTES=${MATCH_MINUTES:-290}
 
@@ -73,7 +73,8 @@ step_download() {
 step_plan() {
   # 新的一轮任务, 上一轮的结果作废 (匹配器会把结果文件里已有的条目当成做完跳过)
   rm -f "$WORK/results.jsonl" "$WORK/summary.txt"
-  local args=(--dump "$WORK/dump.zip" --state "$ROOT/state/state.tsv" --overrides "$ROOT/overrides" --work "$WORK" --max-jobs "$MAX_JOBS")
+  local args=(--dump "$WORK/dump.zip" --state "$ROOT/state/state.tsv" --overrides "$ROOT/overrides" --site "$ROOT/docs"
+    --work "$WORK" --max-jobs "$MAX_JOBS")
   if [ -n "$ONLY_IDS" ]; then args+=(--ids "$ONLY_IDS"); fi
   if [ "${FORCE_ALL:-}" = "true" ]; then args+=(--force); fi
   python3 "$ROOT/scripts/prepare.py" "${args[@]}"
