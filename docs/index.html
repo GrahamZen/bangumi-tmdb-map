@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bangumi → TMDB 对应表</title>
+<meta name="description" content="按 Bangumi id 查看、核对并人工修正对应的 TMDB 条目">
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --text: #1d2129; --muted: #6b7280; --line: #e3e6eb;
+  --accent: #2563eb; --accent-bg: #e8efff; --ok: #0f7a3d; --ok-bg: #e3f6ea; --warn: #9a5b00; --warn-bg: #fff2d6;
+  --bad: #b42318; --bad-bg: #fde8e7; --manual: #7c3aed; --manual-bg: #f0e8ff; --code: #f0f2f5;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121418; --panel: #1b1e24; --text: #e6e8eb; --muted: #9aa1ab; --line: #2c3139;
+    --accent: #7aa7ff; --accent-bg: #1e2a44; --ok: #5fd08f; --ok-bg: #173226; --warn: #f0b458; --warn-bg: #3a2c12;
+    --bad: #ff8a80; --bad-bg: #3d1c1a; --manual: #c4a5ff; --manual-bg: #2d2242; --code: #23272e;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 14px/1.55 system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+header { padding: 20px 16px 8px; max-width: 1100px; margin: 0 auto; }
+header h1 { margin: 0; font-size: 20px; }
+header .meta { color: var(--muted); margin-top: 4px; }
+main { max-width: 1100px; margin: 0 auto; padding: 0 16px 48px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-top: 12px; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+input, select, textarea, button { font: inherit; color: inherit; }
+input[type=text], select, textarea { background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 7px 10px; }
+input[type=text]:focus, textarea:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+#q { flex: 1 1 260px; min-width: 0; }
+button { background: var(--accent); color: #fff; border: 0; border-radius: 7px; padding: 7px 14px; cursor: pointer; }
+button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+button.danger { background: var(--bad); }
+button:disabled { opacity: .5; cursor: default; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 500; font-size: 12px; }
+tr.row { cursor: pointer; }
+tr.row:hover td { background: var(--accent-bg); }
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+.chip { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; background: var(--code); color: var(--muted); margin: 0 4px 4px 0; white-space: nowrap; }
+.chip.hit { background: var(--ok-bg); color: var(--ok); }
+.chip.miss { background: var(--warn-bg); color: var(--warn); }
+.chip.err { background: var(--bad-bg); color: var(--bad); }
+.chip.manual { background: var(--manual-bg); color: var(--manual); }
+.chip.auto { background: var(--accent-bg); color: var(--accent); }
+code, .mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 12.5px; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; }
+h2 { font-size: 18px; margin: 0; }
+h3 { font-size: 14px; margin: 18px 0 8px; color: var(--muted); font-weight: 600; }
+.grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 760px) { .grid { grid-template-columns: minmax(0, 1fr); } .hide-sm { display: none; } }
+.backdrop { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; background: var(--code); display: block; }
+.noimg { width: 100%; aspect-ratio: 16 / 9; border-radius: 8px; background: var(--code); display: flex; align-items: center; justify-content: center; color: var(--muted); }
+.poster { width: 92px; border-radius: 6px; float: right; margin: 0 0 8px 12px; background: var(--code); }
+.thumb { width: 120px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 4px; background: var(--code); display: block; }
+.kv { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 4px 10px; }
+.kv > div:nth-child(odd) { color: var(--muted); }
+.form { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 8px 10px; align-items: center; }
+.form input[type=text], .form textarea { width: 100%; }
+@media (max-width: 560px) { .form { grid-template-columns: minmax(0, 1fr); } }
+pre { background: var(--code); padding: 10px; border-radius: 7px; overflow-x: auto; margin: 8px 0 0; font-size: 12.5px; }
+.msg { margin-top: 8px; }
+.msg.bad { color: var(--bad); }
+.pager { display: flex; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 10px; }
+.overview { white-space: pre-wrap; }
+.scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Bangumi → TMDB 对应表</h1>
+  <div class="meta" id="meta">加载中…</div>
+</header>
+<main>
+  <div id="detail"></div>
+  <div class="panel">
+    <div class="bar">
+      <input type="text" id="q" placeholder="Bangumi id，或名称关键字 (原名 / 中文名)" autocomplete="off">
+      <select id="filter">
+        <option value="">全部</option>
+        <option value="hit">有对应</option>
+        <option value="manual">人工修正</option>
+        <option value="miss">没有对应</option>
+        <option value="err">失败待重试</option>
+        <option value="none">还没查</option>
+      </select>
+      <select id="sort">
+        <option value="pop">按热度</option>
+        <option value="id">按 id</option>
+        <option value="checked">按检查日期</option>
+      </select>
+    </div>
+    <div id="list" class="scroll" style="margin-top:10px"></div>
+  </div>
+</main>
+<script>
+"use strict";
+const REPO = "GrahamZen/bangumi-tmdb-map";
+const IMG = "https://image.tmdb.org/t/p/";
+const SHARD = 2000;
+const PAGE = 50;
+const GENRES = {
+  16: "动画", 10759: "动作冒险", 35: "喜剧", 18: "剧情", 10765: "科幻奇幻", 9648: "悬疑", 10751: "家庭",
+  10762: "儿童", 80: "犯罪", 99: "纪录", 10764: "真人秀", 10766: "肥皂剧", 10767: "脱口秀", 10768: "战争政治",
+  37: "西部", 28: "动作", 12: "冒险", 14: "奇幻", 36: "历史", 27: "恐怖", 10402: "音乐", 10749: "爱情",
+  878: "科幻", 10770: "电视电影", 53: "惊悚", 10752: "战争", 10763: "新闻",
+};
+const STATUS = { hit: ["有对应", "hit"], miss: ["没有对应", "miss"], err: ["失败待重试", "err"], "": ["还没查", ""] };
+
+let rows = [];          // index.tsv
+let byId = new Map();
+const shards = new Map();
+let page = 0;
+
+const $ = (id) => document.getElementById(id);
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function tmdbUrl(ref) {
+  const m = /^(tv|movie|collection)\/(\d+)(?:\/season\/(\d+))?$/.exec(ref || "");
+  if (!m) return null;
+  return `https://www.themoviedb.org/${m[1]}/${m[2]}` + (m[3] !== undefined ? `/season/${m[3]}` : "");
+}
+function refLink(ref) {
+  const url = tmdbUrl(ref);
+  return url ? `<a class="mono" href="${url}" target="_blank" rel="noopener">${esc(ref)}</a>` : `<span class="mono">${esc(ref)}</span>`;
+}
+function chip(text, cls) { return `<span class="chip ${cls || ""}">${esc(text)}</span>`; }
+function statusChips(status, source) {
+  const [label, cls] = STATUS[status] || STATUS[""];
+  let out = chip(source === "manual" && status === "miss" ? "确认没有对应" : label, cls);
+  if (source) out += chip(source === "manual" ? "人工" : "自动", source);
+  return out;
+}
+
+async function load() {
+  try {
+    const [meta, index] = await Promise.all([
+      fetch("meta.json", { cache: "no-cache" }).then((r) => r.ok ? r.json() : null),
+      fetch("data/index.tsv", { cache: "no-cache" }).then((r) => r.ok ? r.text() : ""),
+    ]);
+    if (meta) {
+      $("meta").innerHTML = `更新于 ${esc(meta.generated)} · 动画条目 ${meta.anime} · 已查 ${meta.checked}` +
+        ` · 有对应 ${meta.hit} · 人工修正 ${meta.manual} · 失败待重试 ${meta.err}` +
+        ` · <a href="https://github.com/${REPO}" target="_blank" rel="noopener">仓库</a>`;
+    } else {
+      $("meta").textContent = "还没有数据";
+    }
+    for (const line of index.split("\n")) {
+      if (!line || line[0] === "#") continue;
+      const p = line.split("\t");
+      const row = { id: +p[0], name: p[1], cn: p[2], date: p[3], platform: p[4], pop: +p[5] || 0,
+        status: p[6], source: p[7], ref: p[8], title: p[9], checked: p[10] };
+      rows.push(row);
+      byId.set(row.id, row);
+    }
+  } catch (e) {
+    $("meta").textContent = "加载失败: " + e;
+  }
+  renderList();
+  route();
+}
+
+function filtered() {
+  const q = $("q").value.trim().toLowerCase();
+  const f = $("filter").value;
+  let out = rows;
+  if (f === "manual") out = out.filter((r) => r.source === "manual");
+  else if (f === "none") out = out.filter((r) => !r.status);
+  else if (f) out = out.filter((r) => r.status === f);
+  if (q && !/^\d+$/.test(q)) out = out.filter((r) => r.name.toLowerCase().includes(q) || r.cn.toLowerCase().includes(q) || (r.title || "").toLowerCase().includes(q));
+  if (/^\d+$/.test(q)) out = out.filter((r) => String(r.id).startsWith(q));
+  const s = $("sort").value;
+  const sorted = out.slice();
+  if (s === "pop") sorted.sort((a, b) => b.pop - a.pop);
+  else if (s === "id") sorted.sort((a, b) => a.id - b.id);
+  else sorted.sort((a, b) => (b.checked || "").localeCompare(a.checked || ""));
+  return sorted;
+}
+
+function renderList() {
+  const all = filtered();
+  const pages = Math.max(1, Math.ceil(all.length / PAGE));
+  page = Math.min(page, pages - 1);
+  const slice = all.slice(page * PAGE, page * PAGE + PAGE);
+  let html = `<table><thead><tr><th>id</th><th>Bangumi</th><th class="hide-sm">日期</th><th>结果</th><th>TMDB</th><th class="hide-sm">热度</th></tr></thead><tbody>`;
+  for (const r of slice) {
+    html += `<tr class="row" data-id="${r.id}"><td class="mono">${r.id}</td>` +
+      `<td>${esc(r.cn || r.name)}${r.cn ? `<div class="muted small">${esc(r.name)}</div>` : ""}</td>` +
+      `<td class="hide-sm muted">${esc(r.date)}${r.platform ? `<div class="small">${esc(r.platform)}</div>` : ""}</td>` +
+      `<td>${statusChips(r.status, r.source)}</td>` +
+      `<td>${r.ref ? refLink(r.ref) : ""}${r.title ? `<div class="small muted">${esc(r.title)}</div>` : ""}</td>` +
+      `<td class="hide-sm muted">${r.pop}</td></tr>`;
+  }
+  html += `</tbody></table>`;
+  if (!slice.length) html = `<div class="muted">没有符合条件的条目</div>`;
+  html += `<div class="pager"><span class="muted">${all.length} 条</span>` +
+    `<button class="ghost" id="prev" ${page ? "" : "disabled"}>上一页</button>` +
+    `<span class="muted">${page + 1} / ${pages}</span>` +
+    `<button class="ghost" id="next" ${page < pages - 1 ? "" : "disabled"}>下一页</button></div>`;
+  $("list").innerHTML = html;
+  $("list").querySelectorAll("tr.row").forEach((tr) => tr.addEventListener("click", () => { location.hash = tr.dataset.id; }));
+  $("prev").onclick = () => { page--; renderList(); };
+  $("next").onclick = () => { page++; renderList(); };
+}
+
+async function shardOf(id) {
+  const key = Math.floor(id / SHARD);
+  if (!shards.has(key)) {
+    shards.set(key, fetch(`data/s/${key}.json`, { cache: "no-cache" }).then((r) => r.ok ? r.json() : {}).catch(() => ({})));
+  }
+  return shards.get(key);
+}
+
+async function route() {
+  const id = parseInt(location.hash.slice(1), 10);
+  if (!id) { $("detail").innerHTML = ""; return; }
+  $("detail").innerHTML = `<div class="panel muted">加载 ${id}…</div>`;
+  const rec = (await shardOf(id))[String(id)] || {};
+  renderDetail(id, rec);
+  $("detail").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function entityBlock(e) {
+  if (!e) return `<div class="muted">匹配时没有取到这个条目的信息</div>`;
+  const genres = (e.genres || []).map((g) => GENRES[g] || g).filter((v, i, a) => a.indexOf(v) === i);
+  let html = e.poster ? `<img class="poster" loading="lazy" src="${IMG}w185${esc(e.poster)}" alt="">` : "";
+  html += `<div><b>${esc(e.name)}</b> ${refLink(e.ref)}</div>`;
+  if (e.original) html += `<div class="muted">${esc(e.original)}</div>`;
+  html += `<div class="kv" style="margin-top:8px">`;
+  if (e.date) html += `<div>首播/上映</div><div>${esc(e.date)}</div>`;
+  if (e.lang || (e.countries || []).length) html += `<div>语言/地区</div><div>${esc(e.lang || "")} ${esc((e.countries || []).join(" "))}</div>`;
+  if (genres.length) html += `<div>类型</div><div>${genres.map((g) => chip(g, g === "动画" ? "hit" : "")).join("")}</div>`;
+  if (e.vote) html += `<div>评分</div><div>${e.vote.toFixed(1)}${e.votes ? ` <span class="muted small">(${e.votes} 票)</span>` : ""}</div>`;
+  if (e.status) html += `<div>状态</div><div>${esc(e.status)}${e.episodes ? ` · ${e.episodes} 集` : ""}</div>`;
+  html += `</div>`;
+  if (e.overview) html += `<div class="overview muted small" style="margin-top:8px">${esc(e.overview)}</div>`;
+  if ((e.seasons || []).length) {
+    html += `<table style="margin-top:8px"><thead><tr><th>季</th><th>名称</th><th>首播</th><th>集数</th></tr></thead><tbody>`;
+    for (const s of e.seasons) {
+      html += `<tr><td>${refLink(`${e.ref}/season/${s.n}`)}</td><td>${esc(s.name || "")}</td><td class="muted">${esc(s.date || "")}</td><td class="muted">${s.eps ?? ""}</td></tr>`;
+    }
+    html += `</tbody></table>`;
+  }
+  return html;
+}
+
+function backdropBlock(ref, path) {
+  let html = path ? `<a href="${IMG}original${esc(path)}" target="_blank" rel="noopener"><img class="backdrop" loading="lazy" src="${IMG}w780${esc(path)}" alt=""></a>`
+    : `<div class="noimg">${ref ? "没有指定图片 (客户端按条目自己取)" : "没有整部背景图"}</div>`;
+  html += `<div class="kv" style="margin-top:8px"><div>背景图条目</div><div>${ref ? refLink(ref) : "—"}</div>` +
+    `<div>图片路径</div><div class="mono">${esc(path || "—")}</div></div>`;
+  return html;
+}
+
+function renderDetail(id, rec) {
+  const idx = byId.get(id) || {};
+  const bgm = rec.bgm || {};
+  const auto = rec.auto;
+  const manual = rec.manual;
+  const name = bgm.name || idx.name || "";
+  const cn = bgm.nameCN || idx.cn || "";
+  let html = `<div class="panel">`;
+  html += `<h2>${esc(cn || name || `条目 ${id}`)}</h2>`;
+  if (cn && name) html += `<div class="muted">${esc(name)}</div>`;
+  html += `<div style="margin-top:8px">${statusChips(idx.status || "", idx.source || "")}`;
+  for (const v of [bgm.platform || idx.platform, bgm.date || idx.date, bgm.eps ? `${bgm.eps} 话` : "",
+    bgm.score ? `评分 ${bgm.score}` : "", bgm.rank ? `排名 #${bgm.rank}` : "", (bgm.pop || idx.pop) ? `收藏 ${bgm.pop || idx.pop}` : "",
+    bgm.nsfw ? "NSFW" : ""]) if (v) html += chip(v);
+  html += `</div><div class="small" style="margin-top:4px">` +
+    `<a href="https://bgm.tv/subject/${id}" target="_blank" rel="noopener">Bangumi 页面</a> · id <span class="mono">${id}</span>` +
+    (idx.checked ? ` · 上次检查 ${esc(idx.checked)}` : "") + `</div>`;
+  if ((bgm.aliases || []).length) html += `<div class="small" style="margin-top:6px"><span class="muted">别名 </span>${bgm.aliases.map(esc).join(" / ")}</div>`;
+  if ((bgm.tags || []).length || (bgm.meta || []).length) html += `<div style="margin-top:6px">${[...(bgm.meta || []), ...(bgm.tags || [])].filter((v, i, a) => a.indexOf(v) === i).map((t) => chip(t)).join("")}</div>`;
+
+  if (rec.error) {
+    html += `<h3>最近一次失败</h3><div class="chip err">${esc(rec.error.date)}</div> <span class="small">${esc(rec.error.message)}</span>` +
+      `<span class="muted small"> (连续第 ${rec.error.fails} 次)</span>`;
+  }
+
+  if (manual) {
+    html += `<h3>人工修正 (生效中，自动匹配不会覆盖)</h3>`;
+    html += manual.none ? `<div>确认 TMDB 上没有对应，客户端不出图。</div>`
+      : `<div class="grid"><div>${backdropBlock(manual.backdrop, manual.backdrop_path)}</div><div><div class="kv">` +
+        `<div>名称</div><div>${esc(manual.title || "—")}</div>` +
+        `<div>剧照出处</div><div>${(manual.stills || []).map(refLink).join("<br>") || "—"}</div></div></div></div>`;
+    html += `<div class="kv small" style="margin-top:8px">` +
+      (manual.note ? `<div>备注</div><div>${esc(manual.note)}</div>` : "") +
+      (manual.updated ? `<div>修改日期</div><div>${esc(manual.updated)}</div>` : "") +
+      (manual.auto_was ? `<div>当时的自动结果</div><div class="mono">${esc(manual.auto_was)}</div>` : "") + `</div>`;
+  }
+
+  if (auto) {
+    html += `<h3>${manual ? "自动匹配结果 (已被人工修正取代)" : "自动匹配结果"} · ${esc(auto.checked)}</h3>`;
+    if (auto.status === "hit") {
+      html += `<div class="grid"><div>${backdropBlock(auto.backdrop, auto.backdropPath)}` +
+        `<div class="kv" style="margin-top:4px"><div>剧照出处</div><div>${(auto.stills || []).map(refLink).join("<br>") || "—"}` +
+        (auto.stillCount ? ` <span class="muted small">(${auto.stillCount} 张)</span>` : "") + `</div>` +
+        (auto.hitQuery ? `<div>命中搜索</div><div><code>${esc(auto.hitQuery.query)}</code> <span class="muted small">${[auto.hitQuery.kind, auto.hitQuery.lang, `第 ${auto.hitQuery.rank} 位`].filter(Boolean).map(esc).join(" · ")}</span></div>` : "") +
+        `<div>请求数</div><div>${auto.requests ?? "—"}</div></div></div>` +
+        `<div>${entityBlock(auto.tmdb)}</div></div>`;
+    } else {
+      html += `<div class="muted">TMDB 上没有匹配到 (请求 ${auto.requests ?? "—"} 次)。</div>`;
+    }
+    if ((auto.candidates || []).length) {
+      html += `<h3>搜索中出现的其他条目 (备选)</h3><div class="scroll"><table><thead><tr><th></th><th>条目</th><th>名称</th><th class="hide-sm">日期</th><th class="hide-sm">类型</th><th></th></tr></thead><tbody>`;
+      auto.candidates.forEach((c, i) => {
+        const genres = (c.genres || []).map((g) => GENRES[g] || g).join(" ");
+        html += `<tr><td>${c.backdrop ? `<img class="thumb" loading="lazy" src="${IMG}w300${esc(c.backdrop)}" alt="">` : ""}</td>` +
+          `<td>${refLink(c.ref)}</td><td>${esc(c.name)}${c.original ? `<div class="muted small">${esc(c.original)}</div>` : ""}</td>` +
+          `<td class="hide-sm muted">${esc(c.date || "")}<div class="small">${esc(c.lang || "")} ${esc((c.countries || []).join(" "))}</div></td>` +
+          `<td class="hide-sm muted small">${esc(genres)}</td>` +
+          `<td><button class="ghost" data-cand="${i}">用这个</button></td></tr>`;
+      });
+      html += `</tbody></table></div>`;
+    }
+  } else if (!manual) {
+    html += `<h3>自动匹配结果</h3><div class="muted">这个条目还没查过。</div>`;
+  }
+
+  html += editorHtml(id, manual, auto);
+  html += `</div>`;
+  $("detail").innerHTML = html;
+  bindEditor(id, manual, auto);
+}
+
+function editorHtml(id, manual, auto) {
+  const cur = manual || {};
+  const seed = manual ? cur : (auto && auto.status === "hit" ? { backdrop: auto.backdrop, backdrop_path: auto.backdropPath, stills: auto.stills, title: (auto.tmdb || {}).name } : {});
+  return `<h3>人工修正</h3>
+  <div class="muted small" style="margin-bottom:8px">填 TMDB 条目 (可直接粘贴 TMDB 网址)、背景图 (可粘贴图片地址)；生成的文件提交到仓库的 <code>overrides/${id}.json</code>，
+  推送后几分钟内生效，之后自动匹配不会再改这一条。只有仓库所有者能提交。</div>
+  <div class="form">
+    <label for="e-ref">TMDB 条目</label><input type="text" id="e-ref" placeholder="tv/65942 或 https://www.themoviedb.org/tv/65942" value="${esc(seed.backdrop || "")}">
+    <label for="e-path">背景图</label><input type="text" id="e-path" placeholder="/abc.jpg 或 https://image.tmdb.org/t/p/original/abc.jpg (可空)" value="${esc(seed.backdrop_path || "")}">
+    <label for="e-stills">剧照出处</label><input type="text" id="e-stills" placeholder="tv/65942/season/1, tv/65942/season/0 (可空, 可粘贴季的网址)" value="${esc((seed.stills || []).join(", "))}">
+    <label for="e-title">名称</label><input type="text" id="e-title" placeholder="TMDB 上的名字 (可空, 只用于显示)" value="${esc(seed.title || "")}">
+    <label for="e-note">备注</label><input type="text" id="e-note" placeholder="为什么改 (可空)" value="${esc(cur.note || "")}">
+    <span></span><label><input type="checkbox" id="e-none" ${cur.none ? "checked" : ""}> TMDB 上确实没有对应 (客户端不出图)</label>
+  </div>
+  <div id="e-preview" style="margin-top:10px;max-width:420px"></div>
+  <div class="bar" style="margin-top:10px">
+    <button id="e-submit">${manual ? "复制并去 GitHub 修改" : "去 GitHub 提交"}</button>
+    <button class="ghost" id="e-copy">复制 JSON</button>
+    ${manual ? `<button class="danger" id="e-delete">撤销人工修正</button>` : ""}
+  </div>
+  <div class="msg small" id="e-msg"></div>
+  <pre id="e-json"></pre>`;
+}
+
+function parseRef(s) {
+  s = (s || "").trim();
+  const m = /(tv|movie|collection)\/(\d+)/.exec(s);
+  return m ? `${m[1]}/${m[2]}` : s;
+}
+function parsePath(s) {
+  s = (s || "").trim();
+  if (!s) return "";
+  const m = /\/([A-Za-z0-9_\-]+\.(?:jpg|jpeg|png|webp))(?:[?#].*)?$/.exec(s);
+  return m ? `/${m[1]}` : s;
+}
+function parseStills(s) {
+  return (s || "").split(/[\s,，]+/).filter(Boolean).map((x) => {
+    const m = /(tv)\/(\d+)[^/]*\/season\/(\d+)/.exec(x);
+    if (m) return `tv/${m[2]}/season/${m[3]}`;
+    return parseRef(x);
+  }).filter((v, i, a) => a.indexOf(v) === i);
+}
+
+function buildOverride(id, auto) {
+  const none = $("e-none").checked;
+  const o = { none };
+  const errs = [];
+  if (!none) {
+    const ref = parseRef($("e-ref").value), path = parsePath($("e-path").value), stills = parseStills($("e-stills").value);
+    if (ref) { if (!/^(tv|movie|collection)\/\d+$/.test(ref)) errs.push("TMDB 条目应为 tv/123、movie/123 或 collection/123"); o.backdrop = ref; }
+    if (path) { if (!/^\/[A-Za-z0-9_\-]+\.(jpg|jpeg|png|webp)$/.test(path)) errs.push("背景图应为 /xxxx.jpg"); if (!ref) errs.push("给了背景图就要填 TMDB 条目"); o.backdrop_path = path; }
+    if (stills.length) { for (const s of stills) if (!/^(tv\/\d+\/season\/\d+|movie\/\d+|collection\/\d+)$/.test(s)) errs.push(`剧照出处格式不对: ${s}`); o.stills = stills; }
+    if (!ref && !stills.length) errs.push("至少填 TMDB 条目或剧照出处；要表示没有对应，勾选下面那一项");
+  }
+  const title = $("e-title").value.trim(), note = $("e-note").value.trim();
+  if (title && !none) o.title = title;
+  if (note) o.note = note;
+  o.updated = new Date().toISOString().slice(0, 10);
+  if (auto) o.auto_was = auto.status === "hit" ? [auto.backdrop, auto.backdropPath, (auto.stills || []).join(",")].filter(Boolean).join(" ") : "(自动: 没有对应)";
+  return { o, errs };
+}
+
+function bindEditor(id, manual, auto) {
+  const refresh = () => {
+    const { o, errs } = buildOverride(id, auto);
+    $("e-json").textContent = JSON.stringify(o, null, 2);
+    $("e-msg").textContent = errs.join("；");
+    $("e-msg").className = "msg small" + (errs.length ? " bad" : "");
+    $("e-submit").disabled = errs.length > 0;
+    const path = o.backdrop_path;
+    $("e-preview").innerHTML = path ? `<img class="backdrop" src="${IMG}w780${esc(path)}" alt="">` : "";
+    return { o, errs };
+  };
+  for (const el of ["e-ref", "e-path", "e-stills", "e-title", "e-note", "e-none"]) $(el).addEventListener("input", refresh);
+  $("e-none").addEventListener("change", refresh);
+  refresh();
+  document.querySelectorAll("[data-cand]").forEach((b) => b.addEventListener("click", () => {
+    const c = auto.candidates[+b.dataset.cand];
+    $("e-none").checked = false;
+    $("e-ref").value = c.ref;
+    $("e-path").value = c.backdrop || "";
+    $("e-stills").value = "";
+    $("e-title").value = c.name || "";
+    refresh();
+    $("e-ref").scrollIntoView({ behavior: "smooth", block: "center" });
+  }));
+  const file = `overrides/${id}.json`;
+  const copy = async (text) => { try { await navigator.clipboard.writeText(text); return true; } catch { return false; } };
+  $("e-copy").onclick = async () => {
+    const ok = await copy($("e-json").textContent + "\n");
+    $("e-msg").textContent = ok ? "已复制" : "复制失败，请手动选中下面的 JSON";
+  };
+  $("e-submit").onclick = async () => {
+    const { errs } = refresh();
+    if (errs.length) return;
+    const text = $("e-json").textContent + "\n";
+    if (manual) {
+      const ok = await copy(text);
+      $("e-msg").textContent = ok ? "JSON 已复制，在 GitHub 编辑页里整段替换后提交" : "复制失败，请手动复制下面的 JSON";
+      window.open(`https://github.com/${REPO}/edit/main/${file}`, "_blank", "noopener");
+    } else {
+      const url = `https://github.com/${REPO}/new/main?filename=${encodeURIComponent(file)}&value=${encodeURIComponent(text)}`;
+      window.open(url, "_blank", "noopener");
+      $("e-msg").textContent = "已在新标签页打开 GitHub；若内容没带过去，点「复制 JSON」后粘贴";
+    }
+  };
+  if (manual) $("e-delete").onclick = () => window.open(`https://github.com/${REPO}/delete/main/${file}`, "_blank", "noopener");
+}
+
+let timer = 0;
+$("q").addEventListener("input", () => {
+  clearTimeout(timer);
+  timer = setTimeout(() => { page = 0; renderList(); }, 150);
+});
+$("q").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    const v = $("q").value.trim();
+    if (/^\d+$/.test(v)) location.hash = v;
+  }
+});
+$("filter").addEventListener("change", () => { page = 0; renderList(); });
+$("sort").addEventListener("change", () => { page = 0; renderList(); });
+window.addEventListener("hashchange", route);
+load();
+</script>
+</body>
+</html>

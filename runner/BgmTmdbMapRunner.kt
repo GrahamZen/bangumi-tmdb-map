@@ -213,13 +213,19 @@ class BgmTmdbMapRunner {
             }.orEmpty()
             val unresolved = listOfNotNull(backdropPath).count { backdropIndex.refsOf(it).isEmpty() } +
                     stillPaths.count { stillsIndex.refsOf(it).isEmpty() }
+            val backdropRef = backdropPath?.let { backdropIndex.refsOf(it).firstOrNull() }
+            val stillRefs = stillsIndex.stillRefsOf(stillPaths)
+            val chosen = (backdropRef ?: stillRefs.firstOrNull())?.substringBefore("/season/")
             return Out(
                 id = job.id,
                 ok = handler.failures.isEmpty() && handler.blocked.isEmpty(),
-                backdrop = backdropPath?.let { backdropIndex.refsOf(it).firstOrNull() },
+                backdrop = backdropRef,
                 backdropPath = backdropPath,
-                stills = stillsIndex.stillRefsOf(stillPaths),
+                stills = stillRefs,
                 stillCount = stillPaths.size,
+                tmdb = chosen?.let { stillsIndex.entityOf(it) },
+                hitQuery = chosen?.let { stillsIndex.firstHitOf(it) },
+                candidates = stillsIndex.candidates(exclude = chosen, limit = 6),
                 requests = handler.tmdbRequests.get(),
                 bgmCalls = handler.bgmCalls.get(),
                 ms = System.currentTimeMillis() - begin,
@@ -316,6 +322,12 @@ class BgmTmdbMapRunner {
         /** 分集剧照出处, 形如 `tv/65942/season/3`; 单集电影与合集是 `movie/…` / `collection/…` */
         val stills: List<String> = emptyList(),
         val stillCount: Int = 0,
+        /** backdrop (没有时取剧照出处) 那个 TMDB 条目的信息, 取自本任务已收到的响应, 人工核对用 */
+        val tmdb: MapTmdbEntity? = null,
+        /** 哪一次搜索把它搜了出来 (第一次出现的那次) */
+        val hitQuery: MapSearchHit? = null,
+        /** 本任务搜索结果里的其他条目 (按首次出现排序, 最多 6 个; 只留辨认用的字段), 人工修正时的备选 */
+        val candidates: List<MapTmdbEntity> = emptyList(),
         val requests: Int = 0,
         val bgmCalls: Int = 0,
         val ms: Long = 0,
@@ -356,8 +368,8 @@ private class MapFeatureHandler(
     private val archive: BgmArchive,
     private val limiter: RateLimiter,
 ) : ScopedHttpClientFeatureHandler<ScopedHttpClientUserAgent>(UserAgentFeature) {
-    /** (请求路径, 响应体): 只收成功的 TMDB 响应, 供 [OriginIndex] 反查图片出处. */
-    val tmdbBodies = ConcurrentLinkedQueue<Pair<String, String>>()
+    /** 成功的 TMDB 响应, 供 [OriginIndex] 反查图片出处、取条目信息. */
+    val tmdbBodies = ConcurrentLinkedQueue<MapTmdbBody>()
     val tmdbRequests = AtomicInteger()
     val bgmCalls = AtomicInteger()
     val failures = ConcurrentLinkedQueue<String>()
@@ -389,7 +401,8 @@ private class MapFeatureHandler(
     }
 
     private suspend fun Sender.tmdb(request: HttpRequestBuilder): HttpClientCall {
-        val path = request.url.build().encodedPath
+        val url = request.url.build()
+        val path = url.encodedPath
         request.headers[HttpHeaders.UserAgent] = USER_AGENT
         var attempt = 0
         while (true) {
@@ -399,7 +412,7 @@ private class MapFeatureHandler(
             val retryAfterMillis: Long
             try {
                 val saved = execute(HttpRequestBuilder().takeFrom(request)).save()
-                tmdbBodies.add(path to saved.response.bodyAsText())
+                tmdbBodies.add(MapTmdbBody(path, url.parameters["query"], url.parameters["language"], saved.response.bodyAsText()))
                 return saved
             } catch (e: CancellationException) {
                 throw e
@@ -591,30 +604,76 @@ private class BgmArchive(
     }
 }
 
+/** 一个成功的 TMDB 响应. */
+private class MapTmdbBody(val path: String, val query: String?, val language: String?, val body: String)
+
+/** TMDB 条目的概要, 全部取自搜索结果/详情里本来就有的字段. */
+@Serializable
+private data class MapTmdbEntity(
+    val ref: String,
+    val name: String,
+    val original: String? = null,
+    val date: String? = null,
+    val overview: String? = null,
+    val lang: String? = null,
+    val countries: List<String> = emptyList(),
+    val genres: List<Int> = emptyList(),
+    val vote: Double? = null,
+    val votes: Int? = null,
+    val poster: String? = null,
+    val backdrop: String? = null,
+    /** 以下只有取过详情的剧集才有 */
+    val status: String? = null,
+    val episodes: Int? = null,
+    val seasons: List<MapTmdbSeason> = emptyList(),
+)
+
+@Serializable
+private data class MapTmdbSeason(val n: Int, val name: String? = null, val date: String? = null, val eps: Int? = null)
+
+@Serializable
+private data class MapSearchHit(val kind: String, val query: String, val lang: String? = null, val rank: Int)
+
 /**
  * 「图片路径 → 出处」: 从本任务收到的 TMDB 响应里收集. 同一路径可能出现在多处 (合集与其中的电影、
  * 搜索结果与详情), 按可信度排: 图片列表/分季 > 详情 > 搜索结果.
+ *
+ * 顺带整理各条目的概要与搜索记录 (响应里本来就有), 给人工核对用, 不为此多发请求.
  */
-private class OriginIndex(bodies: Collection<Pair<String, String>>) {
+private class OriginIndex(bodies: Collection<MapTmdbBody>) {
     private val refs = mutableMapOf<String, MutableList<Pair<Int, String>>>()
+
+    /** ref -> (可信度, 概要); 详情覆盖搜索结果 */
+    private val entities = linkedMapOf<String, Pair<Int, MapTmdbEntity>>()
+
+    /** 按请求顺序: (搜索记录, 该次结果里的 ref 列表) */
+    private val searches = mutableListOf<Pair<MapSearchHit, List<String>>>()
 
     init {
         val parser = Json { ignoreUnknownKeys = true }
-        for ((rawPath, body) in bodies) {
-            val element = runCatching { parser.parseToJsonElement(body) }.getOrNull() as? JsonObject ?: continue
+        for (b in bodies) {
+            val rawPath = b.path
+            val element = runCatching { parser.parseToJsonElement(b.body) }.getOrNull() as? JsonObject ?: continue
             // 形如 /3/tv/65942/season/3; 去掉版本号
             val seg = rawPath.trim('/').split('/').let { if (it.firstOrNull() == "3") it.drop(1) else it }
             when {
                 seg.size == 2 && seg[0] == "search" -> {
                     val kind = seg[1]
+                    val hits = mutableListOf<String>()
                     element.array("results").forEach { item ->
-                        item.int("id")?.let { id -> addPaths(item, "$kind/$id", PRIORITY_SEARCH) }
+                        item.int("id")?.let { id ->
+                            addPaths(item, "$kind/$id", PRIORITY_SEARCH)
+                            addEntity(item, "$kind/$id", PRIORITY_SEARCH)
+                            hits += "$kind/$id"
+                        }
                     }
+                    searches += MapSearchHit(kind, b.query.orEmpty(), b.language, rank = 0) to hits
                 }
 
                 seg.size == 2 && seg[0] in KINDS -> {
                     val ref = "${seg[0]}/${seg[1]}"
                     addPaths(element, ref, PRIORITY_DETAIL)
+                    addEntity(element, ref, PRIORITY_DETAIL)
                     when (seg[0]) {
                         "tv" -> element.array("seasons").forEach { season ->
                             season.int("season_number")?.let { n -> addPaths(season, "$ref/season/$n", PRIORITY_DETAIL) }
@@ -627,7 +686,10 @@ private class OriginIndex(bodies: Collection<Pair<String, String>>) {
                         "collection" -> element.array("parts").forEach { part ->
                             // 合集当集表用时, 剧照就是各部电影的横图; 出处记合集本身
                             addPaths(part, ref, PRIORITY_DETAIL)
-                            part.int("id")?.let { pid -> addPaths(part, "movie/$pid", PRIORITY_SEARCH) }
+                            part.int("id")?.let { pid ->
+                                addPaths(part, "movie/$pid", PRIORITY_SEARCH)
+                                addEntity(part, "movie/$pid", PRIORITY_SEARCH)
+                            }
                         }
                     }
                 }
@@ -653,6 +715,48 @@ private class OriginIndex(bodies: Collection<Pair<String, String>>) {
             obj.string(key)?.let { add(it, ref, priority) }
         }
     }
+
+    private fun addEntity(obj: JsonElement, ref: String, priority: Int) {
+        val o = obj as? JsonObject ?: return
+        val name = o.string("name") ?: o.string("title") ?: return
+        val entity = MapTmdbEntity(
+            ref = ref,
+            name = name,
+            original = (o.string("original_name") ?: o.string("original_title"))?.takeIf { it != name },
+            date = o.string("first_air_date") ?: o.string("release_date"),
+            overview = o.string("overview")?.let { if (it.length > OVERVIEW_MAX) it.take(OVERVIEW_MAX) + "…" else it },
+            lang = o.string("original_language"),
+            countries = o.array("origin_country").mapNotNull { (it as? JsonPrimitive)?.contentOrNull },
+            genres = o.array("genre_ids").mapNotNull { (it as? JsonPrimitive)?.intOrNull } +
+                o.array("genres").mapNotNull { it.int("id") },
+            vote = (o["vote_average"] as? JsonPrimitive)?.contentOrNull?.toDoubleOrNull()?.takeIf { it > 0 },
+            votes = o.int("vote_count")?.takeIf { it > 0 },
+            poster = o.string("poster_path"),
+            backdrop = o.string("backdrop_path"),
+            status = o.string("status"),
+            episodes = o.int("number_of_episodes"),
+            seasons = o.array("seasons").mapNotNull { season ->
+                season.int("season_number")?.let { n ->
+                    MapTmdbSeason(n, season.string("name"), season.string("air_date"), season.int("episode_count"))
+                }
+            },
+        )
+        val existing = entities[ref]
+        if (existing == null || priority > existing.first) entities[ref] = priority to entity
+    }
+
+    fun entityOf(ref: String): MapTmdbEntity? = entities[ref]?.second
+
+    /** 第一次把 [ref] 搜出来的那次搜索, rank 从 1 起. */
+    fun firstHitOf(ref: String): MapSearchHit? = searches.firstNotNullOfOrNull { (hit, results) ->
+        results.indexOf(ref).takeIf { it >= 0 }?.let { hit.copy(rank = it + 1) }
+    }
+
+    /** 搜索结果里出现过的其他条目, 按首次出现排序. */
+    fun candidates(exclude: String?, limit: Int): List<MapTmdbEntity> =
+        searches.asSequence().flatMap { it.second }.distinct().filter { it != exclude }
+            .mapNotNull { entityOf(it)?.copy(overview = null, poster = null, seasons = emptyList(), status = null, episodes = null) }
+            .take(limit).toList()
 
     private fun add(path: String, ref: String, priority: Int) {
         val list = refs.getOrPut(path) { mutableListOf() }
@@ -700,5 +804,6 @@ private class OriginIndex(bodies: Collection<Pair<String, String>>) {
         const val PRIORITY_SEARCH = 1
         const val PRIORITY_DETAIL = 2
         const val PRIORITY_IMAGES = 3
+        const val OVERVIEW_MAX = 160
     }
 }

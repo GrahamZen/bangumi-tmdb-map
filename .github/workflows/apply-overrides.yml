@@ -1,0 +1,48 @@
+# 推送人工修正 (overrides/) 后立即应用到对应表与核对页面, 不跑匹配.
+# 修正文件不合法时这一轮失败 (GitHub 会发通知), 什么也不提交.
+name: apply-overrides
+
+on:
+  push:
+    branches: [main]
+    paths: ['overrides/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # 与每日那一轮共用: 两边都改 map/docs, 错开跑
+  group: update
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main # 排队期间 main 可能已前进, 以最新的为准
+
+      - name: Apply overrides
+        run: |
+          set -euo pipefail
+          python3 scripts/merge.py --apply-only --state state/state.tsv --map map/bgm-tmdb.tsv --meta map/meta.json \
+            --site docs --overrides overrides --summary-out "$RUNNER_TEMP/summary.txt"
+
+      - name: Commit
+        run: |
+          set -euo pipefail
+          git add map state docs
+          if git diff --cached --quiet; then echo "没有变化"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "$(cat "$RUNNER_TEMP/summary.txt")"
+          git pull -q --rebase origin main
+          git push
+          for f in map/bgm-tmdb.tsv map/meta.json; do
+            curl -fsS "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@main/$f" > /dev/null || true
+          done

@@ -1,7 +1,7 @@
 """从 Bangumi 官方数据导出挑出本轮要匹配的动画条目, 生成匹配器 (runner/BgmTmdbMapRunner.kt) 的输入.
 
 输出到 --work 目录:
-  anime.jsonl      全部动画条目的精简信息 (合成关联接口时给出关联条目的名字)
+  anime.jsonl      全部动画条目的概要 (合成关联接口时给出关联条目的名字; 核对页面展示的 Bangumi 信息)
   relations.jsonl  动画条目之间的关联, 每条目一行, 按 (order, id) 排好 (与接口顺序一致)
   jobs.jsonl       本轮任务, 按优先级排序; 每行自带匹配所需的全部输入与输入指纹
   plan.json        本轮各类任务的数量
@@ -15,7 +15,7 @@ import os
 import sys
 import zipfile
 
-from common import (ANIME, load_state, parse_infobox)
+from common import ANIME, PLATFORMS, load_overrides, load_state, parse_infobox, popularity
 
 EPISODE_CAP = 3000  # 与 app 取分集的上限一致 (EpisodeService.MAX_EPISODES)
 HASH_KEYS = {"别名", "上映年度", "上映日期", "其他上映日期", "其他上映年度", "放送开始"}
@@ -45,7 +45,8 @@ def due_bucket(state_row, new_hash, subject_date, today, subject_id):
     """返回优先级 (越小越先), 不到期返回 None."""
     if state_row is None:
         return 0
-    if state_row["hash"] != new_hash:
+    # status 为 manual 却走到这里 = 人工修正刚被撤掉, 按输入变了重跑
+    if state_row["hash"] != new_hash or state_row["status"] == "manual":
         return 1
     since = days_between(state_row["checked"], today)
     status = state_row["status"]
@@ -63,6 +64,7 @@ def main():
     ap.add_argument("--dump", required=True, help="Bangumi Archive 的 zip")
     ap.add_argument("--state", required=True)
     ap.add_argument("--work", required=True)
+    ap.add_argument("--overrides", default="overrides", help="人工修正目录; 有修正的条目不跑")
     ap.add_argument("--today", default=datetime.datetime.now(datetime.timezone.utc).date().isoformat())
     ap.add_argument("--max-jobs", type=int, default=20000)
     ap.add_argument("--ids", help="只跑这些条目 (逗号分隔), 忽略到期规则; 调试用")
@@ -72,6 +74,7 @@ def main():
     os.makedirs(args.work, exist_ok=True)
 
     state = load_state(args.state)
+    manual = set(load_overrides(args.overrides)[0])
     subjects = {}
     with zipfile.ZipFile(args.dump) as zf:
         with open_member(zf, "subject.jsonlines") as f:
@@ -100,6 +103,8 @@ def main():
         eps = [{"name": name, "airdate": airdate}
                for _, _, _, name, airdate in sorted(episodes.get(sid, []))][:EPISODE_CAP]
         h = input_hash(s, infobox, eps, args.today)
+        if sid in manual:
+            continue
         if only is not None:
             if sid not in only:
                 continue
@@ -108,17 +113,24 @@ def main():
             bucket = due_bucket(state.get(sid), h, s.get("date") or "", args.today, sid)
             if bucket is None:
                 continue
-        fav = s.get("favorite") or {}
-        popularity = sum(v for v in fav.values() if isinstance(v, int))
-        candidates.append((bucket, -popularity, sid, infobox, eps, h))
+        candidates.append((bucket, -popularity(s), sid, infobox, eps, h))
     candidates.sort(key=lambda c: (c[0], c[1], c[2]))
     candidates = candidates[:args.max_jobs]
 
     with open(f"{args.work}/anime.jsonl", "w", encoding="utf-8", newline="\n") as f:
         for sid, s in subjects.items():
-            ep_count = sum(1 for e in episodes.get(sid, []) if e[0] == 0)
-            f.write(json.dumps({"id": sid, "name": s["name"], "nameCN": s["name_cn"], "date": s.get("date") or "",
-                                "eps": ep_count, "nsfw": bool(s.get("nsfw"))}, ensure_ascii=False) + "\n")
+            infobox = parse_infobox(s.get("infobox") or "")
+            aliases = [v["v"] for item in infobox if item["key"] == "别名" for v in item["values"] if v["v"].strip()]
+            f.write(json.dumps({
+                "id": sid, "name": s["name"], "nameCN": s["name_cn"], "date": s.get("date") or "",
+                "eps": sum(1 for e in episodes.get(sid, []) if e[0] == 0),
+                "nsfw": bool(s.get("nsfw")), "pop": popularity(s),
+                "platform": PLATFORMS.get(s.get("platform"), str(s.get("platform"))),
+                "aliases": aliases[:10],
+                "score": s.get("score") or None, "rank": s.get("rank") or None,
+                "tags": [t["name"] for t in (s.get("tags") or [])[:8]],
+                "meta": s.get("meta_tags") or [],
+            }, ensure_ascii=False) + "\n")
     with open(f"{args.work}/relations.jsonl", "w", encoding="utf-8", newline="\n") as f:
         for sid, rows in relations.items():
             rows.sort()

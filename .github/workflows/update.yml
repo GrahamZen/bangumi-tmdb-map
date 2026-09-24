@@ -56,7 +56,7 @@ jobs:
         id: plan
         run: |
           set -euo pipefail
-          args=(--dump "$WORK/dump.zip" --state state/state.tsv --work "$WORK" --max-jobs "$MAX_JOBS")
+          args=(--dump "$WORK/dump.zip" --state state/state.tsv --overrides overrides --work "$WORK" --max-jobs "$MAX_JOBS")
           if [ -n "$ONLY_IDS" ]; then args+=(--ids "$ONLY_IDS"); fi
           python3 scripts/prepare.py "${args[@]}"
           jobs=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["jobs"])' "$WORK/plan.json")
@@ -126,18 +126,20 @@ jobs:
         run: |
           set -euo pipefail
           python3 scripts/merge.py --work "$WORK" --results "$WORK/results.jsonl" \
-            --state state/state.tsv --map map/bgm-tmdb.tsv --meta map/meta.json \
+            --state state/state.tsv --map map/bgm-tmdb.tsv --meta map/meta.json --site docs --overrides overrides \
             --dump-name "$DUMP_NAME" --matcher "${MATCHER_SHA:-}" --summary-out "$WORK/summary.txt"
 
       - name: Commit
         if: steps.plan.outputs.jobs != '0'
         run: |
           set -euo pipefail
-          git add map state
+          git add map state docs
           if git diff --cached --quiet; then echo "没有变化"; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -q -m "update $(date -u +%F): $(cat "$WORK/summary.txt")"
+          # 跑的这几个小时里可能有人工修正推上来 (只动 overrides/), 叠在它上面再推; 修正由 apply-overrides 那一轮应用
+          git pull -q --rebase origin main
           git push
           # jsDelivr 按分支缓存, 推完主动刷新
           for f in map/bgm-tmdb.tsv map/meta.json; do
