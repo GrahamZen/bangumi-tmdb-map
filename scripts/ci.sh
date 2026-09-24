@@ -17,6 +17,7 @@
 #   TMDB_API_TOKEN  TMDB 读取令牌 (matcher 写进 izuko-tv 的 local.properties)
 #   JAVA_HOME       带 JCEF 的 JBR 21 (izuko-tv 的构建要 JetBrains 厂商, 桌面端代码要 JCEF 的类); 用 jdk 步骤装的就不用设
 #   MAX_JOBS (20000) / ONLY_IDS (逗号分隔, 调试用) / MATCH_MINUTES (290)
+#   FORCE_ALL (true = 全部重跑, 人工修正的除外; 匹配器或表的格式变了时用)
 #   BGM_TMDB_CONCURRENCY (10) / BGM_TMDB_RPS (35)
 set -euo pipefail
 
@@ -74,6 +75,7 @@ step_plan() {
   rm -f "$WORK/results.jsonl" "$WORK/summary.txt"
   local args=(--dump "$WORK/dump.zip" --state "$ROOT/state/state.tsv" --overrides "$ROOT/overrides" --work "$WORK" --max-jobs "$MAX_JOBS")
   if [ -n "$ONLY_IDS" ]; then args+=(--ids "$ONLY_IDS"); fi
+  if [ "${FORCE_ALL:-}" = "true" ]; then args+=(--force); fi
   python3 "$ROOT/scripts/prepare.py" "${args[@]}"
   gh_output "jobs=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["jobs"])' "$WORK/plan.json")"
 }

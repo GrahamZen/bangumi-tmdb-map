@@ -290,7 +290,7 @@ function renderDetail(id, rec) {
     html += manual.none ? `<div>确认 TMDB 上没有对应，客户端不出图。</div>`
       : `<div class="grid"><div>${backdropBlock(manual.backdrop, manual.backdrop_path)}</div><div><div class="kv">` +
         `<div>名称</div><div>${esc(manual.title || "—")}</div>` +
-        `<div>剧照出处</div><div>${(manual.stills || []).map(refLink).join("<br>") || "—"}</div></div></div></div>`;
+        `<div>分集数据</div><div>${(manual.stills || []).map(refLink).join("<br>") || "跟着背景图条目"}</div></div></div></div>`;
     html += `<div class="kv small" style="margin-top:8px">` +
       (manual.note ? `<div>备注</div><div>${esc(manual.note)}</div>` : "") +
       (manual.updated ? `<div>修改日期</div><div>${esc(manual.updated)}</div>` : "") +
@@ -301,7 +301,8 @@ function renderDetail(id, rec) {
     html += `<h3>${manual ? "自动匹配结果 (已被人工修正取代)" : "自动匹配结果"} · ${esc(auto.checked)}</h3>`;
     if (auto.status === "hit") {
       html += `<div class="grid"><div>${backdropBlock(auto.backdrop, auto.backdropPath)}` +
-        `<div class="kv" style="margin-top:4px"><div>剧照出处</div><div>${(auto.stills || []).map(refLink).join("<br>") || "—"}` +
+        `<div class="kv" style="margin-top:4px"><div>分集数据</div><div>${auto.stillsSource ? refLink(auto.stillsSource) + (auto.stillsSource.endsWith("/season/0") ? ` <span class="muted small">(只取 S0)</span>` : "") : "—"}</div>` +
+        `<div>有剧照的季</div><div>${(auto.stills || []).map(refLink).join("<br>") || "—"}` +
         (auto.stillCount ? ` <span class="muted small">(${auto.stillCount} 张)</span>` : "") + `</div>` +
         (auto.hitQuery ? `<div>命中搜索</div><div><code>${esc(auto.hitQuery.query)}</code> <span class="muted small">${[auto.hitQuery.kind, auto.hitQuery.lang, `第 ${auto.hitQuery.rank} 位`].filter(Boolean).map(esc).join(" · ")}</span></div>` : "") +
         `<div>请求数</div><div>${auto.requests ?? "—"}</div></div></div>` +
@@ -333,14 +334,15 @@ function renderDetail(id, rec) {
 
 function editorHtml(id, manual, auto) {
   const cur = manual || {};
-  const seed = manual ? cur : (auto && auto.status === "hit" ? { backdrop: auto.backdrop, backdrop_path: auto.backdropPath, stills: auto.stills, title: (auto.tmdb || {}).name } : {});
+  const seed = manual ? cur : (auto && auto.status === "hit" ? { backdrop: auto.backdrop, backdrop_path: auto.backdropPath, stills: auto.stillsSource ? [auto.stillsSource] : [], title: (auto.tmdb || {}).name } : {});
   return `<h3>人工修正</h3>
-  <div class="muted small" style="margin-bottom:8px">填 TMDB 条目 (可直接粘贴 TMDB 网址)、背景图 (可粘贴图片地址)；生成的文件提交到仓库的 <code>overrides/${id}.json</code>，
+  <div class="muted small" style="margin-bottom:8px">填 TMDB 条目 (可直接粘贴 TMDB 网址)、背景图 (可粘贴图片地址)；分集数据一般跟背景图是同一个条目，留空即可，
+  衍生作只该用本篇的特别篇时填 <code>tv/本篇/season/0</code>。生成的文件提交到仓库的 <code>overrides/${id}.json</code>，
   推送后几分钟内生效，之后自动匹配不会再改这一条。只有仓库所有者能提交。</div>
   <div class="form">
     <label for="e-ref">TMDB 条目</label><input type="text" id="e-ref" placeholder="tv/65942 或 https://www.themoviedb.org/tv/65942" value="${esc(seed.backdrop || "")}">
     <label for="e-path">背景图</label><input type="text" id="e-path" placeholder="/abc.jpg 或 https://image.tmdb.org/t/p/original/abc.jpg (可空)" value="${esc(seed.backdrop_path || "")}">
-    <label for="e-stills">剧照出处</label><input type="text" id="e-stills" placeholder="tv/65942/season/1, tv/65942/season/0 (可空, 可粘贴季的网址)" value="${esc((seed.stills || []).join(", "))}">
+    <label for="e-stills">分集数据</label><input type="text" id="e-stills" placeholder="tv/65942 整部, tv/65942/season/0 只取 S0, movie/123 (可空 = 跟着背景图条目)" value="${esc((seed.stills || []).join(", "))}">
     <label for="e-title">名称</label><input type="text" id="e-title" placeholder="TMDB 上的名字 (可空, 只用于显示)" value="${esc(seed.title || "")}">
     <label for="e-note">备注</label><input type="text" id="e-note" placeholder="为什么改 (可空)" value="${esc(cur.note || "")}">
     <span></span><label><input type="checkbox" id="e-none" ${cur.none ? "checked" : ""}> TMDB 上确实没有对应 (客户端不出图)</label>
@@ -382,14 +384,18 @@ function buildOverride(id, auto) {
     const ref = parseRef($("e-ref").value), path = parsePath($("e-path").value), stills = parseStills($("e-stills").value);
     if (ref) { if (!/^(tv|movie|collection)\/\d+$/.test(ref)) errs.push("TMDB 条目应为 tv/123、movie/123 或 collection/123"); o.backdrop = ref; }
     if (path) { if (!/^\/[A-Za-z0-9_\-]+\.(jpg|jpeg|png|webp)$/.test(path)) errs.push("背景图应为 /xxxx.jpg"); if (!ref) errs.push("给了背景图就要填 TMDB 条目"); o.backdrop_path = path; }
-    if (stills.length) { for (const s of stills) if (!/^(tv\/\d+\/season\/\d+|movie\/\d+|collection\/\d+)$/.test(s)) errs.push(`剧照出处格式不对: ${s}`); o.stills = stills; }
-    if (!ref && !stills.length) errs.push("至少填 TMDB 条目或剧照出处；要表示没有对应，勾选下面那一项");
+    if (stills.length) {
+      if (stills.length > 1) errs.push("分集数据只能填一个出处");
+      for (const s of stills) if (!/^(tv\/\d+(\/season\/0)?|movie\/\d+|collection\/\d+)$/.test(s)) errs.push(`分集数据格式不对: ${s} (应为 tv/123、tv/123/season/0 或 movie/123)`);
+      o.stills = stills;
+    }
+    if (!ref && !stills.length) errs.push("至少填 TMDB 条目或分集数据；要表示没有对应，勾选下面那一项");
   }
   const title = $("e-title").value.trim(), note = $("e-note").value.trim();
   if (title && !none) o.title = title;
   if (note) o.note = note;
   o.updated = new Date().toISOString().slice(0, 10);
-  if (auto) o.auto_was = auto.status === "hit" ? [auto.backdrop, auto.backdropPath, (auto.stills || []).join(",")].filter(Boolean).join(" ") : "(自动: 没有对应)";
+  if (auto) o.auto_was = auto.status === "hit" ? [auto.backdrop, auto.backdropPath, auto.stillsSource].filter(Boolean).join(" ") : "(自动: 没有对应)";
   return { o, errs };
 }
 

@@ -197,7 +197,7 @@ class BgmTmdbMapRunner {
             val stills = service.getEpisodeStills(
                 subjectId = job.id,
                 originalName = subjectInfo.name,
-                language = "zh-CN",
+                language = STILLS_LANGUAGE,
                 newestWantedAirDate = job.episodes.mapNotNull { it.airDateOrNull() }.filter { it <= today }.maxOrNull(),
                 subjectAirDate = airDate,
                 subjectEpisodeCount = job.episodes.size,
@@ -215,6 +215,7 @@ class BgmTmdbMapRunner {
                     stillPaths.count { stillsIndex.refsOf(it).isEmpty() }
             val backdropRef = backdropPath?.let { backdropIndex.refsOf(it).firstOrNull() }
             val stillRefs = stillsIndex.stillRefsOf(stillPaths)
+            val stillsSource = stillsSourceOf(handler.tmdbBodies.toList(), stillRefs, stills)
             val chosen = (backdropRef ?: stillRefs.firstOrNull())?.substringBefore("/season/")
             return Out(
                 id = job.id,
@@ -222,6 +223,7 @@ class BgmTmdbMapRunner {
                 backdrop = backdropRef,
                 backdropPath = backdropPath,
                 stills = stillRefs,
+                stillsSource = stillsSource,
                 stillCount = stillPaths.size,
                 tmdb = chosen?.let { stillsIndex.entityOf(it) },
                 hitQuery = chosen?.let { stillsIndex.firstHitOf(it) },
@@ -245,6 +247,43 @@ class BgmTmdbMapRunner {
             withContext(NonCancellable) { provider.forceReleaseAll() }
             scope.cancel()
         }
+    }
+
+    /**
+     * 剧照链最后用的是哪部剧/电影. 写进对应表, 客户端据此跳过搜索, 照同样的规则重建出一模一样的分集数据.
+     *
+     * - 剧集: `tv/<id>`, 客户端全量索引; 只索引了 S0 (衍生作挂在本篇的 S0 下) 时是 `tv/<id>/season/0`.
+     *   是哪部: 结果里的剧照出自哪部就是哪部; 一张剧照都没有 (只有时长/简介) 时是第一部建过索引的
+     *   —— 匹配器对空壳剧的回退也是它. 建过索引 = 以剧照语言请求过它的季 (按原语言取集名的请求不算).
+     * - 电影或合集: 原样给出 (客户端对合集照旧搜).
+     * - 什么数据都没有: null (客户端照旧搜, 结果同样是空).
+     *
+     * 只记"有剧照的季"不够: 没剧照的季也提供时长与分集简介, 按有剧照的季过滤会把它们丢掉
+     * (锚点实测 252 条里 36 条对不上, 改成这样之后是 0).
+     */
+    private fun stillsSourceOf(bodies: List<MapTmdbBody>, stillRefs: List<String>, stills: TmdbEpisodeStills?): String? {
+        if (stills == null || stills.isEmpty()) return null
+        val indexed = linkedMapOf<Int, MutableSet<Int>>()
+        val allSeasons = mutableMapOf<Int, Set<Int>>()
+        for (b in bodies) {
+            val seg = b.path.trim('/').split('/').let { if (it.firstOrNull() == "3") it.drop(1) else it }
+            if (seg.firstOrNull() != "tv") continue
+            val id = seg.getOrNull(1)?.toIntOrNull() ?: continue
+            if (seg.size == 4 && seg[2] == "season" && b.language == STILLS_LANGUAGE) {
+                val season = seg[3].toIntOrNull() ?: continue
+                indexed.getOrPut(id) { linkedSetOf() }.add(season)
+            } else if (seg.size == 2) {
+                val element = runCatching { json.parseToJsonElement(b.body) }.getOrNull() as? JsonObject ?: continue
+                allSeasons[id] = (element["seasons"] as? JsonArray).orEmpty()
+                    .mapNotNull { ((it as? JsonObject)?.get("season_number") as? JsonPrimitive)?.intOrNull }
+                    .toSet()
+            }
+        }
+        val tvId = stillRefs.firstOrNull { it.startsWith("tv/") }?.split('/')?.getOrNull(1)?.toIntOrNull()
+            ?: if (stillRefs.isEmpty()) indexed.keys.firstOrNull() else null
+        if (tvId == null) return stillRefs.singleOrNull()
+        val specialsOnly = indexed[tvId].orEmpty() == setOf(0) && allSeasons[tvId].orEmpty().any { it != 0 }
+        return if (specialsOnly) "tv/$tvId/season/0" else "tv/$tvId"
     }
 
     private fun Job.toSubjectInfo(): SubjectInfo {
@@ -319,8 +358,10 @@ class BgmTmdbMapRunner {
         /** 背景图出处, 形如 `tv/65942`, `movie/9323`, `collection/404609` */
         val backdrop: String? = null,
         val backdropPath: String? = null,
-        /** 分集剧照出处, 形如 `tv/65942/season/3`; 单集电影与合集是 `movie/…` / `collection/…` */
+        /** 有剧照的出处 (剧集的季、单集电影或合集), 形如 `tv/65942/season/3`; 只给核对页面看 */
         val stills: List<String> = emptyList(),
+        /** 剧照链最后用的是哪部剧/电影, 写进对应表给客户端用, 见 [stillsSourceOf] */
+        val stillsSource: String? = null,
         val stillCount: Int = 0,
         /** backdrop (没有时取剧照出处) 那个 TMDB 条目的信息, 取自本任务已收到的响应, 人工核对用 */
         val tmdb: MapTmdbEntity? = null,
@@ -338,6 +379,9 @@ class BgmTmdbMapRunner {
 
     private companion object {
         val json = Json { ignoreUnknownKeys = true; encodeDefaults = false }
+
+        /** 取分集数据用的语言, 与 app 在中文界面下一致 */
+        const val STILLS_LANGUAGE = "zh-CN"
     }
 }
 

@@ -11,7 +11,7 @@ STATE_HEADER = "# bgm_id\tchecked\tstatus\thash\tfails"
 PLATFORMS = {0: "其他", 1: "TV", 2: "OVA", 3: "剧场版", 4: "短片", 5: "WEB", 2006: "动态漫画"}
 
 REF_RE = re.compile(r"^(tv|movie|collection)/\d+$")
-STILL_REF_RE = re.compile(r"^(tv/\d+/season/\d+|movie/\d+|collection/\d+)$")
+STILL_REF_RE = re.compile(r"^(tv/\d+(/season/0)?|movie/\d+|collection/\d+)$")
 PATH_RE = re.compile(r"^/[A-Za-z0-9_\-]+\.(jpg|jpeg|png|webp)$")
 
 
@@ -86,7 +86,8 @@ def save_state(path, state):
 def normalize_override(raw: dict) -> dict:
     """校验并规整一条人工修正; 不合法抛 ValueError.
 
-    字段: backdrop (tv|movie|collection/<id>), backdrop_path (/xxx.jpg), stills ([tv/<id>/season/<n>, ...]),
+    字段: backdrop (tv|movie|collection/<id>), backdrop_path (/xxx.jpg),
+    stills ([tv/<id>] 整部剧 / [tv/<id>/season/0] 只取 S0 / [movie/<id>]; 只认一个),
     none (true = 确认 TMDB 上没有对应), title, note, updated, auto_was. 除 none 外都可省.
     """
     if not isinstance(raw, dict):
@@ -101,7 +102,9 @@ def normalize_override(raw: dict) -> dict:
         raise ValueError(f"backdrop_path 格式不对: {path!r} (应为 /xxxx.jpg)")
     for ref in stills:
         if not STILL_REF_RE.match(ref):
-            raise ValueError(f"stills 格式不对: {ref!r} (应为 tv/123/season/1、movie/123 或 collection/123)")
+            raise ValueError(f"stills 格式不对: {ref!r} (应为 tv/123、tv/123/season/0 或 movie/123)")
+    if len(stills) > 1:
+        raise ValueError("stills 只能给一个出处")
     if none and (backdrop or path or stills):
         raise ValueError("none 为 true 时不能再填条目")
     if not none and not backdrop and not stills:

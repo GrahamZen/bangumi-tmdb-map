@@ -68,6 +68,7 @@ def main():
     ap.add_argument("--today", default=datetime.datetime.now(datetime.timezone.utc).date().isoformat())
     ap.add_argument("--max-jobs", type=int, default=20000)
     ap.add_argument("--ids", help="只跑这些条目 (逗号分隔), 忽略到期规则; 调试用")
+    ap.add_argument("--force", action="store_true", help="全部 (人工修正的除外) 都算到期; 匹配器或表的格式变了时整体重跑")
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
     only = {int(x) for x in args.ids.split(",")} if args.ids else None
@@ -108,6 +109,8 @@ def main():
         if only is not None:
             if sid not in only:
                 continue
+            bucket = 0
+        elif args.force:
             bucket = 0
         else:
             bucket = due_bucket(state.get(sid), h, s.get("date") or "", args.today, sid)

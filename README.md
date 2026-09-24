@@ -18,10 +18,10 @@ https://raw.githubusercontent.com/GrahamZen/bangumi-tmdb-map/main/map/bgm-tmdb.t
 | `bgm_id` | Bangumi 条目 id | `425998` |
 | `backdrop` | 整部背景图所属的 TMDB 条目：`tv/<id>`、`movie/<id>` 或 `collection/<id>`；空表示只有分集剧照 | `tv/65942` |
 | `backdrop_path` | 背景图路径，拼在 `https://image.tmdb.org/t/p/w1280` 之类的尺寸前缀后面；人工修正可能只给条目不给图，此时为空 | `/abc.jpg` |
-| `stills` | 分集剧照的出处，逗号分隔，都是 TMDB API 路径：`tv/<id>/season/<n>`、`movie/<id>`、`collection/<id>` | `tv/65942/season/0,tv/65942/season/3` |
+| `stills` | 分集数据 (剧照、时长、分集简介) 的出处，是 TMDB API 路径：`tv/<id>` 整部剧，按同样的规则全量索引；`tv/<id>/season/0` 只取 S0 (衍生作挂在本篇特别篇下的情形)；`movie/<id>` 单集电影；`collection/<id>` 合集 (客户端照旧自己搜) | `tv/65942` |
 | `source` | `auto` 自动匹配，`manual` 人工修正 | `auto` |
 
-表里没有的条目，要么在 TMDB 上没匹配到（或人工确认没有），要么还没查过，调用方照常自己搜。
+人工确认 TMDB 上没有对应的条目也在表里，除 `source` 外各列为空，调用方不必再搜。表里没有的条目，要么自动匹配没找到，要么还没查过，调用方照常自己搜。
 
 `map/meta.json` 记着生成日期、用的哪一份 Bangumi 导出、匹配器的提交，以及条目数。
 
@@ -42,7 +42,7 @@ https://raw.githubusercontent.com/GrahamZen/bangumi-tmdb-map/main/map/bgm-tmdb.t
 {
   "backdrop": "tv/65942",
   "backdrop_path": "/7ZruEnSnHD6Jx5mF0hBt1E306Vt.jpg",
-  "stills": ["tv/65942/season/1"],
+  "stills": ["tv/65942"],
   "title": "Re:从零开始的异世界生活",
   "note": "新编集版挂回本传",
   "updated": "2026-09-24",
@@ -50,7 +50,8 @@ https://raw.githubusercontent.com/GrahamZen/bangumi-tmdb-map/main/map/bgm-tmdb.t
 }
 ```
 
-- `{"none": true}` 表示确认 TMDB 上没有对应，这个条目不进对应表；
+- `{"none": true}` 表示确认 TMDB 上没有对应；
+- `stills` 只能给一个出处，省略就跟着 `backdrop` 那个条目；
 - 除 `backdrop` / `stills` / `none` 至少有一项外，其他字段都可省；`auto_was` 是修正时的自动结果，留着方便回看。
 
 推送修正后，`apply-overrides` 工作流几分钟内把它并进对应表与页面。**有修正的条目不再自动匹配，自动结果也不会覆盖它**；删掉修正文件（页面上的「撤销人工修正」）就回到自动匹配，下一轮重新查。修正文件格式不对时那一轮会失败并通知，不会提交任何东西。

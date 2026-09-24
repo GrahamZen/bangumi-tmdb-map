@@ -18,6 +18,10 @@ on:
       minutes:
         description: '匹配最多跑多少分钟 (之后不再开新任务, 剩下的下一轮接着跑)'
         default: '290'
+      force:
+        description: '全部重跑 (人工修正的除外); 匹配器或表的格式变了时用'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -36,8 +40,12 @@ jobs:
       MAX_JOBS: ${{ inputs.max_jobs || '20000' }}
       ONLY_IDS: ${{ inputs.ids || '' }}
       MATCH_MINUTES: ${{ inputs.minutes || '290' }}
+      FORCE_ALL: ${{ inputs.force || false }}
     steps:
+      # 取开跑时最新的 main, 而不是触发那一刻的提交: 排在前一轮后面的这一轮要接着它的结果往下合并
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Download Bangumi Archive
         run: scripts/ci.sh download
