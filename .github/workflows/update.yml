@@ -1,5 +1,6 @@
 # 每天跑一轮: 取 Bangumi 最新导出 → 挑出到期的条目 → 用 izuko-tv 的匹配器搜 TMDB → 结果提交回本仓库.
 # 没有到期条目时在构建前就结束 (只花下载导出的一两分钟).
+# 各步骤的逻辑在 scripts/ci.sh (本地用 `scripts/ci.sh local` 跑同一套); 这里只另外装 JDK、存取缓存与提交.
 name: update
 
 on:
@@ -39,46 +40,28 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Download Bangumi Archive
-        run: |
-          set -euo pipefail
-          WORK="$RUNNER_TEMP/work"
-          echo "WORK=$WORK" >> "$GITHUB_ENV"
-          mkdir -p "$WORK"
-          curl -fsSL https://raw.githubusercontent.com/bangumi/Archive/master/aux/latest.json -o "$WORK/latest.json"
-          read -r url name digest < <(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d["browser_download_url"], d["name"], d.get("digest") or "-")' "$WORK/latest.json")
-          curl -fsSL "$url" -o "$WORK/dump.zip"
-          if [ "$digest" != "-" ]; then
-            echo "${digest#sha256:}  $WORK/dump.zip" | sha256sum -c -
-          fi
-          echo "DUMP_NAME=$name" >> "$GITHUB_ENV"
+        run: scripts/ci.sh download
 
       - name: Plan
         id: plan
-        run: |
-          set -euo pipefail
-          args=(--dump "$WORK/dump.zip" --state state/state.tsv --overrides overrides --work "$WORK" --max-jobs "$MAX_JOBS")
-          if [ -n "$ONLY_IDS" ]; then args+=(--ids "$ONLY_IDS"); fi
-          python3 scripts/prepare.py "${args[@]}"
-          jobs=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["jobs"])' "$WORK/plan.json")
-          echo "jobs=$jobs" >> "$GITHUB_OUTPUT"
+        run: scripts/ci.sh plan
 
       - name: Checkout matcher (izuko-tv)
         if: steps.plan.outputs.jobs != '0'
-        run: |
-          set -euo pipefail
-          ref=$(tr -d '[:space:]' < matcher.ref)
-          git clone --depth 1 --branch "$ref" https://github.com/GrahamZen/izuko-tv.git "$WORK/izuko-tv"
-          echo "MATCHER_SHA=$(git -C "$WORK/izuko-tv" rev-parse HEAD)" >> "$GITHUB_ENV"
-          cp runner/BgmTmdbMapRunner.kt "$WORK/izuko-tv/app/shared/app-data/src/desktopTest/kotlin/data/network/"
+        env:
+          TMDB_API_TOKEN: ${{ secrets.TMDB_API_TOKEN }}
+        run: scripts/ci.sh matcher
 
-      # izuko-tv 的构建把工具链厂商定成 JetBrains (gradle.properties 的 jvm.toolchain.vendor)
+      # izuko-tv 的构建把工具链厂商定成 JetBrains (gradle.properties 的 jvm.toolchain.vendor),
+      # 桌面端代码还要 JCEF 的类 —— 与它自己的发版工作流一样用带 JCEF 的 JBR
       - uses: actions/setup-java@v4
         if: steps.plan.outputs.jobs != '0'
         with:
           distribution: jetbrains
+          java-package: jdk+jcef
           java-version: '21'
 
-      - uses: actions/cache@v4
+      - uses: actions/cache/restore@v4
         if: steps.plan.outputs.jobs != '0'
         with:
           path: |
@@ -87,56 +70,18 @@ jobs:
           key: gradle-${{ runner.os }}-${{ env.MATCHER_SHA }}
           restore-keys: gradle-${{ runner.os }}-
 
-      - name: Configure matcher build
-        if: steps.plan.outputs.jobs != '0'
-        env:
-          TMDB_API_TOKEN: ${{ secrets.TMDB_API_TOKEN }}
-        run: |
-          set -euo pipefail
-          test -n "$TMDB_API_TOKEN" || { echo "::error::缺少 secrets.TMDB_API_TOKEN"; exit 1; }
-          cd "$WORK/izuko-tv"
-          {
-            echo "sdk.dir=$ANDROID_HOME"
-            echo "ani.tmdb.api.token=$TMDB_API_TOKEN"
-            echo "ani.enable.firebase=false"
-            echo "jvm.toolchain.version=21"
-            echo "kotlin.native.ignoreDisabledTargets=true"
-          } > local.properties
-          (yes || true) | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-37.0" > /dev/null
-
       # 超时或中途失败也继续往下合并: 结果逐条落盘, 已完成的不丢. 最后一步再把这一轮标成失败
       - name: Match
         id: match
         if: steps.plan.outputs.jobs != '0'
         continue-on-error: true
         timeout-minutes: 330
-        run: |
-          set -euo pipefail
-          cd "$WORK/izuko-tv"
-          export BGM_TMDB_WORK="$WORK"
-          export BGM_TMDB_OUT="$WORK/results.jsonl"
-          export BGM_TMDB_DEADLINE=$(( $(date +%s) + MATCH_MINUTES * 60 ))
-          # TMDB 按 IP 限流 (约 40 次/秒); 平均每个条目 3 秒、十来个请求, 10 路并发刚好把 35 次/秒用满
-          export BGM_TMDB_CONCURRENCY=10
-          export BGM_TMDB_RPS=35
-          ./gradlew :app:shared:app-data:desktopTest --tests "*BgmTmdbMapRunner*" \
-            --init-script "$GITHUB_WORKSPACE/runner/runner.init.gradle" \
-            "-Dorg.gradle.jvmargs=-Xmx6g -Dfile.encoding=UTF-8" \
-            "-Dkotlin.daemon.jvm.options=-Xmx5g"
+        run: scripts/ci.sh match
 
       - name: Merge
         id: merge
         if: steps.plan.outputs.jobs != '0'
-        run: |
-          set -euo pipefail
-          if [ ! -s "$WORK/results.jsonl" ]; then
-            echo "一条结果也没有, 不合并"
-            echo "skip=1" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          python3 scripts/merge.py --work "$WORK" --results "$WORK/results.jsonl" \
-            --state state/state.tsv --map map/bgm-tmdb.tsv --meta map/meta.json --site docs --overrides overrides \
-            --dump-name "$DUMP_NAME" --matcher "${MATCHER_SHA:-}" --summary-out "$WORK/summary.txt"
+        run: scripts/ci.sh merge
 
       - name: Commit
         if: steps.plan.outputs.jobs != '0' && steps.merge.outputs.skip != '1'
@@ -146,7 +91,7 @@ jobs:
           if git diff --cached --quiet; then echo "没有变化"; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -q -m "update $(date -u +%F): $(cat "$WORK/summary.txt")"
+          git commit -q -m "update $(date -u +%F): $(cat "$RUNNER_TEMP/work/summary.txt")"
           # 跑的这几个小时里可能有人工修正推上来 (只动 overrides/), 叠在它上面再推; 修正由 apply-overrides 那一轮应用
           git pull -q --rebase origin main
           git push
@@ -154,6 +99,15 @@ jobs:
           for f in map/bgm-tmdb.tsv map/meta.json; do
             curl -fsS "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@main/$f" > /dev/null || true
           done
+
+      # 失败的那一轮也存: 下载的依赖与编译产物照样有用, 不然每次重试都是冷构建
+      - uses: actions/cache/save@v4
+        if: always() && steps.plan.outputs.jobs != '0'
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ env.MATCHER_SHA }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - uses: actions/upload-artifact@v4
         if: always() && steps.plan.outputs.jobs != '0'

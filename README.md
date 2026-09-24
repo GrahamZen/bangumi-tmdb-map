@@ -74,11 +74,22 @@ map/meta.json          生成信息
 overrides/             人工修正, 每个条目一个 <bgm_id>.json
 docs/                  核对页面 (GitHub Pages) 与它的数据: data/index.tsv 全部条目一览, data/s/*.json 条目详情
 state/state.tsv        每个条目上次检查的日期、结果与输入指纹 (决定下次什么时候查)
-scripts/               prepare.py 挑任务, merge.py 合并结果与人工修正
+scripts/               ci.sh 每日更新的全部步骤 (工作流与本地共用), prepare.py 挑任务, merge.py 合并结果与人工修正
 runner/                匹配器入口; 工作流把它拷进 izuko-tv 的测试源码里运行
 matcher.ref            用 izuko-tv 的哪个分支/标签
 .github/workflows/     update 每日更新, apply-overrides 推送修正后立即应用
 ```
+
+## 本地验证
+
+改了脚本或工作流，先在 Linux (WSL 的 Ubuntu 24.04 即可, 与 `ubuntu-latest` 同版本) 里用同一份脚本跑通再推：
+
+```
+export JAVA_HOME=<带 JCEF 的 JBR 21>  TMDB_API_TOKEN=<TMDB 读取令牌>
+ONLY_IDS=237,311,296195 scripts/ci.sh local   # 下载导出 → 挑任务 → 取匹配器 → 匹配 → 合并, 不提交
+```
+
+结果写在仓库下的 `.work/` 与 `map/`、`docs/`、`state/` 里, 看完用 `git checkout -- map docs state` 丢掉。
 
 ## 数据来源与署名
 
