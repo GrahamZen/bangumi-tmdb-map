@@ -71,10 +71,11 @@ jobs:
           echo "MATCHER_SHA=$(git -C "$WORK/izuko-tv" rev-parse HEAD)" >> "$GITHUB_ENV"
           cp runner/BgmTmdbMapRunner.kt "$WORK/izuko-tv/app/shared/app-data/src/desktopTest/kotlin/data/network/"
 
+      # izuko-tv 的构建把工具链厂商定成 JetBrains (gradle.properties 的 jvm.toolchain.vendor)
       - uses: actions/setup-java@v4
         if: steps.plan.outputs.jobs != '0'
         with:
-          distribution: temurin
+          distribution: jetbrains
           java-version: '21'
 
       - uses: actions/cache@v4
@@ -103,7 +104,9 @@ jobs:
           } > local.properties
           (yes || true) | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-37.0" > /dev/null
 
+      # 超时或中途失败也继续往下合并: 结果逐条落盘, 已完成的不丢. 最后一步再把这一轮标成失败
       - name: Match
+        id: match
         if: steps.plan.outputs.jobs != '0'
         continue-on-error: true
         timeout-minutes: 330
@@ -122,15 +125,21 @@ jobs:
             "-Dkotlin.daemon.jvm.options=-Xmx5g"
 
       - name: Merge
+        id: merge
         if: steps.plan.outputs.jobs != '0'
         run: |
           set -euo pipefail
+          if [ ! -s "$WORK/results.jsonl" ]; then
+            echo "一条结果也没有, 不合并"
+            echo "skip=1" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           python3 scripts/merge.py --work "$WORK" --results "$WORK/results.jsonl" \
             --state state/state.tsv --map map/bgm-tmdb.tsv --meta map/meta.json --site docs --overrides overrides \
             --dump-name "$DUMP_NAME" --matcher "${MATCHER_SHA:-}" --summary-out "$WORK/summary.txt"
 
       - name: Commit
-        if: steps.plan.outputs.jobs != '0'
+        if: steps.plan.outputs.jobs != '0' && steps.merge.outputs.skip != '1'
         run: |
           set -euo pipefail
           git add map state docs
@@ -155,3 +164,9 @@ jobs:
             ${{ runner.temp }}/work/results.jsonl
           retention-days: 14
           if-no-files-found: ignore
+
+      - name: Fail if matching failed
+        if: steps.match.outcome == 'failure'
+        run: |
+          echo "::error::匹配那一步失败了 (构建失败或超时); 已完成的结果已经提交, 见上面 Match 的日志"
+          exit 1
