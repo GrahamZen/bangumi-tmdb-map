@@ -5,16 +5,16 @@
   "matcher": "363946539fbaf06a1fbc3afbd4a9784779b19fa6",
   "anime": 30924,
   "checked": 30924,
-  "entries": 23994,
+  "entries": 24228,
   "manual": 0,
-  "hit": 23994,
-  "miss": 6930,
+  "hit": 24228,
+  "miss": 6696,
   "err": 0,
   "last_run": {
-    "processed": 30914,
-    "hit": 23984,
-    "miss": 6930,
+    "processed": 30924,
+    "hit": 24228,
+    "miss": 6696,
     "err": 0,
-    "tmdb_requests": 313445
+    "tmdb_requests": 313581
   }
 }
