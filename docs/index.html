@@ -68,7 +68,8 @@ h3 { font-size: 14px; margin: 18px 0 8px; color: var(--muted); font-weight: 600;
 pre { background: var(--code); padding: 10px; border-radius: 7px; overflow-x: auto; margin: 8px 0 0; font-size: 12.5px; }
 .msg { margin-top: 8px; }
 .msg.bad { color: var(--bad); }
-.pager { display: flex; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 10px; }
+.pager { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 10px; }
+#page-input { width: 4.5em; background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 5px 6px; text-align: center; }
 .overview { white-space: pre-wrap; }
 .scroll { overflow-x: auto; }
 </style>
@@ -202,13 +203,22 @@ function renderList() {
   html += `</tbody></table>`;
   if (!slice.length) html = `<div class="muted">没有符合条件的条目</div>`;
   html += `<div class="pager"><span class="muted">${all.length} 条</span>` +
+    `<button class="ghost" id="first" ${page ? "" : "disabled"}>首页</button>` +
     `<button class="ghost" id="prev" ${page ? "" : "disabled"}>上一页</button>` +
-    `<span class="muted">${page + 1} / ${pages}</span>` +
-    `<button class="ghost" id="next" ${page < pages - 1 ? "" : "disabled"}>下一页</button></div>`;
+    `<span class="muted"><input type="number" id="page-input" min="1" max="${pages}" value="${page + 1}" aria-label="页码"> / ${pages}</span>` +
+    `<button class="ghost" id="go">跳转</button>` +
+    `<button class="ghost" id="next" ${page < pages - 1 ? "" : "disabled"}>下一页</button>` +
+    `<button class="ghost" id="last" ${page < pages - 1 ? "" : "disabled"}>末页</button></div>`;
   $("list").innerHTML = html;
   $("list").querySelectorAll("tr.row").forEach((tr) => tr.addEventListener("click", () => { location.hash = tr.dataset.id; }));
-  $("prev").onclick = () => { page--; renderList(); };
-  $("next").onclick = () => { page++; renderList(); };
+  const goTo = (p) => { page = Math.min(Math.max(p, 0), pages - 1); renderList(); };
+  $("first").onclick = () => goTo(0);
+  $("prev").onclick = () => goTo(page - 1);
+  $("next").onclick = () => goTo(page + 1);
+  $("last").onclick = () => goTo(pages - 1);
+  const jump = () => { const n = parseInt($("page-input").value, 10); if (n) goTo(n - 1); };
+  $("go").onclick = jump;
+  $("page-input").addEventListener("keydown", (e) => { if (e.key === "Enter") jump(); });
 }
 
 async function shardOf(id) {
