@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 核对页
+    url: https://grahamzen.github.io/bangumi-tmdb-map/
+    about: 按名字或 id 找到条目，看自动匹配的结果与备选，点「提交修正请求」会打开填好的表单。

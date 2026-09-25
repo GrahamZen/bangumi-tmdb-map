@@ -302,7 +302,8 @@ function renderDetail(id, rec) {
         `<div>名称</div><div>${esc(manual.title || "—")}</div>` +
         `<div>分集数据</div><div>${(manual.stills || []).map(refLink).join("<br>") || "跟着背景图条目"}</div></div></div></div>`;
     html += `<div class="kv small" style="margin-top:8px">` +
-      (manual.note ? `<div>备注</div><div>${esc(manual.note)}</div>` : "") +
+      (manual.note ? `<div>说明</div><div>${esc(manual.note).replace(/#(\d+)/g, (m, n) =>
+        `<a href="https://github.com/${REPO}/issues/${n}" target="_blank" rel="noopener">#${n}</a>`)}</div>` : "") +
       (manual.updated ? `<div>修改日期</div><div>${esc(manual.updated)}</div>` : "") +
       (manual.auto_was ? `<div>当时的自动结果</div><div class="mono">${esc(manual.auto_was)}</div>` : "") + `</div>`;
   }
@@ -348,23 +349,26 @@ function editorHtml(id, manual, auto) {
   const seed = manual ? cur : (auto && auto.status === "hit" ? { backdrop: auto.backdrop, backdrop_path: auto.backdropPath, stills: auto.stillsSource ? [auto.stillsSource] : [], title: (auto.tmdb || {}).name } : {});
   return `<h3>人工修正</h3>
   <div class="muted small" style="margin-bottom:8px">填 TMDB 条目 (可直接粘贴 TMDB 网址)、背景图 (可粘贴图片地址)；分集数据一般跟背景图是同一个条目，留空即可，
-  衍生作只该用本篇的特别篇时填 <code>tv/本篇/season/0</code>。生成的文件提交到仓库的 <code>overrides/${id}.json</code>，
-  推送后几分钟内生效，之后自动匹配不会再改这一条。只有仓库所有者能提交。</div>
+  衍生作只该用本篇的特别篇时填 <code>tv/本篇/season/0</code>。</div>
   <div class="form">
     <label for="e-ref">TMDB 条目</label><input type="text" id="e-ref" placeholder="tv/65942 或 https://www.themoviedb.org/tv/65942" value="${esc(seed.backdrop || "")}">
     <label for="e-path">背景图</label><input type="text" id="e-path" placeholder="/abc.jpg 或 https://image.tmdb.org/t/p/original/abc.jpg (可空)" value="${esc(seed.backdrop_path || "")}">
     <label for="e-stills">分集数据</label><input type="text" id="e-stills" placeholder="tv/65942 整部, tv/65942/season/0 只取 S0, movie/123 (可空 = 跟着背景图条目)" value="${esc((seed.stills || []).join(", "))}">
     <label for="e-title">名称</label><input type="text" id="e-title" placeholder="TMDB 上的名字 (可空, 只用于显示)" value="${esc(seed.title || "")}">
-    <label for="e-note">备注</label><input type="text" id="e-note" placeholder="为什么改 (可空)" value="${esc(cur.note || "")}">
+    <label for="e-note">说明</label><input type="text" id="e-note" placeholder="为什么这样改 (可空，会附在修正请求里)" value="${esc(cur.note || "")}">
     <span></span><label><input type="checkbox" id="e-none" ${cur.none ? "checked" : ""}> TMDB 上确实没有对应 (客户端不出图)</label>
   </div>
   <div id="e-preview" style="margin-top:10px;max-width:420px"></div>
+  <div id="e-pending" class="small" style="margin-top:10px"></div>
   <div class="bar" style="margin-top:10px">
-    <button id="e-submit">${manual ? "复制并去 GitHub 修改" : "去 GitHub 提交"}</button>
+    <button id="e-request">提交修正请求</button>
+    ${manual ? `<button class="ghost" id="e-revert">请求撤销人工修正</button>` : ""}
     <button class="ghost" id="e-copy">复制 JSON</button>
-    ${manual ? `<button class="danger" id="e-delete">撤销人工修正</button>` : ""}
   </div>
   <div class="msg small" id="e-msg"></div>
+  <div class="muted small" style="margin-top:8px">提交修正请求会打开一个填好内容的 GitHub issue (要登录 GitHub)。提交后自动检查格式、向 TMDB 核实，` +
+  `生成修正 PR；维护者审核合并后几分钟内生效，之后自动匹配不再改这一条。` +
+  `仓库维护者也可以直接改 <code>overrides/${id}.json</code>：<a href="#" id="e-direct">${manual ? "编辑" : "新建"}修正文件</a>${manual ? ` · <a href="#" id="e-delete">删除修正文件</a>` : ""}</div>
   <pre id="e-json"></pre>`;
 }
 
@@ -410,17 +414,49 @@ function buildOverride(id, auto) {
   return { o, errs };
 }
 
+// 修正请求: 打开填好的 issue 表单 (.github/ISSUE_TEMPLATE/correction.yml), 提交后由工作流校验并生成 PR
+function requestUrl(id, o, revert) {
+  const idx = byId.get(id) || {};
+  const name = idx.cn || idx.name || "";
+  const params = { template: "correction.yml", bgm_id: String(id), reason: $("e-note").value.trim() };
+  if (revert) Object.assign(params, { title: `撤销人工修正 ${id} ${name}`, tmdb: "撤销" });
+  else if (o.none) Object.assign(params, { title: `确认无对应 ${id} ${name}`, tmdb: "无" });
+  else Object.assign(params, { title: `修正 ${id} ${name}`, tmdb: o.backdrop || "", backdrop: o.backdrop_path || "",
+    stills: (o.stills || []).join(", ") });
+  params.title = params.title.trim();
+  const qs = Object.entries(params).filter(([, v]) => v).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&");
+  return `https://github.com/${REPO}/issues/new?${qs}`;
+}
+
+// 这个条目已有的待审核请求 (issue 标题统一成「修正 <id> <名字>」). GitHub 搜索接口不登录每分钟 10 次, 失败就不显示
+async function showPending(id) {
+  try {
+    const q = encodeURIComponent(`repo:${REPO} is:issue is:open in:title ${id}`);
+    const r = await fetch(`https://api.github.com/search/issues?q=${q}&per_page=10`, { headers: { Accept: "application/vnd.github+json" } });
+    if (!r.ok) return;
+    const re = new RegExp(`(^|\\D)${id}(\\D|$)`);
+    const items = ((await r.json()).items || []).filter((it) => re.test(it.title) && (it.labels || []).some((l) => l.name === "修正请求"));
+    if (!items.length || !$("e-pending")) return;
+    $("e-pending").innerHTML = `<span class="chip manual">已有待审核的修正请求</span> ` + items.map((it) =>
+      `<a href="${esc(it.html_url)}" target="_blank" rel="noopener">#${it.number} ${esc(it.title)}</a>` +
+      `<span class="muted"> · ${esc((it.user || {}).login || "")}</span>`).join("<br>");
+  } catch { /* 网络不通或被限流: 不显示 */ }
+}
+
 function bindEditor(id, manual, auto) {
   const refresh = () => {
     const { o, errs } = buildOverride(id, auto);
     $("e-json").textContent = JSON.stringify(o, null, 2);
-    $("e-msg").textContent = errs.join("；");
-    $("e-msg").className = "msg small" + (errs.length ? " bad" : "");
-    $("e-submit").disabled = errs.length > 0;
+    // 修正请求的表单要求填 TMDB 条目 (只给分集数据的修正由维护者直接改)
+    const all = !o.none && !o.backdrop && !errs.length ? ["提交修正请求要填 TMDB 条目"] : errs;
+    $("e-msg").textContent = all.join("；");
+    $("e-msg").className = "msg small" + (all.length ? " bad" : "");
+    $("e-request").disabled = all.length > 0;
     const path = o.backdrop_path;
     $("e-preview").innerHTML = path ? `<img class="backdrop" src="${IMG}w780${esc(path)}" alt="">` : "";
     return { o, errs };
   };
+  showPending(id);
   for (const el of ["e-ref", "e-path", "e-stills", "e-title", "e-note", "e-none"]) $(el).addEventListener("input", refresh);
   $("e-none").addEventListener("change", refresh);
   refresh();
@@ -440,7 +476,16 @@ function bindEditor(id, manual, auto) {
     const ok = await copy($("e-json").textContent + "\n");
     $("e-msg").textContent = ok ? "已复制" : "复制失败，请手动选中下面的 JSON";
   };
-  $("e-submit").onclick = async () => {
+  $("e-request").onclick = () => {
+    const { o, errs } = refresh();
+    if (errs.length || $("e-request").disabled) return;
+    window.open(requestUrl(id, o, false), "_blank", "noopener");
+    $("e-msg").textContent = "已在新标签页打开 GitHub，确认内容后点 Create 提交";
+  };
+  if (manual) $("e-revert").onclick = () => window.open(requestUrl(id, {}, true), "_blank", "noopener");
+  // 维护者直接改仓库里的修正文件 (不经审核)
+  $("e-direct").onclick = async (e) => {
+    e.preventDefault();
     const { errs } = refresh();
     if (errs.length) return;
     const text = $("e-json").textContent + "\n";
@@ -454,7 +499,7 @@ function bindEditor(id, manual, auto) {
       $("e-msg").textContent = "已在新标签页打开 GitHub；若内容没带过去，点「复制 JSON」后粘贴";
     }
   };
-  if (manual) $("e-delete").onclick = () => window.open(`https://github.com/${REPO}/delete/main/${file}`, "_blank", "noopener");
+  if (manual) $("e-delete").onclick = (e) => { e.preventDefault(); window.open(`https://github.com/${REPO}/delete/main/${file}`, "_blank", "noopener"); };
 }
 
 let timer = 0;

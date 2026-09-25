@@ -1,0 +1,41 @@
+name: 修正对应的 TMDB 条目
+description: 某个 Bangumi 条目对应的 TMDB 条目或背景图不对。建议在核对页找到条目后点「提交修正请求」，这里会自动填好。
+title: "修正 "
+labels: ["修正请求"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        建议在[核对页](https://grahamzen.github.io/bangumi-tmdb-map/)找到条目后点「提交修正请求」，下面会自动填好。
+        提交后会自动检查格式、向 TMDB 核实，生成一个修正 PR；维护者审核合并后几分钟内生效。
+  - type: input
+    id: bgm_id
+    attributes:
+      label: Bangumi id
+      description: 条目页网址里的数字，例如 bgm.tv/subject/554346 就填 554346
+      placeholder: "554346"
+    validations:
+      required: true
+  - type: input
+    id: tmdb
+    attributes:
+      label: TMDB 条目
+      description: 填 tv/123、movie/123、collection/123，或直接粘贴 TMDB 网址。TMDB 上确实没有对应就填「无」；要撤销已有的人工修正、回到自动匹配就填「撤销」。
+      placeholder: tv/38693
+    validations:
+      required: true
+  - type: input
+    id: backdrop
+    attributes:
+      label: 背景图
+      description: 可空。填图片路径 /xxxx.jpg，或粘贴 TMDB 图片网址；不填就由客户端按条目自己挑。
+  - type: input
+    id: stills
+    attributes:
+      label: 分集数据
+      description: 可空，一般跟 TMDB 条目是同一个。衍生作只该用本篇特别篇里的集时，填 tv/本篇 id/season/0。
+  - type: textarea
+    id: reason
+    attributes:
+      label: 说明
+      description: 为什么这样改，例如对应的是哪一季、TMDB 上叫什么。

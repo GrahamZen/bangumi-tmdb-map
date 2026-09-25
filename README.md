@@ -42,7 +42,13 @@ https://raw.githubusercontent.com/GrahamZen/bangumi-tmdb-map/main/map/bgm-tmdb.t
 
 这些都取自 Bangumi 导出与匹配时已经收到的 TMDB 响应，没有为页面多发请求。
 
-发现匹配错了，在页面底部的「人工修正」里填对的 TMDB 条目（可以直接粘贴 TMDB 网址）和背景图（可以粘贴图片地址），或者勾选「TMDB 上确实没有对应」。点提交会打开 GitHub 的新建文件页，内容已经填好，确认提交即可（只有仓库所有者能提交）。
+发现匹配错了，在页面底部的「人工修正」里填对的 TMDB 条目（可以直接粘贴 TMDB 网址）和背景图（可以粘贴图片地址），或者勾选「TMDB 上确实没有对应」，点「提交修正请求」。任何人都可以提交（要登录 GitHub）：
+
+1. 页面打开一个内容已经填好的 issue（表单在 `.github/ISSUE_TEMPLATE/correction.yml`，也可以直接在仓库里新建 issue 手填），确认后提交；
+2. `correction` 工作流检查格式、向 TMDB 核实条目存在、背景图属于这个条目，生成一个只改 `overrides/<bgm_id>.json` 的 PR，把现在与改后的结果（含背景图预览）列在 PR 说明里，并在 issue 里回复；格式不对时在 issue 里说明哪里不对，改了 issue 会重新检查；
+3. 维护者审核：合并就生效，issue 随之关闭；不采纳就关掉 PR，issue 一起关掉。提交者关掉 issue 也会撤回 PR。
+
+仓库维护者也可以不经请求，点页面上的「新建修正文件」直接提交到 `main`。
 
 修正存成 `overrides/<bgm_id>.json`：
 
@@ -83,10 +89,12 @@ map/meta.json          生成信息
 overrides/             人工修正, 每个条目一个 <bgm_id>.json
 docs/                  核对页面 (GitHub Pages) 与它的数据: data/index.tsv 全部条目一览, data/s/*.json 条目详情
 state/state.tsv        每个条目上次检查的日期、结果与输入指纹 (决定下次什么时候查)
-scripts/               ci.sh 每日更新的全部步骤 (工作流与本地共用), prepare.py 挑任务, merge.py 合并结果与人工修正
+scripts/               ci.sh 每日更新的全部步骤 (工作流与本地共用), prepare.py 挑任务, merge.py 合并结果与人工修正,
+                       correction.py / correction_pr.sh 处理修正请求
 runner/                匹配器入口; 工作流把它拷进 izuko-tv 的测试源码里运行
 matcher.ref            用 izuko-tv 的哪个分支/标签
-.github/workflows/     update 每日更新, apply-overrides 推送修正后立即应用
+.github/workflows/     update 每日更新, apply-overrides 推送修正后立即应用, correction 修正请求 → PR
+.github/ISSUE_TEMPLATE/ 修正请求的表单
 ```
 
 ## 本地验证
@@ -99,6 +107,8 @@ ONLY_IDS=237,311,296195 scripts/ci.sh local   # 下载导出 → 挑任务 → �
 ```
 
 结果写在仓库下的 `.work/` 与 `map/`、`docs/`、`state/` 里, 看完用 `git checkout -- map docs state` 丢掉。
+
+修正请求的解析与校验有单测：`python3 -m unittest discover -s scripts`。
 
 ## 数据来源与署名
 

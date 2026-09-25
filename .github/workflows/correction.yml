@@ -1,0 +1,96 @@
+# 修正请求: 任何人在核对页点「提交修正请求」(打开填好的 issue 表单) 提交后, 这里校验、向 TMDB 核实,
+# 生成只改 overrides/<bgm_id>.json 的 PR, 由维护者审核合并; 合并后 apply-overrides 应用, issue 随 PR 关闭.
+# issue 的内容由提交者决定: 只经环境变量交给 scripts/correction.py 当数据解析, 不拼进任何命令.
+name: correction
+
+on:
+  issues:
+    types: [opened, edited, reopened, closed]
+  # 只按分支名关 issue、删分支, 不检出 PR 的代码. 用 _target: fork 来的 PR 关闭时不用等批准才跑
+  pull_request_target:
+    types: [closed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: correction-${{ github.event.pull_request.head.ref || format('correction/issue-{0}', github.event.issue.number) }}
+  cancel-in-progress: false
+
+jobs:
+  propose:
+    # 新建、重开, 或正文改了 (只改标题不重跑)
+    if: >-
+      github.event_name == 'issues' && github.event.action != 'closed' &&
+      (github.event.action != 'edited' || github.event.changes.body)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Check the request
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+          ISSUE_AUTHOR_ID: ${{ github.event.issue.user.id }}
+          TMDB_API_TOKEN: ${{ secrets.TMDB_API_TOKEN }}
+        run: python3 scripts/correction.py --out "$RUNNER_TEMP/correction"
+
+      - name: Open or update the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: scripts/correction_pr.sh "$RUNNER_TEMP/correction"
+
+  withdraw:
+    # issue 关了 (提交者撤回, 或维护者直接关掉) 而 PR 还开着: 一起关掉. PR 合并时 issue 由 Closes 关掉, 那时没有开着的 PR
+    if: github.event_name == 'issues' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Close the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          set -euo pipefail
+          pr=$(gh pr list --head "correction/issue-$ISSUE_NUMBER" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$pr" ]; then gh pr close "$pr" --delete-branch --comment "修正请求 #$ISSUE_NUMBER 已关闭，这个 PR 一起关掉。"; fi
+
+  finish:
+    # 修正 PR 关了: 没合并 = 维护者没采纳, 关掉 issue; 合并了 issue 已由 Closes 关掉. 两种都删分支
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.event.pull_request.head.ref, 'correction/issue-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - name: Close the issue and delete the branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          MERGED: ${{ github.event.pull_request.merged }}
+        run: |
+          set -euo pipefail
+          [[ "$BRANCH" =~ ^correction/issue-([0-9]+)$ ]] || exit 0
+          issue=${BASH_REMATCH[1]}
+          if [ "$MERGED" != true ] && [ "$(gh issue view "$issue" --json state --jq .state)" = OPEN ]; then
+            gh issue close "$issue" --reason "not planned" --comment "维护者没有采纳这个修正 (PR 已关闭)。有疑问可以在这里回复。"
+          fi
+          gh api -X DELETE "repos/$GH_REPO/git/refs/heads/$BRANCH" > /dev/null 2>&1 || true
