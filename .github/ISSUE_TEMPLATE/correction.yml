@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         建议在[核对页](https://grahamzen.github.io/bangumi-tmdb-map/)找到条目后点「提交修正请求」，下面会自动填好。
-        提交后会自动检查格式、向 TMDB 核实，生成一个修正 PR；维护者审核合并后几分钟内生效。
+        提交后会自动检查格式、向 TMDB 核实，生成一个修正 PR；维护者审核合并后几分钟内写进对应表，app 一般一天内用上。
   - type: input
     id: bgm_id
     attributes:

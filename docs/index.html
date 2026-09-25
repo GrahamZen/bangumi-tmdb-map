@@ -367,7 +367,7 @@ function editorHtml(id, manual, auto) {
   </div>
   <div class="msg small" id="e-msg"></div>
   <div class="muted small" style="margin-top:8px">提交修正请求会打开一个填好内容的 GitHub issue (要登录 GitHub)。提交后自动检查格式、向 TMDB 核实，` +
-  `生成修正 PR；维护者审核合并后几分钟内生效，之后自动匹配不再改这一条。` +
+  `生成修正 PR；维护者审核合并后几分钟内写进对应表 (app 一般一天内用上)，之后自动匹配不再改这一条。` +
   `仓库维护者也可以直接改 <code>overrides/${id}.json</code>：<a href="#" id="e-direct">${manual ? "编辑" : "新建"}修正文件</a>${manual ? ` · <a href="#" id="e-delete">删除修正文件</a>` : ""}</div>
   <pre id="e-json"></pre>`;
 }

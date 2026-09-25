@@ -399,7 +399,7 @@ def render_pr(p, issue, author):
         if len(reason) > REASON_MAX:
             reason = reason[:REASON_MAX] + "\n…(太长，截断了；全文见 issue)"
         lines += ["", "<details><summary>提交者的说明</summary>", "", "~~~text", reason, "~~~", "", "</details>"]
-    lines += ["", "合并后 apply-overrides 几分钟内把它并进对应表与核对页；不采纳就直接关闭这个 PR，issue 会一起关掉。",
+    lines += ["", "合并后 apply-overrides 几分钟内把它并进对应表与核对页 (app 经 jsDelivr 取表, 一般一天内用上)；不采纳就直接关闭这个 PR，issue 会一起关掉。",
               "", f"Closes #{issue}", ""]
     return "\n".join(lines)
 

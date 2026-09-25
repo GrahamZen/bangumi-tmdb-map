@@ -62,7 +62,7 @@ case "$(result status)" in
       url=$(gh pr create --base main --head "$branch" --title "$title" --body-file "$OUT/pr.md" --label "修正请求")
       head="已生成修正 PR #${url##*/}"
     fi
-    { echo "$head，等维护者审核，合并后几分钟内生效。"; echo; cat "$OUT/reply.md"; } > "$OUT/reply_full.md"
+    { echo "$head，等维护者审核；合并后几分钟内写进对应表，app 一般一天内用上。"; echo; cat "$OUT/reply.md"; } > "$OUT/reply_full.md"
     gh issue comment "$ISSUE_NUMBER" --body-file "$OUT/reply_full.md"
     ;;
   *)

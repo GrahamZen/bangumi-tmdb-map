@@ -46,7 +46,7 @@ https://raw.githubusercontent.com/GrahamZen/bangumi-tmdb-map/main/map/bgm-tmdb.t
 
 1. 页面打开一个内容已经填好的 issue（表单在 `.github/ISSUE_TEMPLATE/correction.yml`，也可以直接在仓库里新建 issue 手填），确认后提交；
 2. `correction` 工作流检查格式、向 TMDB 核实条目存在、背景图属于这个条目，生成一个只改 `overrides/<bgm_id>.json` 的 PR，把现在与改后的结果（含背景图预览）列在 PR 说明里，并在 issue 里回复；格式不对时在 issue 里说明哪里不对，改了 issue 会重新检查；
-3. 维护者审核：合并就生效，issue 随之关闭；不采纳就关掉 PR，issue 一起关掉。提交者关掉 issue 也会撤回 PR。
+3. 维护者审核：合并后几分钟内写进对应表，issue 随之关闭；不采纳就关掉 PR，issue 一起关掉。提交者关掉 issue 也会撤回 PR。
 
 仓库维护者也可以不经请求，点页面上的「新建修正文件」直接提交到 `main`。
 
@@ -68,7 +68,7 @@ https://raw.githubusercontent.com/GrahamZen/bangumi-tmdb-map/main/map/bgm-tmdb.t
 - `stills` 只能给一个出处，省略就跟着 `backdrop` 那个条目；
 - 除 `backdrop` / `stills` / `none` 至少有一项外，其他字段都可省；`auto_was` 是修正时的自动结果，留着方便回看。
 
-推送修正后，`apply-overrides` 工作流几分钟内把它并进对应表与页面。**有修正的条目不再自动匹配，自动结果也不会覆盖它**；删掉修正文件（页面上的「撤销人工修正」）就回到自动匹配，下一轮重新查。修正文件格式不对时那一轮会失败并通知，不会提交任何东西。
+推送修正后，`apply-overrides` 工作流几分钟内把它并进对应表与页面；客户端经 jsDelivr 取表，它的部分节点不认主动刷新、最长缓存 12 小时，加上客户端每天查一次表，一般一天内用上。**有修正的条目不再自动匹配，自动结果也不会覆盖它**；删掉修正文件（页面上的「撤销人工修正」）就回到自动匹配，下一轮重新查。修正文件格式不对时那一轮会失败并通知，不会提交任何东西。
 
 ## 怎么来的
 
