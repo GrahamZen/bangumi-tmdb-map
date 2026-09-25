@@ -302,6 +302,7 @@ function renderDetail(id, rec) {
     if (auto.status === "hit") {
       html += `<div class="grid"><div>${backdropBlock(auto.backdrop, auto.backdropPath)}` +
         `<div class="kv" style="margin-top:4px"><div>分集数据</div><div>${auto.stillsSource ? refLink(auto.stillsSource) + (auto.stillsSource.endsWith("/season/0") ? ` <span class="muted small">(只取 S0)</span>` : "") : "—"}</div>` +
+        (auto.episodes ? `<div>逐集对位</div><div class="mono small" style="word-break:break-all">${esc(auto.episodes)}</div>` : "") +
         `<div>有剧照的季</div><div>${(auto.stills || []).map(refLink).join("<br>") || "—"}` +
         (auto.stillCount ? ` <span class="muted small">(${auto.stillCount} 张)</span>` : "") + `</div>` +
         (auto.hitQuery ? `<div>命中搜索</div><div><code>${esc(auto.hitQuery.query)}</code> <span class="muted small">${[auto.hitQuery.kind, auto.hitQuery.lang, `第 ${auto.hitQuery.rank} 位`].filter(Boolean).map(esc).join(" · ")}</span></div>` : "") +

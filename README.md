@@ -20,6 +20,14 @@ https://raw.githubusercontent.com/GrahamZen/bangumi-tmdb-map/main/map/bgm-tmdb.t
 | `backdrop_path` | 背景图路径，拼在 `https://image.tmdb.org/t/p/w1280` 之类的尺寸前缀后面；人工修正可能只给条目不给图，此时为空 | `/abc.jpg` |
 | `stills` | 分集数据 (剧照、时长、分集简介) 的出处，是 TMDB API 路径：`tv/<id>` 整部剧，按同样的规则全量索引；`tv/<id>/season/0` 只取 S0 (衍生作挂在本篇特别篇下的情形)；`movie/<id>` 单集电影；`collection/<id>` 合集 (客户端照旧自己搜) | `tv/65942` |
 | `source` | `auto` 自动匹配，`manual` 人工修正 | `auto` |
+| `episodes` | 每一集对应 TMDB 第几季第几集 (见下)；空表示没算出来，照 `stills` 全量索引、自己对集 | `S3E1` |
+
+`episodes` 是空格分隔的几段，按离线用客户端同一套规则对出来的结果写：
+
+- `S3E1`：本篇按集号从小到大，第 k 集对第 3 季第 1+k 集 (最常见，只写起点，之后新播的集照此往下接)；
+- `1-12:S3E1` / `7:S3E8`：本篇集号 1–12 对 S3E1–E12；单集只写一个集号；
+- `SP1-2:S0E5` / `SP12.1:S0E7`：其他类型带前缀 (SP / OP / ED / PV / MAD，没有类型的写 O)；Bangumi 夹在两集之间的特别篇集号 (如 12.1) 照原文写；
+- 没写到的集 = 没对上。有了它，客户端只需取这几季的数据，不用逐季全拉、再按日期和集名对。
 
 人工确认 TMDB 上没有对应的条目也在表里，除 `source` 外各列为空，调用方不必再搜。表里没有的条目，要么自动匹配没找到，要么还没查过，调用方照常自己搜。
 

@@ -61,13 +61,14 @@ def due_bucket(state_row, new_hash, subject_date, today, subject_id):
 
 
 def outdated_records(site):
-    """自动结果还是旧格式的条目 (没有 stillsSource 字段, 那时对应表的分集数据列另有含义), 要重跑."""
+    """自动结果还是旧格式的条目要重跑: 没有 stillsSource 字段 (那时对应表的分集数据列另有含义),
+    或没有 episodes 字段 (还没算每一集对应 TMDB 第几季第几集)."""
     ids = set()
     for path in glob.glob(os.path.join(site, "data", "s", "*.json")):
         with open(path, encoding="utf-8") as f:
             for sid, rec in json.load(f).items():
                 auto = rec.get("auto")
-                if auto is not None and "stillsSource" not in auto:
+                if auto is not None and ("stillsSource" not in auto or "episodes" not in auto):
                     ids.add(int(sid))
     return ids
 
@@ -111,13 +112,14 @@ def main():
                 e = json.loads(line)
                 if e["subject_id"] in subjects:
                     episodes.setdefault(e["subject_id"], []).append(
-                        (e.get("type", 0), float(e.get("sort") or 0), e["id"], e.get("name") or "", e.get("airdate") or ""))
+                        (e.get("type", 0), float(e.get("sort") or 0), e["id"], e.get("name") or "", e.get("airdate") or "",
+                         e.get("name_cn") or ""))
 
     candidates = []
     for sid, s in subjects.items():
         infobox = parse_infobox(s.get("infobox") or "")
-        eps = [{"name": name, "airdate": airdate}
-               for _, _, _, name, airdate in sorted(episodes.get(sid, []))][:EPISODE_CAP]
+        eps = [{"id": eid, "type": etype, "sort": esort, "name": name, "nameCN": name_cn, "airdate": airdate}
+               for etype, esort, eid, name, airdate, name_cn in sorted(episodes.get(sid, []))][:EPISODE_CAP]
         h = input_hash(s, infobox, eps, args.today)
         if sid in manual:
             continue

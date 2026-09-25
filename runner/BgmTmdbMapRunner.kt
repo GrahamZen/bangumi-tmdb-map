@@ -56,9 +56,12 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.put
+import me.him188.ani.app.data.models.episode.EpisodeCollectionInfo
+import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.toTmdbMatchHints
 import me.him188.ani.app.data.network.mapper.toEntity
+import me.him188.ani.app.data.network.mapper.toEpisodeTypeOrNull
 import me.him188.ani.app.data.persistent.MemoryDataStore
 import me.him188.ani.app.domain.foundation.DefaultHttpClientProvider
 import me.him188.ani.app.domain.foundation.ScopedHttpClientFeatureHandler
@@ -68,7 +71,10 @@ import me.him188.ani.app.domain.foundation.UserAgentFeature
 import me.him188.ani.app.domain.foundation.UserAgentFeatureHandler
 import me.him188.ani.app.domain.settings.NoProxyProvider
 import me.him188.ani.app.platform.currentAniBuildConfig
+import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.EpisodeType
 import me.him188.ani.datasources.api.PackedDate
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.api.toLocalDateOrNull
 import me.him188.ani.datasources.bangumi.next.models.BangumiNextInfoboxItem
 import me.him188.ani.datasources.bangumi.next.models.BangumiNextInfoboxValue
@@ -216,6 +222,10 @@ class BgmTmdbMapRunner {
             val backdropRef = backdropPath?.let { backdropIndex.refsOf(it).firstOrNull() }
             val stillRefs = stillsIndex.stillRefsOf(stillPaths)
             val stillsSource = stillsSourceOf(handler.tmdbBodies.toList(), stillRefs, stills)
+            val episodeInfos = job.episodeInfos()
+            val episodeMap = stillsSource?.let { src ->
+                stills?.let { episodeMapOf(src, it, episodeInfos, airDate, handler.tmdbBodies.toList()) }
+            }
             val chosen = (backdropRef ?: stillRefs.firstOrNull())?.substringBefore("/season/")
             return Out(
                 id = job.id,
@@ -224,6 +234,7 @@ class BgmTmdbMapRunner {
                 backdropPath = backdropPath,
                 stills = stillRefs,
                 stillsSource = stillsSource,
+                episodes = episodeMap,
                 stillCount = stillPaths.size,
                 tmdb = chosen?.let { stillsIndex.entityOf(it) },
                 hitQuery = chosen?.let { stillsIndex.firstHitOf(it) },
@@ -349,7 +360,200 @@ class BgmTmdbMapRunner {
     private data class InfoboxValue(val v: String = "", val k: String? = null)
 
     @Serializable
-    private data class Ep(val name: String = "", val airdate: String = "")
+    private data class Ep(
+        val id: Int = 0,
+        val type: Int = 0,
+        val sort: Double = 0.0,
+        val name: String = "",
+        val nameCN: String = "",
+        val airdate: String = "",
+    )
+
+    /**
+     * 与 app 看到的分集列表逐字段一致: 字段照 `BangumiEpisode.toEntity` → `toEpisodeInfo` 的转换
+     * (集号经数据库存取一次: 存的是 `EpisodeSort.toString()`, 读回来再解析), 顺序照
+     * `EpisodeCollectionDao.filterBySubjectId` 的 `ORDER BY sortNumber ASC, sort ASC`.
+     */
+    private fun Job.episodeInfos(): List<EpisodeCollectionInfo> = episodes
+        .map { e ->
+            val type = e.type.toEpisodeTypeOrNull()
+            val storedSort = EpisodeSort(BigNum(e.sort), type).toString()
+            Triple(e.sort.toFloat(), storedSort, e to type)
+        }
+        .sortedWith(compareBy({ it.first }, { it.second }))
+        .map { (_, storedSort, pair) ->
+            val (e, type) = pair
+            EpisodeCollectionInfo(
+                episodeInfo = EpisodeInfo(
+                    episodeId = e.id,
+                    type = type,
+                    name = e.name,
+                    nameCn = e.nameCN,
+                    airDate = PackedDate.parseFromDate(e.airdate),
+                    sort = EpisodeSort(storedSort),
+                ),
+                collectionType = UnifiedCollectionType.NOT_COLLECTED,
+            )
+        }
+
+    /**
+     * 每一集对应 TMDB 第几季第几集: 用 app 自己的 [matchToEpisodes] 对出结果 (与设备上自己搜再对的一致),
+     * 再从剧照链收到的各季响应里找出每一集是第几季第几集 (按 app 构造分集数据的同一规则比对内容),
+     * 最后压成编码 (见 [encodeEpisodeMap]). 只对剧集出处做; 有一集找不出来就整条不给, 客户端照旧全量索引.
+     *
+     * 内容完全相同的占位集 (没图没简介、时长一样) 可能出现在好几个位置, 取哪个显示都一样:
+     * 优先取"上一集的下一集", 编码才压得成区间. 什么都没有的空数据与"没对上"显示相同, 不记.
+     */
+    private fun episodeMapOf(
+        stillsSource: String,
+        stills: TmdbEpisodeStills,
+        episodes: List<EpisodeCollectionInfo>,
+        subjectAirDate: String?,
+        bodies: List<MapTmdbBody>,
+    ): String? {
+        if (!stillsSource.startsWith("tv/")) return null
+        val tvId = stillsSource.split('/')[1].toIntOrNull() ?: return null
+        val assigned = stills.matchToEpisodes(episodes, subjectAirDate)
+            .filterValues { it.stillUrl != null || it.runtimeMinutes != null || it.overview != null }
+        if (assigned.isEmpty()) return null
+        val positions = mutableMapOf<TmdbEpisodeMedia, MutableList<Pair<Int, Int>>>()
+        for (b in bodies) {
+            val seg = b.path.trim('/').split('/').let { if (it.firstOrNull() == "3") it.drop(1) else it }
+            if (seg.size != 4 || seg[0] != "tv" || seg[1] != tvId.toString() || seg[2] != "season") continue
+            if (b.language != STILLS_LANGUAGE) continue
+            val season = seg[3].toIntOrNull() ?: continue
+            val element = runCatching { json.parseToJsonElement(b.body) }.getOrNull() as? JsonObject ?: continue
+            for (ep in (element["episodes"] as? JsonArray).orEmpty()) {
+                val o = ep as? JsonObject ?: continue
+                val number = (o["episode_number"] as? JsonPrimitive)?.intOrNull ?: continue
+                val media = TmdbEpisodeMedia(
+                    stillUrl = (o["still_path"] as? JsonPrimitive)?.contentOrNull?.let { "$STILL_IMAGE_BASE_URL$it" },
+                    runtimeMinutes = (o["runtime"] as? JsonPrimitive)?.intOrNull?.takeIf { it > 0 },
+                    overview = (o["overview"] as? JsonPrimitive)?.contentOrNull?.trim()?.takeIf { it.isNotBlank() },
+                )
+                val list = positions.getOrPut(media) { mutableListOf() }
+                if (season to number !in list) list += season to number
+            }
+        }
+        val entries = mutableListOf<EncodedEpisode>()
+        var last: Pair<Int, Int>? = null
+        for (e in episodes) {
+            val media = assigned[e.episodeInfo.episodeId] ?: continue
+            val candidates = positions[media] ?: return null
+            val chosen = last?.let { (s, n) -> candidates.firstOrNull { it == s to n + 1 } }
+                ?: candidates.firstOrNull { it.first == last?.first }
+                ?: candidates.first()
+            last = chosen
+            val text = sortText(e.episodeInfo) ?: return null
+            entries += EncodedEpisode(episodePrefix(e.episodeInfo.type), text, chosen.first, chosen.second)
+        }
+        val spec = encodeEpisodeMap(entries, episodes)
+        // 自检: 按编码还原出来的必须与对出来的逐集相同
+        val expected = episodes.mapNotNull { e ->
+            val media = assigned[e.episodeInfo.episodeId] ?: return@mapNotNull null
+            e.episodeInfo.episodeId to media
+        }.toMap()
+        val decoded = decodeEpisodeMap(spec, episodes).mapValues { (_, se) ->
+            positions.entries.firstOrNull { se in it.value }?.key
+        }
+        return spec.takeIf { decoded == expected }
+    }
+
+    private class EncodedEpisode(val prefix: String, val text: String, val season: Int, val episode: Int) {
+        val value: Double get() = text.toDouble()
+        val integral: Boolean get() = '.' !in text
+    }
+
+    private fun episodePrefix(type: EpisodeType?): String = when (type) {
+        EpisodeType.MainStory -> ""
+        EpisodeType.SP -> "SP"
+        EpisodeType.OP -> "OP"
+        EpisodeType.ED -> "ED"
+        EpisodeType.PV -> "PV"
+        EpisodeType.MAD -> "MAD"
+        EpisodeType.OVA, EpisodeType.OAD, null -> "O"
+    }
+
+    /**
+     * 集号写法 (与 app 的 `TmdbEpisodeMap.keyOf` 一致): 能解析成数的写 `12` / `12.5`; 夹在两集之间的特别篇
+     * `12.1` 这种 EpisodeSort 认不出来, 写存储时的原文. 写不成数的返回 null.
+     */
+    private fun sortText(info: EpisodeInfo): String? {
+        val number = info.sort.number
+        val text = if (number != null) {
+            if (number == number.toInt().toFloat()) number.toInt().toString() else number.toString()
+        } else {
+            info.sort.toString()
+        }
+        return text.takeIf { NUMBER_TEXT.matches(it) }
+    }
+
+    /**
+     * 压成编码 (与 app 的 `TmdbEpisodeMap` 对应): 本篇 (集号能解析成数的那些) 全部对上且一集接一集时只写起点 `S3E1`;
+     * 否则按"集号逐个 +1、TMDB 集号也逐个 +1、同一季"切段 `1-12:S3E1`, 单集 `7:S3E8`; 其他类型带前缀 `SP1:S0E5`.
+     */
+    private fun encodeEpisodeMap(entries: List<EncodedEpisode>, episodes: List<EpisodeCollectionInfo>): String {
+        val tokens = mutableListOf<String>()
+        val continuationIds = episodes.map { it.episodeInfo }
+            .filter { it.type == EpisodeType.MainStory && it.sort.number != null }
+            .sortedBy { it.sort.number }
+            .map { sortText(it) }
+        val main = entries.filter { it.prefix == "" && it.text in continuationIds }.sortedBy { it.value }
+        val continuation = main.isNotEmpty() && main.map { it.text } == continuationIds &&
+            main.withIndex().all { (k, e) -> e.season == main[0].season && e.episode == main[0].episode + k }
+        if (continuation) tokens += "S${main[0].season}E${main[0].episode}"
+        val rest = if (continuation) entries.filter { it !in main } else entries
+        for ((prefix, group) in rest.groupBy { it.prefix }) {
+            val sorted = group.sortedBy { it.value }
+            var i = 0
+            while (i < sorted.size) {
+                val start = sorted[i]
+                var j = i
+                while (start.integral && j + 1 < sorted.size) {
+                    val cur = sorted[j]
+                    val next = sorted[j + 1]
+                    val consecutive = next.integral && next.value == cur.value + 1 &&
+                        next.season == cur.season && next.episode == cur.episode + 1
+                    if (consecutive) j++ else break
+                }
+                val range = if (j > i) "${start.text}-${sorted[j].text}" else start.text
+                tokens += "$prefix$range:S${start.season}E${start.episode}"
+                i = j + 1
+            }
+        }
+        return tokens.joinToString(" ")
+    }
+
+    /** [encodeEpisodeMap] 的逆过程, 只给自检用 (app 那边是 `TmdbEpisodeMap`, 两边按同一份说明各写一份). */
+    private fun decodeEpisodeMap(spec: String, episodes: List<EpisodeCollectionInfo>): Map<Int, Pair<Int, Int>> {
+        val result = mutableMapOf<Int, Pair<Int, Int>>()
+        val explicit = mutableMapOf<Pair<String, String>, Pair<Int, Int>>()
+        for (token in spec.split(' ').filter { it.isNotEmpty() }) {
+            val c = Regex("""^S(\d+)E(\d+)$""").matchEntire(token)
+            if (c != null) {
+                val (season, first) = c.destructured
+                episodes.map { it.episodeInfo }
+                    .filter { it.type == EpisodeType.MainStory && it.sort.number != null }
+                    .sortedBy { it.sort.number }
+                    .forEachIndexed { k, info -> result[info.episodeId] = season.toInt() to first.toInt() + k }
+                continue
+            }
+            val m = Regex("""^([A-Z]*)(\d+(?:\.\d+)?)(?:-(\d+))?:S(\d+)E(\d+)$""").matchEntire(token) ?: continue
+            val (prefix, from, to, season, first) = m.destructured
+            if (to.isEmpty()) {
+                explicit[prefix to from] = season.toInt() to first.toInt()
+            } else {
+                for (offset in 0..(to.toInt() - from.toInt())) {
+                    explicit[prefix to (from.toInt() + offset).toString()] = season.toInt() to first.toInt() + offset
+                }
+            }
+        }
+        for (e in episodes) {
+            val text = sortText(e.episodeInfo) ?: continue
+            explicit[episodePrefix(e.episodeInfo.type) to text]?.let { result[e.episodeInfo.episodeId] = it }
+        }
+        return result
+    }
 
     @Serializable
     private data class Out(
@@ -362,6 +566,8 @@ class BgmTmdbMapRunner {
         val stills: List<String> = emptyList(),
         /** 剧照链最后用的是哪部剧/电影, 写进对应表给客户端用, 见 [stillsSourceOf] */
         val stillsSource: String? = null,
+        /** 每一集对应 TMDB 第几季第几集, 编码见 [encodeEpisodeMap]; 对不出来或不是剧集时为 null */
+        val episodes: String? = null,
         val stillCount: Int = 0,
         /** backdrop (没有时取剧照出处) 那个 TMDB 条目的信息, 取自本任务已收到的响应, 人工核对用 */
         val tmdb: MapTmdbEntity? = null,
@@ -382,6 +588,11 @@ class BgmTmdbMapRunner {
 
         /** 取分集数据用的语言, 与 app 在中文界面下一致 */
         const val STILLS_LANGUAGE = "zh-CN"
+
+        val NUMBER_TEXT = Regex("""^\d+(?:\.\d+)?$""")
+
+        /** 与 TmdbImageService 的 STILL_IMAGE_BASE_URL 一致 (分集数据按同一规则构造, 才比得上内容) */
+        const val STILL_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/original"
     }
 }
 

@@ -22,7 +22,7 @@ from common import load_overrides, load_state, save_state
 SHARD = 2000
 MAP_HEADER = ("# bangumi-tmdb-map v1. 列: bgm_id, backdrop (TMDB 条目), backdrop_path (图片路径), "
               "stills (分集数据出处: tv/<id> 整部 / tv/<id>/season/0 只取 S0 / movie/<id>), "
-              "source (auto 自动 / manual 人工). 说明见 README.")
+              "source (auto 自动 / manual 人工), episodes (每一集对应 TMDB 第几季第几集). 说明见 README.")
 INDEX_COLUMNS = ["id", "name", "cn", "date", "platform", "pop", "status", "source", "ref", "title", "checked"]
 
 
@@ -70,24 +70,26 @@ def load_index(site):
 
 
 def effective(rec):
-    """(status, source, backdrop, backdrop_path, stills_source, title): 人工修正优先.
+    """(status, source, backdrop, backdrop_path, stills_source, title, episodes): 人工修正优先.
 
-    stills_source 是给客户端的分集数据出处 (一个 TMDB 路径或空), 见 runner 的 stillsSourceOf.
+    stills_source 是给客户端的分集数据出处 (一个 TMDB 路径或空), 见 runner 的 stillsSourceOf;
+    episodes 是每一集对应 TMDB 第几季第几集的编码 (见 runner 的 encodeEpisodeMap), 人工修正不带.
     """
     manual = rec.get("manual")
     if manual:
         if manual["none"]:
-            return "miss", "manual", None, None, None, manual.get("title")
+            return "miss", "manual", None, None, None, manual.get("title"), None
         stills = manual["stills"]
         return "hit", "manual", manual["backdrop"], manual["backdrop_path"], stills[0] if stills else None, \
-            manual.get("title")
+            manual.get("title"), None
     auto = rec.get("auto")
     if not auto:
-        return ("err" if rec.get("error") else ""), "", None, None, None, None
+        return ("err" if rec.get("error") else ""), "", None, None, None, None, None
     title = (auto.get("tmdb") or {}).get("name")
     if auto["status"] == "hit":
-        return "hit", "auto", auto.get("backdrop"), auto.get("backdropPath"), auto.get("stillsSource"), title
-    return ("err" if rec.get("error") else "miss"), "auto", None, None, None, None
+        return "hit", "auto", auto.get("backdrop"), auto.get("backdropPath"), auto.get("stillsSource"), title, \
+            auto.get("episodes")
+    return ("err" if rec.get("error") else "miss"), "auto", None, None, None, None, None
 
 
 def main():
@@ -169,6 +171,7 @@ def main():
                         "backdropPath": r.get("backdropPath") if r.get("backdrop") else None,
                         "stills": r.get("stills") or [],
                         "stillsSource": r.get("stillsSource"),
+                        "episodes": r.get("episodes"),
                         "stillCount": r.get("stillCount", 0),
                         "tmdb": r.get("tmdb"),
                         "hitQuery": r.get("hitQuery"),
@@ -208,11 +211,11 @@ def main():
     with open(args.map, "w", encoding="utf-8", newline="\n") as f:
         f.write(MAP_HEADER + "\n")
         for sid in sorted(records):
-            status, source, backdrop, path, stills, _ = effective(records[sid])
+            status, source, backdrop, path, stills, _, episodes = effective(records[sid])
             # 人工确认没有对应的也进表 (客户端据此不再去搜); 自动没匹配到的不进 (以后 TMDB 可能补上, 客户端自己搜)
             if status != "hit" and source != "manual":
                 continue
-            f.write("\t".join([str(sid), backdrop or "", path or "", stills or "", source]) + "\n")
+            f.write("\t".join([str(sid), backdrop or "", path or "", stills or "", source, episodes or ""]) + "\n")
             map_rows += 1
 
     # 页面索引: 全部动画条目
@@ -227,7 +230,7 @@ def main():
         f.write("# " + "\t".join(INDEX_COLUMNS) + "\n")
         for sid in sorted(base):
             rec = records.get(sid, {})
-            status, source, backdrop, _, stills, title = effective(rec)
+            status, source, backdrop, _, stills, title, _ = effective(rec)
             ref = backdrop or (stills.split("/season/")[0] if stills else "")
             checked = ((rec.get("manual") or {}).get("updated") or (rec.get("auto") or {}).get("checked")
                        or (rec.get("error") or {}).get("date") or "")
