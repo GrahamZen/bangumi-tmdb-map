@@ -1,0 +1,11 @@
+{
+  "backdrop": "tv/209649",
+  "backdrop_path": "/aRwtnWVrwaJq1xYzA1fhH8IOkCj.jpg",
+  "stills": [
+    "tv/209649"
+  ],
+  "title": "其实，我是最强的？",
+  "note": "条目没错; 自动选的那张背景图在 TMDB 图床部分节点上 w1280 缓存的是坏图 (纯黑, 响应头带 X-BO-Processing-Error), app 里整块黑, 换同一部剧的另一张无字背景图",
+  "updated": "2026-09-27",
+  "auto_was": "tv/209649 /56APRYRS4NdgrezZNnV6csySWC0.jpg"
+}
