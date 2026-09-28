@@ -65,6 +65,7 @@ jobs:
         run: scripts/ci.sh jdk
 
       - uses: actions/cache/restore@v4
+        id: gradle-cache
         if: steps.plan.outputs.jobs != '0'
         with:
           path: |
@@ -103,14 +104,15 @@ jobs:
             curl -fsS "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@main/$f" > /dev/null || true
           done
 
-      # 失败的那一轮也存: 下载的依赖与编译产物照样有用, 不然每次重试都是冷构建
+      # 一个匹配器版本只存一份 (一份 1 GB 多, 仓库缓存共 10 GB): 开头按这个版本精确恢复到了就不再存;
+      # 换了版本从最近那份接着编, 编完存成新版本的. 失败的那一轮也存: 下载的依赖与编译产物照样有用, 不然每次重试都是冷构建
       - uses: actions/cache/save@v4
-        if: always() && steps.plan.outputs.jobs != '0'
+        if: always() && steps.plan.outputs.jobs != '0' && steps.gradle-cache.outputs.cache-hit != 'true'
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ env.MATCHER_SHA }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: gradle-${{ runner.os }}-${{ env.MATCHER_SHA }}
 
       - uses: actions/upload-artifact@v4
         if: always() && steps.plan.outputs.jobs != '0'
