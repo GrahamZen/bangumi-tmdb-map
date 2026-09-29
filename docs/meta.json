@@ -1,8 +1,8 @@
 {
-  "generated": "2026-09-28",
-  "overrides_applied": "2026-09-28",
+  "generated": "2026-09-29",
+  "overrides_applied": "2026-09-29",
   "bangumi_dump": "dump-2026-09-22.210341Z.zip",
-  "matcher": "2151c094416f4ac703d462fcb657201eb4b6cb2c",
+  "matcher": "cd6fde760560cee7ddc17ec16597d594c8801ace",
   "anime": 30924,
   "checked": 30924,
   "entries": 24229,
@@ -11,10 +11,10 @@
   "miss": 6695,
   "err": 0,
   "last_run": {
-    "processed": 5,
-    "hit": 5,
+    "processed": 6,
+    "hit": 6,
     "miss": 0,
     "err": 0,
-    "tmdb_requests": 60
+    "tmdb_requests": 61
   }
 }
