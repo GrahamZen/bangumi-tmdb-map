@@ -2,7 +2,7 @@
 8	movie/1263462	/55TdBuoqHJdGAr9nWzDJ2GVn99c.jpg	tv/31724	auto	S2E1	o=ja ja=/rD6OLP4eo5leX9nzUAUgD5HL4Pc.png:2.229 zh=- en=-
 12	tv/37527	/4dTV1Ygbl5hypkrnxpH9Q8qSZbq.jpg	tv/37527	auto	1-8:S1E1 9-16:S1E10 17-24:S1E19 SP8.5:S1E9 SP16.5:S1E18 SP24.5:S0E1	o=ja ja=/moTTqSLH6Z93MGOOG4wbCifCAQH.png:3.12 zh=- en=/5R5cBK6wd5wHJn7f0SjSmiHmE0h.png:3.119
 50	tv/21731	/484TQnWzNSm2iGj6XMY66VBDr6g.jpg	tv/21731	auto	S1E1	o=ja ja=/7d7ucGyLU4izeKsUDw3GU5hLhtN.png:1.176 zh=/1Y6a7o14Wh0jhN4bmffDZCSOWsO.png:2.111 en=/kIUhbYPLl4Kn27JpYmEG6JmKLnK.png:1.707
-51	tv/24835	/vB7HwJNhlRA9tPViK32bK0hVCmb.jpg	tv/24835	auto	S1E1 SP23:S0E1	o=ja ja=/xyujyIzf6kFWZ2stdhIIPG7Kg5U.png:3.741 zh=- en=/4y8COPgQNfhkGBWlzLKdhwtFmMA.png:3.731
+51	tv/24835	/vB7HwJNhlRA9tPViK32bK0hVCmb.jpg	tv/24835	auto	S1E1 SP23:S0E1	o=ja ja=/xyujyIzf6kFWZ2stdhIIPG7Kg5U.png:3.741 zh=/xyujyIzf6kFWZ2stdhIIPG7Kg5U.png:3.741 en=/4y8COPgQNfhkGBWlzLKdhwtFmMA.png:3.731
 233	movie/23150	/x4pfbhYvn0Nr5mYqBkJAD9LwLoD.jpg	movie/23150	auto		o=ja ja=/s9ascqDsyt5bS7Hz5F01uq7NiiX.png:2.609 zh=/p4mDgYhjFa3Pq09IGmitVqVn0vW.png:1.943 en=/4U0zVZIFNABIX4PrZSX4TEcAcfN.png:3.476
 234	tv/26201	/h0mbpTHdWTvNg4fzbjoqWI3jtjM.jpg	tv/26201	auto	S1E1 SP13:S0E1	o=ja ja=- zh=- en=-
 236	tv/5857	/f5l4L9QPCleLRWBXkjhT9fedyD0.jpg	tv/5857	auto	SP0:S0E1 1-5:S1E1 6:S1E7 7-15:S1E10 16:S1E8 17:S1E6 18:S1E9 19-25:S1E19	o=ja ja=/3U278oMbrz4Xetf4Y1a8HK9nnWF.png:2.996 zh=/az7sbR9N7kTEvgGLipx4OWM1mwP.png:2.649 en=/ew4KMNmd6VFNnq1uFT1eeIDzKgB.png:3.679
@@ -1568,7 +1568,7 @@
 10377	tv/65356	/3H96IZCk0balz3DsrJOVawUl8NA.jpg	tv/65356	auto	1-12:S1E1 13:S0E1 ED1:S1E1 OP1:S1E1	o=ja ja=/i5xs4DTVCycB9V1oN8r2efYTeSR.png:3.419 zh=- en=/rrtbAA4jz1Tr5ArwEejDIQL8FwL.png:3.69
 10378	tv/8779	/ko65bRVvUAaOJ9Xw6vmXc6rHWxC.jpg	tv/8779	auto	S1E1	o=ja ja=/qNY5ABNVOfJOBRQHhHWxLWumrht.png:2.348 zh=- en=/sk2WiBWDOkLHY9a67AI00Cn38NH.png:2.727
 10379	tv/32377	/1YTo2OpO7GP6k5cq9A0pR6hAWZP.jpg	tv/32377	auto	S1E1	o=ja ja=/iRPIzJaaVLOLlEnhvphJOKBWLg7.png:1.896 zh=- en=/wt5pkwFrUeqy75ezsOF43iD1HAt.png:2.375
-10380	tv/42509	/gDvxT2z6TNxervG97WfpePRZ3aR.jpg	tv/42509	auto	S1E1 SP23:S0E6 SP25:S0E1	o=ja ja=/e7iugqBOq2bT6KYH6iLVKieJpDu.png:3.729 zh=- en=/7GEZnpbAgtPr7MeZ04i7HtiLvl3.png:4.852
+10380	tv/42509	/gDvxT2z6TNxervG97WfpePRZ3aR.jpg	tv/42509	auto	S1E1 SP23:S0E6 SP25:S0E1	o=ja ja=/e7iugqBOq2bT6KYH6iLVKieJpDu.png:3.729 zh=/e7iugqBOq2bT6KYH6iLVKieJpDu.png:3.729 en=/7GEZnpbAgtPr7MeZ04i7HtiLvl3.png:4.852
 10381	tv/42503	/iHA3JmrA8k4TSeGlcDhfBKvRdBZ.jpg	tv/42503	auto	S1E1	o=ja ja=/xwxIFmu4fSkKB2CKOCsabZDBTDf.png:2.789 zh=- en=/qvYhxr65Ci3dYmTmgEGFaHynjoa.png:2.85
 10382	tv/22149	/xM27gLXWLk01YbAWEsljDkILlaQ.jpg	tv/22149	auto	S1E1	o=ja ja=- zh=- en=-
 10383	tv/45348	/dnLaooZ9upokQ3jk9I1G9OlYlm6.jpg	tv/45348	auto	1-7:S1E1	o=ja ja=- zh=- en=/zC3jmeSsisUsQRvmXL97hjEV92h.png:3.96
