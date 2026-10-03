@@ -73,10 +73,10 @@ def fake_fetch(fail=False):
     return fetch
 
 
-def run(repo, **kw):
+def run(repo, image_size=lambda path: None, **kw):
     p = repo.propose(**kw)
     if not p.errors and not p.noop:
-        logo_correction.verify(p, fake_fetch())
+        logo_correction.verify(p, fake_fetch(), image_size=image_size)
     if not p.errors and not p.noop:
         logo_correction.finish(p)
     return p
@@ -97,6 +97,7 @@ class ParseTest(unittest.TestCase):
         self.assertEqual("zh", logo_correction.parse_lang(" ZH "))
         self.assertIsNone(logo_correction.parse_lang("japanese"))
         self.assertEqual("/abc.png", logo_correction.parse_logo("https://image.tmdb.org/t/p/w500/abc.png"))
+        self.assertEqual("/abc.png", logo_correction.parse_logo("https://image.tmdb.org/t/p/original/abc.svg"))
         self.assertIsNone(logo_correction.parse_logo("/abc.jpg"))
 
 
@@ -152,6 +153,13 @@ class ProposeTest(unittest.TestCase):
     def test_logo_not_on_tmdb(self):
         p = run(Repo(), logo="/nope.png")
         self.assertTrue(any("不在 tv/65844 的 logo 里" in e for e in p.errors))
+
+    def test_svg_logo_missing_from_the_api_is_checked_on_the_image_host(self):
+        p = run(Repo(), logo="https://image.tmdb.org/t/p/original/svg-only.svg", image_size=lambda path: (500, 250))
+        self.assertEqual([], p.errors)
+        self.assertEqual({"logo": "/svg-only.png", "aspect": 2.0, "auto_was": "/s3.png:2.383"}, p.override["logos"]["ja"])
+        self.assertTrue(any("接口的 logo 列表里没有这张" in w for w in p.warnings))
+        self.assertIn("图床上有它的 PNG 版", logo_correction.render_pr(p, 21, "someone"))
 
     def test_logo_of_another_language_is_allowed_with_a_warning(self):
         p = run(Repo(), language="zh", logo="/en.png")

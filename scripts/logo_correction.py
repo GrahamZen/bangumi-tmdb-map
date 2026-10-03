@@ -12,7 +12,10 @@ import datetime
 import json
 import os
 import re
+import struct
 import sys
+import urllib.error
+import urllib.request
 
 from common import LOGO_LANG_RE, format_logo_entry, load_logos, normalize_logo_override
 from correction import (IMG, NONE_WORDS, PAGE, REASON_MAX, REVERT_WORDS, cell, clip, commit_message, load_entry,
@@ -20,7 +23,9 @@ from correction import (IMG, NONE_WORDS, PAGE, REASON_MAX, REVERT_WORDS, cell, c
 from merge import effective
 
 FORM = {"Bangumi id": "bgm_id", "TMDB 条目": "tmdb", "语言": "language", "标题 logo": "logo", "说明": "reason"}
-LOGO_IN_TEXT = re.compile(r"/([A-Za-z0-9_\-]+\.png)(?:[?#]\S*)?$")
+LOGO_IN_TEXT = re.compile(r"/([A-Za-z0-9_\-]+)\.(?:png|svg)(?:[?#]\S*)?$")
+# TMDB 图床: SVG 的 logo 也有同名的 PNG 版 (/t/p/w92/<名字>.png)
+PNG_RENDITION = "https://image.tmdb.org/t/p/w92"
 LANG_WORDS = {"日文": "ja", "日语": "ja", "中文": "zh", "汉语": "zh", "英文": "en", "英语": "en"}
 LANG_NAMES = {"ja": "日文", "zh": "中文", "en": "英文"}
 GALLERY_MAX = 12
@@ -88,8 +93,24 @@ def parse_lang(text):
 
 
 def parse_logo(text):
+    """图片路径或网址 → /xxx.png. SVG 的 logo (TMDB 网页上原图是 .svg) 换成图床上同名的 PNG 版."""
     m = LOGO_IN_TEXT.search(text.strip())
-    return f"/{m.group(1)}" if m else None
+    return f"/{m.group(1)}.png" if m else None
+
+
+def png_size(path):
+    """图床上 [path] (/xxx.png) 的 PNG 版的宽高, 读文件头 (IHDR); 不存在或不是 PNG 返回 None."""
+    req = urllib.request.Request(PNG_RENDITION + path, headers={
+        "User-Agent": "bangumi-tmdb-map/correction (+https://github.com/GrahamZen/bangumi-tmdb-map)",
+    })
+    try:
+        with urllib.request.urlopen(req, timeout=20) as r:
+            head = r.read(24)
+    except urllib.error.HTTPError:
+        return None
+    if len(head) < 24 or head[:8] != b"\x89PNG\r\n\x1a\n" or head[12:16] != b"IHDR":
+        return None
+    return struct.unpack(">II", head[16:24])
 
 
 def current_entry(p):
@@ -195,8 +216,12 @@ def finish(p):
         p.errors.append(f"内容不合法：{e}")
 
 
-def verify(p, fetch):
-    """向 TMDB 核实这张图是这个条目的 logo, 取宽高比; 顺带列出这种语言的全部 logo 与条目对应的季."""
+def verify(p, fetch, image_size=png_size):
+    """向 TMDB 核实这张图是这个条目的 logo, 取宽高比; 顺带列出这种语言的全部 logo 与条目对应的季.
+
+    TMDB 接口的 logo 列表漏掉没有尺寸的 SVG logo (网页上有, 尺寸一栏是「-」): 不在列表里的, 图床上有它的 PNG 版也收,
+    宽高比按 PNG 版 ([image_size]) 算, 提醒维护者看图确认是这部的.
+    """
     kind, tid = p.ref.split("/")
     try:
         status, images = fetch(f"/{kind}/{tid}/images")
@@ -206,15 +231,21 @@ def verify(p, fetch):
         if p.action == "set":
             hit = next((x for x in logos if x.get("file_path") == p.entry["logo"]), None)
             if hit is None:
-                p.errors.append(f"这张图不在 {p.ref} 的 logo 里 (TMDB 上的 logo 才能用)")
-                return
-            if not (hit.get("aspect_ratio") or 0) > 0:
+                size = image_size(p.entry["logo"])
+                if size is None or not size[0] or not size[1]:
+                    p.errors.append(f"这张图不在 {p.ref} 的 logo 里，TMDB 图床上也没有它 (TMDB 上的 logo 才能用)")
+                    return
+                p.override_logos[p.lang]["aspect"] = round(size[0] / size[1], 3)
+                p.warnings.append(f"TMDB 接口的 logo 列表里没有这张 (多是 SVG 格式的 logo, 接口漏掉了)，按图床上的 PNG 版"
+                                  f"核实、取宽高比；请确认它是 {p.ref} 的 logo")
+            elif not (hit.get("aspect_ratio") or 0) > 0:
                 p.errors.append("TMDB 上这张 logo 没有宽高比，没法用")
                 return
-            p.override_logos[p.lang]["aspect"] = round(float(hit["aspect_ratio"]), 3)
-            image_lang = (hit.get("iso_639_1") or "").lower()
-            if image_lang != p.lang:
-                p.warnings.append(f"这张 logo 在 TMDB 上标的语言是 {image_lang or '无'}，这次用在{lang_name(p.lang)}下")
+            else:
+                p.override_logos[p.lang]["aspect"] = round(float(hit["aspect_ratio"]), 3)
+                image_lang = (hit.get("iso_639_1") or "").lower()
+                if image_lang != p.lang:
+                    p.warnings.append(f"这张 logo 在 TMDB 上标的语言是 {image_lang or '无'}，这次用在{lang_name(p.lang)}下")
         if kind == "tv":
             numbers = sorted({int(n) for n in re.findall(r"S(\d+)E", (p.rec.get("auto") or {}).get("episodes") or "")})
             if numbers:
@@ -278,8 +309,10 @@ def render_pr(p, issue, author):
                 lines += ["| " + " | ".join(" " for _ in row) + " |", "|" + "---|" * len(row)]
             lines.append("| " + " | ".join(row) + " |")
         lines.append("")
+    in_api = any(x.get("file_path") == (p.entry or {}).get("logo") for x in p.candidates)
     lines.append("TMDB 核实：" + ("没有核实" if not p.verified else
-                               ("这张图是这个条目的 logo" if p.action == "set" else "条目的 logo 已列出")))
+                               "条目的 logo 已列出" if p.action != "set" else
+                               "这张图是这个条目的 logo" if in_api else "接口列表里没有这张，图床上有它的 PNG 版"))
     for w in p.warnings:
         lines.append(f"- 请留意：{cell(w)}")
     if p.reason.strip():
