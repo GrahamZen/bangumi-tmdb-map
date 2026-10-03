@@ -1,0 +1,6 @@
+{
+  "_comment": "标题 logo 报告的中转地址 (worker/), Izuko TV 每天拉一次这个文件, 按顺序试, 连不上换下一个. workers.dev 在中国大陆多半连不上: 给 Worker 绑了自定义域名就把它加在前面. 部署时 worker 工作流会把 workers.dev 的地址补在最后.",
+  "logoReport": [
+    "https://bangumi-tmdb-map-report.grahamzen.workers.dev/logo-report"
+  ]
+}
