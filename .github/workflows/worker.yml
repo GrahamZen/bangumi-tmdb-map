@@ -40,25 +40,27 @@ jobs:
             echo "::notice::CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID / REPORT_GITHUB_TOKEN 没配齐, 跳过部署"
           fi
 
+      # 直接跑 wrangler (npm 包), 不用 cloudflare/wrangler-action: 本仓库的 Actions 只许 GitHub 自己的 action
       - name: Deploy
         id: deploy
         if: steps.check.outputs.ready == '1'
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: worker
-          secrets: |
-            REPORT_GITHUB_TOKEN
+        working-directory: worker
         env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           REPORT_GITHUB_TOKEN: ${{ secrets.REPORT_GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 deploy 2>&1 | tee "$RUNNER_TEMP/deploy.log"
+          printf '%s' "$REPORT_GITHUB_TOKEN" | npx --yes wrangler@4 secret put REPORT_GITHUB_TOKEN
+          url=$(grep -oE 'https://[A-Za-z0-9.-]+\.workers\.dev' "$RUNNER_TEMP/deploy.log" | head -1 || true)
+          echo "url=$url" >> "$GITHUB_OUTPUT"
 
       # 部署出来的地址 (workers.dev) 写进清单: 已经在里面就不动; 手动加的地址 (如大陆连得上的自定义域名) 保留在前面
       - name: Update report-endpoints.json
         if: steps.check.outputs.ready == '1'
         env:
-          DEPLOY_URL: ${{ steps.deploy.outputs.deployment-url }}
-          DEPLOY_OUTPUT: ${{ steps.deploy.outputs.command-output }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
         run: |
           set -euo pipefail
           python3 scripts/report_endpoints.py
