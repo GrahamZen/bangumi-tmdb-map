@@ -1,0 +1,72 @@
+# 部署 worker/ (Izuko TV 里「标题 logo 不对」的报告中转) 到 Cloudflare, 再把它的地址写进 report-endpoints.json (app 每天拉一次这份清单).
+# 要三个仓库密钥: CLOUDFLARE_API_TOKEN (Cloudflare「Edit Cloudflare Workers」模板建的 API 令牌)、CLOUDFLARE_ACCOUNT_ID、
+# REPORT_GITHUB_TOKEN (只给本仓库 Issues 读写的 fine-grained 令牌, 部署成 Worker 的密钥). 没配齐就跳过, 不算失败.
+name: worker
+
+on:
+  push:
+    branches: [main]
+    paths: ['worker/**', '.github/workflows/worker.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: worker
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Check secrets
+        id: check
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          REPORT_GITHUB_TOKEN: ${{ secrets.REPORT_GITHUB_TOKEN }}
+        run: |
+          if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ] && [ -n "$REPORT_GITHUB_TOKEN" ]; then
+            echo "ready=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID / REPORT_GITHUB_TOKEN 没配齐, 跳过部署"
+          fi
+
+      - name: Deploy
+        id: deploy
+        if: steps.check.outputs.ready == '1'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+          secrets: |
+            REPORT_GITHUB_TOKEN
+        env:
+          REPORT_GITHUB_TOKEN: ${{ secrets.REPORT_GITHUB_TOKEN }}
+
+      # 部署出来的地址 (workers.dev) 写进清单: 已经在里面就不动; 手动加的地址 (如大陆连得上的自定义域名) 保留在前面
+      - name: Update report-endpoints.json
+        if: steps.check.outputs.ready == '1'
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.deployment-url }}
+          DEPLOY_OUTPUT: ${{ steps.deploy.outputs.command-output }}
+        run: |
+          set -euo pipefail
+          python3 scripts/report_endpoints.py
+          git add report-endpoints.json
+          if git diff --cached --quiet; then echo "地址没变"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "报告中转地址: $(python3 -c 'import json; print(json.load(open("report-endpoints.json"))["logoReport"][-1])')"
+          git pull -q --rebase origin main
+          git push
+          curl -fsS "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@main/report-endpoints.json" > /dev/null || true

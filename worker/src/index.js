@@ -4,7 +4,7 @@
 // POST /logo-report  {"bgm_id": 135275, "tmdb": "tv/65844", "language": "ja", "logo": "/x.png" 或 null (= 用文字), "app": "1.0.4"}
 // → 200 {"status": "created" | "duplicate", "issue": 12}; 格式不对 400, 太频繁 429, GitHub 出错 502.
 //
-// 绑定: GITHUB_TOKEN (secret, 只给本仓库 Issues 读写的 fine-grained token), REPO (vars),
+// 绑定: REPORT_GITHUB_TOKEN (secret, 只给本仓库 Issues 读写的 fine-grained token), REPO (vars),
 //       REPORT_LIMITER (ratelimit, 每个 IP 每分钟), REPORTS (KV, 可省: 每个 IP 每天的上限).
 
 const DAILY_LIMIT = 30;
@@ -41,7 +41,7 @@ async function github(env, path, init = {}) {
   const response = await fetch(`https://api.github.com${path}`, {
     ...init,
     headers: {
-      authorization: `Bearer ${env.GITHUB_TOKEN}`,
+      authorization: `Bearer ${env.REPORT_GITHUB_TOKEN}`,
       accept: "application/vnd.github+json",
       "x-github-api-version": "2022-11-28",
       "user-agent": "bangumi-tmdb-map-report",

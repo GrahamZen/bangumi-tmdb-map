@@ -1,6 +1,6 @@
 # 标题 logo 报告的中转 (Cloudflare Worker)
 
-Izuko TV 详情页里点「标题 logo 不对」选好正确的那张后，app 把报告发到这里；Worker 在本仓库开一个标题 logo 修正请求 issue
+Izuko TV 详情页里点「标题 logo」选好正确的那张后，app 把报告发到这里；Worker 在本仓库开一个标题 logo 修正请求 issue
 (和 `.github/ISSUE_TEMPLATE/logo.yml` 同一写法)，之后由 `correction` 工作流核实、开 PR，维护者合并后写进对应表。
 电视上没法登录 GitHub，令牌也不能放进 app，所以经这里转一道。
 
@@ -9,29 +9,32 @@ Worker 只做三件事：检查字段格式；按 IP 限频 (每分钟 3 次，�
 
 ## 部署
 
-1. GitHub 建一个 fine-grained token：Repository access 只选 `GrahamZen/bangumi-tmdb-map`，Permissions 只给 Issues: Read and write。
-2. 在这个目录：
+由 `worker` 工作流 (`.github/workflows/worker.yml`) 部署：`worker/` 有改动推到 main 时、或手动触发时跑；部署完把 Worker 的地址补进仓库根目录的
+`report-endpoints.json` (app 每天拉一次，按顺序试)。要三个仓库密钥，没配齐就跳过：
 
-   ```
-   npx wrangler login
-   npx wrangler secret put GITHUB_TOKEN     # 粘贴上面的 token
-   npx wrangler deploy
-   ```
+| 密钥 | 怎么来 |
+|---|---|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare 控制台 → My Profile → API Tokens → Create Token → 模板「Edit Cloudflare Workers」 |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare 控制台 → Workers & Pages 页右侧的 Account ID |
+| `REPORT_GITHUB_TOKEN` | GitHub fine-grained token：Repository access 只选 `GrahamZen/bangumi-tmdb-map`，权限只给 Issues: Read and write；部署成 Worker 的密钥 |
 
-   部署完给出 `https://bangumi-tmdb-map-report.<子域>.workers.dev`，app 要的地址是它加上 `/logo-report`。
-3. (可省) 每天的上限：`npx wrangler kv namespace create REPORTS`，把 id 填进 `wrangler.toml` 再 deploy。
+```
+gh secret set CLOUDFLARE_API_TOKEN -R GrahamZen/bangumi-tmdb-map
+gh secret set CLOUDFLARE_ACCOUNT_ID -R GrahamZen/bangumi-tmdb-map
+gh secret set REPORT_GITHUB_TOKEN -R GrahamZen/bangumi-tmdb-map
+gh workflow run worker.yml -R GrahamZen/bangumi-tmdb-map
+```
 
-没装 Node 也可以在 Cloudflare 控制台里做：Workers & Pages → Create → 从 Hello World 建一个名为 `bangumi-tmdb-map-report` 的 Worker，
-编辑代码换成 `src/index.js` 的内容并部署；Settings → Variables and Secrets 里加变量 `REPO` = `GrahamZen/bangumi-tmdb-map`、
-加 Secret `GITHUB_TOKEN`。控制台建的没有每分钟限频绑定 (那个只能在 `wrangler.toml` 里配)，可以在 Settings → Bindings 绑一个
-KV 命名空间到 `REPORTS`，至少有每天的上限。
+Cloudflare 账号第一次用 Workers 时要先在控制台的 Workers & Pages 里点开一次，注册 `workers.dev` 子域，否则部署会报没有子域。
 
-`workers.dev` 在中国大陆多半连不上；要给大陆用户用，给 Worker 绑一个自定义域名，把地址加进 app 的报告地址清单 (izuko-tv 仓库根的
-`report-endpoints.json`)，app 按清单顺序试。
+(可省) 每天的上限：建一个 KV 命名空间，把 id 填进 `wrangler.toml` 里注释掉的那段。
+
+`workers.dev` 在中国大陆多半连不上；要给大陆用户用，给 Worker 绑一个自定义域名，把地址 (带 `/logo-report`) 加在 `report-endpoints.json` 的前面。
 
 ## 试一下
 
+格式不对的请求返回 400，不会开 issue，可以拿来看 Worker 在不在：
+
 ```
-curl -X POST https://<地址>/logo-report -H 'content-type: application/json' \
-  -d '{"bgm_id": 135275, "tmdb": "tv/65844", "language": "ja", "logo": "/8sW8IRMpZNvPHtTZIBxbCjyYEfX.png", "app": "test"}'
+curl -X POST https://<地址>/logo-report -H 'content-type: application/json' -d '{}'
 ```

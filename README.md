@@ -123,8 +123,11 @@ state/logos.tsv        每个 TMDB 条目自动挑的标题 logo 与查的日期
 scripts/               ci.sh 每日更新的全部步骤 (工作流与本地共用), prepare.py 挑任务, merge.py 合并结果与人工修正,
                        correction.py / logo_correction.py / correction_pr.sh 处理修正请求, logos.py 挑标题 logo
 runner/                匹配器入口; 工作流把它拷进 izuko-tv 的测试源码里运行
+worker/                标题 logo 报告的中转 (Cloudflare Worker), 部署见 worker/README.md
+report-endpoints.json  中转地址清单 (Izuko TV 每天拉一次; 部署时 worker 工作流补上)
 matcher.ref            用 izuko-tv 的哪个分支/标签
-.github/workflows/     update 每日更新, logos 每日查标题 logo, apply-overrides 推送修正后立即应用, correction 修正请求 → PR
+.github/workflows/     update 每日更新, logos 每日查标题 logo, apply-overrides 推送修正后立即应用, correction 修正请求 → PR,
+                       worker 部署报告中转
 .github/ISSUE_TEMPLATE/ 修正请求的表单 (条目 correction.yml, 标题 logo logo.yml)
 ```
 
