@@ -55,6 +55,12 @@ def lang_name(lang):
     return LANG_NAMES.get(lang, lang)
 
 
+def image_language(image):
+    """TMDB 图片标的语言; 没标 (null / xx) 为 None."""
+    lang = (image.get("iso_639_1") or "").lower()
+    return None if lang in ("", "xx") else lang
+
+
 class Proposal:
     def __init__(self):
         self.errors, self.warnings = [], []
@@ -71,7 +77,7 @@ class Proposal:
         self.noop = False
         self.reason = ""
         self.verified = False
-        self.candidates = []        # TMDB 上这个条目这种语言的全部 logo
+        self.candidates = []        # TMDB 上这个条目各种语言的全部 logo (这种语言的在前)
         self.seasons = []           # 条目对应 TMDB 的哪几季 (季号, 季名, 首播日)
         self.override_logos = {}    # 改完后这个条目各语言的 logo 修正
         self.note = ""
@@ -226,8 +232,12 @@ def verify(p, fetch, image_size=png_size):
     try:
         status, images = fetch(f"/{kind}/{tid}/images")
         logos = (images or {}).get("logos") or []
-        p.candidates = [x for x in logos if (x.get("iso_639_1") or "").lower() == p.lang
-                        and (x.get("file_path") or "").lower().endswith(".png")]
+        # 各种语言的都列 (同 app 的报告弹窗: 只有英文 logo 的作品, 中文下也会选英文那张): 这种语言的在前, 没标语言的最后
+        p.candidates = sorted(
+            (x for x in logos if (x.get("file_path") or "").lower().endswith(".png")),
+            key=lambda x: (image_language(x) != p.lang, image_language(x) is None, image_language(x) or "",
+                           -(x.get("vote_average") or 0), -(x.get("vote_count") or 0)),
+        )
         if p.action == "set":
             hit = next((x for x in logos if x.get("file_path") == p.entry["logo"]), None)
             if hit is None:
@@ -294,15 +304,16 @@ def render_pr(p, issue, author):
               f"| logo | {logo_md(now) if source else '还没查'} | {then} |", ""]
     if p.candidates:
         chosen = (p.entry or {}).get("logo")
-        shown = sorted(p.candidates, key=lambda x: (-(x.get("vote_average") or 0), -(x.get("vote_count") or 0)))[:GALLERY_MAX]
-        lines.append(f"TMDB 上这个条目的{lang_name(p.lang)} logo 共 {len(p.candidates)} 张"
-                     + (f" (只列前 {GALLERY_MAX} 张)" if len(p.candidates) > GALLERY_MAX else "") + "：")
+        shown = p.candidates[:GALLERY_MAX]
+        lines.append(f"TMDB 上这个条目的 logo 共 {len(p.candidates)} 张 ({lang_name(p.lang)}的在前)"
+                     + (f"，只列前 {GALLERY_MAX} 张" if len(p.candidates) > GALLERY_MAX else "") + "：")
         lines.append("")
         cells = []
         for x in shown:
             mark = " ✅" if x["file_path"] == chosen else ""
+            language = image_language(x)
             cells.append(f'<img src="{IMG}w185{x["file_path"]}" width="160" alt="{x["file_path"]}"><br>'
-                         f'<code>{x["file_path"]}</code>{mark}')
+                         f'<code>{x["file_path"]}</code> {lang_name(language) if language else "未标语言"}{mark}')
         for i in range(0, len(cells), 4):
             row = cells[i:i + 4]
             if i == 0:

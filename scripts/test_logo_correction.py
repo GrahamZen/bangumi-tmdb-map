@@ -108,9 +108,9 @@ class ProposeTest(unittest.TestCase):
         self.assertEqual("tv/65844", p.override["tmdb"])
         self.assertEqual({"logo": "/base.png", "aspect": 2.112, "auto_was": "/s3.png:2.383"}, p.override["logos"]["ja"])
         self.assertEqual([(1, "シーズン1", "2016-01-14")], p.seasons)
-        self.assertEqual({"/s3.png", "/base.png"}, {x["file_path"] for x in p.candidates})
+        self.assertEqual(["/s3.png", "/base.png", "/en.png"], [x["file_path"] for x in p.candidates])
         pr = logo_correction.render_pr(p, 21, "someone")
-        self.assertIn("/base.png</code> ✅", pr)
+        self.assertIn("/base.png</code> 日文 ✅", pr)
         self.assertIn("第 1 季「シーズン1」", pr)
         self.assertIn("Closes #21", pr)
 
