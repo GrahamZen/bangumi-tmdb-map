@@ -1,15 +1,19 @@
 // Izuko TV 详情页「反馈」里的报告 → 在本仓库开修正请求 issue (表单的写法), 之后的校验、向 TMDB 核实、开 PR 都由 correction 工作流做.
-// 这里只管: 字段格式、按 IP 限频、同一条请求不重复开.
+// 这里只管: 字段格式、防刷、同一处已经有没处理的修正就不再开.
 //
 // POST /logo-report   标题 logo 不对 (表单 .github/ISSUE_TEMPLATE/logo.yml)
 //   {"bgm_id": 135275, "tmdb": "tv/65844", "language": "ja", "logo": "/x.png" 或 null (= 用文字), "app": "1.0.4"}
 // POST /entry-report  对应的 TMDB 条目不对 (表单 .github/ISSUE_TEMPLATE/correction.yml)
 //   {"bgm_id": 135275, "tmdb": "tv/65844" 或 null (= TMDB 上没有对应), "backdrop": "/x.jpg" 或 null, "app": "1.0.4"}
 // 请求要带 X-Izuko-Client 头 (app 填版本号), 没有的 403 —— 挡掉随手乱发的, 不算防护 (头谁都能伪造).
-// → 200 {"status": "created" | "duplicate", "issue": 12}; 格式不对 400, 没带头 403, 太频繁 429, GitHub 出错 502.
+// → 200 {"status": "created" | "duplicate" | "pending", "issue": 12}; 格式不对 400, 没带头 403, 太频繁 429, GitHub 出错 502.
 //
-// 防刷靠封顶: 每个 IP 每分钟 5 次 (REPORT_LIMITER), 每个 IP 每天 30 次、全站每天 100 次写 GitHub (开 issue 或在已有的里记一笔;
-// 计数在 KV, 跨地区最终一致, 是约数) —— 最坏一天多出一百来个 issue, 正常的反馈量到不了.
+// 同一处 (同一条目的标题 logo 的同一种语言 / 同一条目对应的作品) 已经有开着的修正请求 (= 维护者还没处理: PR 合并或关掉时 issue 跟着关),
+// 就不再开新的, 也不写任何东西: 内容一样回 duplicate, 不一样回 pending —— 同一处不堆互相冲突的 PR. 核对页提交的条目修正也算.
+// 查的是开着的「修正请求」issue 列表 (不用搜索接口: 搜索有索引延迟, 连着两次报告会都查不到对方).
+//
+// 防刷靠封顶: 每个 IP 每分钟 5 次 (REPORT_LIMITER), 每个 IP 每天 30 次, 全站每天开 100 个 issue (计数在 KV, 跨地区最终一致, 是约数)
+// —— 最坏一天多出一百来个 issue, 正常的反馈量到不了.
 //
 // 绑定: REPORT_GITHUB_TOKEN (secret, 只给本仓库 Issues 读写的 fine-grained token), REPO (vars),
 //       REPORT_LIMITER (ratelimit), REPORTS (KV).
@@ -17,6 +21,7 @@
 const IP_DAILY_LIMIT = 30;
 const SITE_DAILY_LIMIT = 100;
 const CLIENT_HEADER = "x-izuko-client";
+const LABEL = "修正请求";
 const REF_RE = /^(tv|movie|collection)\/\d{1,9}$/;
 const LANG_RE = /^[a-z]{2}$/;
 const LOGO_RE = /^\/[A-Za-z0-9_-]{1,64}\.png$/;
@@ -31,7 +36,14 @@ function from(app) {
   return app ? `来自 Izuko TV ${app} 的报告` : "来自 Izuko TV 的报告";
 }
 
-/** 两种报告: 请求体 → {title, body, same (同一条请求在正文里的特征)}; 不合法返回 null. 只认这几个字段, 别的一律不要 (issue 是公开的). */
+function normalized(issue) {
+  return (issue.body || "").replace(/\r\n/g, "\n");
+}
+
+/**
+ * 两种报告: 请求体 → {title, body, samePlace (开着的 issue 是不是同一处的修正), sameContent (是不是连内容都一样)}; 不合法返回 null.
+ * 只认这几个字段, 别的一律不要 (issue 是公开的). 标题会被 correction 工作流改成「<前缀> <id> <名字>」, 按前缀与 id 认.
+ */
 const KINDS = {
   "/logo-report": (b) => {
     if (typeof b.tmdb !== "string" || !REF_RE.test(b.tmdb)) return null;
@@ -40,10 +52,12 @@ const KINDS = {
     if (logo !== null && (typeof logo !== "string" || !LOGO_RE.test(logo))) return null;
     const lang = `### 语言\n\n${b.language}\n`;
     const logoText = `### 标题 logo\n\n${logo ?? "无"}\n`;
+    const titleRe = new RegExp(`^标题 logo ${b.bgm_id}( |$)`);
     return {
       title: `标题 logo ${b.bgm_id}`,
       body: `### Bangumi id\n\n${b.bgm_id}\n\n### TMDB 条目\n\n${b.tmdb}\n\n${lang}\n${logoText}\n### 说明\n\n${from(b.app)}。\n`,
-      same: [lang, logoText],
+      samePlace: (i) => titleRe.test(i.title) && normalized(i).includes(lang),
+      sameContent: (i) => normalized(i).includes(logoText),
     };
   },
   "/entry-report": (b) => {
@@ -52,11 +66,14 @@ const KINDS = {
     const backdrop = b.backdrop ?? null;
     if (backdrop !== null && (tmdb === null || typeof backdrop !== "string" || !BACKDROP_RE.test(backdrop))) return null;
     const tmdbText = `### TMDB 条目\n\n${tmdb ?? "无"}\n`;
+    // correction_pr.sh 改的标题: 修正 / 确认无对应 / 撤销人工修正
+    const titleRe = new RegExp(`^(修正|确认无对应|撤销人工修正) ${b.bgm_id}( |$)`);
     return {
       title: `修正 ${b.bgm_id}`,
       body: `### Bangumi id\n\n${b.bgm_id}\n\n${tmdbText}\n### 背景图\n\n${backdrop ?? "_No response_"}\n\n` +
         `### 分集数据\n\n_No response_\n\n### 说明\n\n${from(b.app)}。\n`,
-      same: [tmdbText],
+      samePlace: (i) => titleRe.test(i.title),
+      sameContent: (i) => normalized(i).includes(tmdbText),
     };
   },
 };
@@ -67,8 +84,7 @@ function parseReport(path, body) {
   const id = body.bgm_id;
   if (!Number.isInteger(id) || id <= 0 || id > 99999999) return null;
   const app = typeof body.app === "string" && APP_RE.test(body.app) ? body.app : "";
-  const issue = kind({ ...body, app });
-  return issue && { ...issue, app };
+  return kind({ ...body, app });
 }
 
 async function github(env, path, init = {}) {
@@ -86,15 +102,15 @@ async function github(env, path, init = {}) {
   return response.json();
 }
 
-/** 已经开着的同一条请求 (标题开头相同、正文特征都在): 有就返回 issue 编号. */
-async function findOpen(env, report) {
-  const q = `repo:${env.REPO} is:issue is:open in:title "${report.title}"`;
-  const result = await github(env, `/search/issues?q=${encodeURIComponent(q)}&per_page=20`);
-  const same = (result.items || []).find((i) => {
-    const body = (i.body || "").replace(/\r\n/g, "\n");
-    return (i.title === report.title || i.title.startsWith(report.title + " ")) && report.same.every((s) => body.includes(s));
-  });
-  return same ? same.number : null;
+/** 开着的修正请求 issue (不含 PR), 最多三页. */
+async function openRequests(env) {
+  const issues = [];
+  for (let page = 1; page <= 3; page++) {
+    const batch = await github(env, `/repos/${env.REPO}/issues?state=open&labels=${encodeURIComponent(LABEL)}&per_page=100&page=${page}`);
+    issues.push(...batch.filter((i) => !i.pull_request));
+    if (batch.length < 100) break;
+  }
+  return issues;
 }
 
 function today() {
@@ -129,20 +145,17 @@ export default {
     }
     if (!report) return json({ error: "bad_request" }, 400);
     if (await overLimit(env, `ip:${ip}:${today()}`, IP_DAILY_LIMIT)) return json({ error: "rate_limited" }, 429);
-    // 全站封顶: 每次写 GitHub (开 issue 或记一笔) 都算
-    if (await overLimit(env, `site:${today()}`, SITE_DAILY_LIMIT)) return json({ error: "rate_limited" }, 429);
     try {
-      const existing = await findOpen(env, report);
-      if (existing) {
-        await github(env, `/repos/${env.REPO}/issues/${existing}/comments`, {
-          method: "POST",
-          body: JSON.stringify({ body: `又收到一次同样的报告${report.app ? ` (Izuko TV ${report.app})` : ""}。` }),
-        });
-        return json({ status: "duplicate", issue: existing });
-      }
+      // 同一处有没处理的修正: 不开新的, 也不写任何东西
+      const open = (await openRequests(env)).filter(report.samePlace);
+      const same = open.find(report.sameContent);
+      if (same) return json({ status: "duplicate", issue: same.number });
+      if (open.length > 0) return json({ status: "pending", issue: open[0].number });
+      // 全站封顶只算真的开 issue
+      if (await overLimit(env, `site:${today()}`, SITE_DAILY_LIMIT)) return json({ error: "rate_limited" }, 429);
       const issue = await github(env, `/repos/${env.REPO}/issues`, {
         method: "POST",
-        body: JSON.stringify({ title: report.title, body: report.body, labels: ["修正请求"] }),
+        body: JSON.stringify({ title: report.title, body: report.body, labels: [LABEL] }),
       });
       return json({ status: "created", issue: issue.number });
     } catch (e) {
