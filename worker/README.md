@@ -1,4 +1,4 @@
-# 标题 logo 报告的中转 (Cloudflare Worker)
+# 详情页「反馈」的中转 (Cloudflare Worker)
 
 Izuko TV 详情页的「反馈」里报告的两类问题经这里转成本仓库的修正请求 issue，之后由 `correction` 工作流核实、开 PR，维护者合并后写进对应表：
 
