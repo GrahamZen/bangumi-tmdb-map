@@ -23,7 +23,7 @@ def form(bgm_id="135275", tmdb="", language="ja", logo="/base.png", reason="自�
 class Repo:
     """最小的仓库: このすば第一季 (自动对应 tv/65844) 与一个没有 TMDB 条目的; logos.tsv 里自动挑的是第三季的 logo."""
 
-    def __init__(self, logo_override=None):
+    def __init__(self, logo_overrides=None):
         self.dir = tempfile.TemporaryDirectory()
         root = self.root = self.dir.name
         os.makedirs(os.path.join(root, "docs", "data", "s"))
@@ -46,9 +46,9 @@ class Repo:
             "tv/65844": {"checked": "2026-10-01", "original": "ja",
                          "logos": {"ja": {"logo": "/s3.png", "aspect": 2.383}, "zh": {"none": True}, "en": {"none": True}}},
         })
-        if logo_override is not None:
-            with open(os.path.join(root, "logo-overrides", "135275.json"), "w", encoding="utf-8") as f:
-                json.dump(logo_override, f)
+        for lang, override in (logo_overrides or {}).items():
+            with open(os.path.join(root, "logo-overrides", f"135275.{lang}.json"), "w", encoding="utf-8") as f:
+                json.dump(override, f)
 
     def propose(self, **kw):
         return logo_correction.propose(logo_correction.parse_form(form(**kw)), self.root, 21, "2026-10-03")
@@ -105,8 +105,10 @@ class ProposeTest(unittest.TestCase):
     def test_set_a_logo(self):
         p = run(Repo())
         self.assertEqual([], p.errors)
-        self.assertEqual("tv/65844", p.override["tmdb"])
-        self.assertEqual({"logo": "/base.png", "aspect": 2.112, "auto_was": "/s3.png:2.383"}, p.override["logos"]["ja"])
+        self.assertEqual("logo-overrides/135275.ja.json", p.file)
+        self.assertEqual({"tmdb": "tv/65844", "logo": "/base.png", "aspect": 2.112, "auto_was": "/s3.png:2.383",
+                          "title": "为美好的世界献上祝福！", "note": "自动挑的是第三季的 (修正请求 #21)", "updated": "2026-10-03"},
+                         common.logo_override_content(p.override))
         self.assertEqual([(1, "シーズン1", "2016-01-14")], p.seasons)
         self.assertEqual(["/s3.png", "/base.png", "/en.png"], [x["file_path"] for x in p.candidates])
         pr = logo_correction.render_pr(p, 21, "someone")
@@ -117,34 +119,38 @@ class ProposeTest(unittest.TestCase):
     def test_text_instead_of_a_logo(self):
         p = run(Repo(), language="zh", logo="无")
         self.assertEqual([], p.errors)
-        self.assertEqual({"none": True, "auto_was": "-"}, p.override["logos"]["zh"])
+        self.assertEqual("logo-overrides/135275.zh.json", p.file)
+        content = common.logo_override_content(p.override)
+        self.assertEqual((True, "-"), (content["none"], content["auto_was"]))
+        self.assertNotIn("logo", content)
         self.assertTrue(any("和现在自动挑的一样" in w for w in p.warnings))
 
-    def test_other_languages_of_an_existing_override_are_kept(self):
-        existing = {"tmdb": "tv/65844", "logos": {"en": {"logo": "/en.png", "aspect": 4.1}}}
-        p = run(Repo(existing))
-        self.assertEqual({"en", "ja"}, set(p.override["logos"]))
+    def test_other_languages_have_their_own_files(self):
+        p = run(Repo({"en": {"tmdb": "tv/65844", "logo": "/en.png", "aspect": 4.1}}))
+        self.assertEqual([], p.errors)
+        self.assertIsNone(p.existing)
+        self.assertEqual("logo-overrides/135275.ja.json", p.file)
 
-    def test_revert_the_last_language_deletes_the_file(self):
-        existing = {"tmdb": "tv/65844", "logos": {"ja": {"logo": "/base.png", "aspect": 2.112}}}
-        p = run(Repo(existing), logo="撤销")
+    def test_revert_deletes_the_file(self):
+        p = run(Repo({"ja": {"tmdb": "tv/65844", "logo": "/base.png", "aspect": 2.112}}), logo="撤销")
         self.assertEqual([], p.errors)
         self.assertIsNone(p.override)
+        self.assertIn("撤销人工修正", logo_correction.render_pr(p, 21, "someone"))
 
     def test_revert_without_an_override(self):
         p = run(Repo(), logo="撤销")
         self.assertTrue(any("不用撤销" in e for e in p.errors))
 
     def test_same_as_the_existing_override_is_a_noop(self):
-        existing = {"tmdb": "tv/65844", "logos": {"ja": {"logo": "/base.png", "aspect": 2.112}}}
-        p = Repo(existing).propose()
+        p = Repo({"ja": {"tmdb": "tv/65844", "logo": "/base.png", "aspect": 2.112}}).propose()
         self.assertTrue(p.noop)
 
     def test_override_for_another_entry_is_dropped(self):
-        existing = {"tmdb": "tv/1", "logos": {"en": {"logo": "/old.png", "aspect": 3}}}
-        p = run(Repo(existing))
-        self.assertEqual({"ja"}, set(p.override["logos"]))
-        self.assertTrue(any("原来的修正一并清掉" in w for w in p.warnings))
+        p = run(Repo({"ja": {"tmdb": "tv/1", "logo": "/old.png", "aspect": 3}}))
+        self.assertEqual([], p.errors)
+        self.assertIsNone(p.existing)
+        self.assertEqual("/base.png", p.override["logo"])
+        self.assertTrue(any("原来的修正作废" in w for w in p.warnings))
 
     def test_logo_must_come_from_the_current_entry(self):
         p = run(Repo(), tmdb="tv/1429")
@@ -157,7 +163,7 @@ class ProposeTest(unittest.TestCase):
     def test_svg_logo_missing_from_the_api_is_checked_on_the_image_host(self):
         p = run(Repo(), logo="https://image.tmdb.org/t/p/original/svg-only.svg", image_size=lambda path: (500, 250))
         self.assertEqual([], p.errors)
-        self.assertEqual({"logo": "/svg-only.png", "aspect": 2.0, "auto_was": "/s3.png:2.383"}, p.override["logos"]["ja"])
+        self.assertEqual(("/svg-only.png", 2.0), (p.override["logo"], p.override["aspect"]))
         self.assertTrue(any("接口的 logo 列表里没有这张" in w for w in p.warnings))
         self.assertIn("图床上有它的 PNG 版", logo_correction.render_pr(p, 21, "someone"))
 
@@ -178,25 +184,34 @@ class LogoColumnTest(unittest.TestCase):
 
     def test_override_on_top_of_auto(self):
         auto = {"original": "ja", "logos": {"ja": {"logo": "/s3.png", "aspect": 2.383}, "zh": {"none": True}}}
-        override = {"tmdb": "tv/65844", "logos": {"ja": {"logo": "/base.png", "aspect": 2.112}}}
-        self.assertEqual("o=ja ja=/base.png:2.112 zh=-", common.logo_cell("tv/65844", override, auto))
-        stale = dict(override, tmdb="tv/1")
-        self.assertEqual("o=ja ja=/s3.png:2.383 zh=-", common.logo_cell("tv/65844", stale, auto))
+        ja = common.normalize_logo_override({"tmdb": "tv/65844", "logo": "/base.png", "aspect": 2.112})
+        en = common.normalize_logo_override({"tmdb": "tv/65844", "none": True})
+        self.assertEqual("o=ja ja=/base.png:2.112 zh=- en=-", common.logo_cell("tv/65844", {"ja": ja, "en": en}, auto))
+        stale = dict(ja, tmdb="tv/1")
+        self.assertEqual("o=ja ja=/s3.png:2.383 zh=-", common.logo_cell("tv/65844", {"ja": stale}, auto))
         self.assertEqual("", common.logo_cell("tv/65844", None, None))
-        self.assertEqual("", common.logo_cell(None, override, auto))
+        self.assertEqual("", common.logo_cell(None, {"ja": ja}, auto))
 
     def test_bad_override_files(self):
-        for raw in ({"logos": {"ja": {"none": True}}},
-                    {"tmdb": "tv/1", "logos": {}},
-                    {"tmdb": "tv/1", "logos": {"japanese": {"none": True}}},
-                    {"tmdb": "tv/1", "logos": {"ja": {"logo": "/a.jpg", "aspect": 2}}},
-                    {"tmdb": "tv/1", "logos": {"ja": {"logo": "/a.png"}}},
-                    {"tmdb": "tv/1", "logos": {"ja": {"none": True, "logo": "/a.png"}}}):
+        for raw in ({"none": True},
+                    {"tmdb": "tv/1"},
+                    {"tmdb": "tv/1", "logo": "/a.jpg", "aspect": 2},
+                    {"tmdb": "tv/1", "logo": "/a.png"},
+                    {"tmdb": "tv/1", "none": True, "logo": "/a.png"}):
             with self.assertRaises(ValueError, msg=raw):
                 common.normalize_logo_override(raw)
 
+    def test_override_file_names(self):
+        repo = Repo({"ja": {"tmdb": "tv/65844", "logo": "/base.png", "aspect": 2.112}})
+        with open(os.path.join(repo.root, "logo-overrides", "135275.json"), "w", encoding="utf-8") as f:
+            json.dump({"tmdb": "tv/65844", "none": True}, f)
+        overrides, errors = common.load_logo_overrides(os.path.join(repo.root, "logo-overrides"))
+        self.assertEqual({135275: ["ja"]}, {k: list(v) for k, v in overrides.items()})
+        self.assertEqual(["135275.json"], [name for name, _ in errors])
+
     def test_merge_writes_the_logo_column(self):
-        repo = Repo({"tmdb": "tv/65844", "logos": {"ja": {"logo": "/base.png", "aspect": 2.112}}})
+        repo = Repo({"ja": {"tmdb": "tv/65844", "logo": "/base.png", "aspect": 2.112},
+                     "en": {"tmdb": "tv/65844", "logo": "/en.png", "aspect": 4.1}})
         root = repo.root
         map_path = os.path.join(root, "map", "bgm-tmdb.tsv")
         subprocess.run([sys.executable, os.path.join(HERE, "merge.py"), "--apply-only",
@@ -208,7 +223,7 @@ class LogoColumnTest(unittest.TestCase):
                        check=True, capture_output=True)
         with open(map_path, encoding="utf-8") as f:
             rows = [line.rstrip("\n").split("\t") for line in f if not line.startswith("#")]
-        self.assertEqual([["135275", "tv/65844", "/k.jpg", "tv/65844", "auto", "S1E1", "o=ja ja=/base.png:2.112 zh=- en=-"]],
+        self.assertEqual([["135275", "tv/65844", "/k.jpg", "tv/65844", "auto", "S1E1", "o=ja ja=/base.png:2.112 zh=- en=/en.png:4.1"]],
                          rows)
 
 

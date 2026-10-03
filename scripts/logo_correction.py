@@ -1,10 +1,10 @@
 """标题 logo 修正请求 (issue 表单 .github/ISSUE_TEMPLATE/logo.yml; Izuko TV 详情页里的报告也开这张) → 校验、向 TMDB 核实
-→ 写好 logo-overrides/<bgm_id>.json 与 PR 说明.
+→ 写好 logo-overrides/<bgm_id>.<语言>.json 与 PR 说明.
 
 由 .github/workflows/correction.yml 在 correction.py 认不出表单 (不是条目修正) 时调用; 输入输出与 correction.py 相同,
 建分支、开 PR、回复 issue 仍由 correction_pr.sh 做. issue 是任何人都能写的: 只把它当数据, 写进仓库的只有规整后的 JSON.
 
-一个条目的 logo 修正按语言分开记 (logos.<语言>), 每次请求只改一种语言; 修正针对对应表里这个条目现在的 TMDB 条目
+一种语言一个文件, 每次请求只改一种语言 (同一条目不同语言的 PR 不互相冲突); 修正针对对应表里这个条目现在的 TMDB 条目
 (背景图条目), 条目改了旧修正就不再生效 (见 merge.py).
 """
 import argparse
@@ -17,7 +17,7 @@ import sys
 import urllib.error
 import urllib.request
 
-from common import LOGO_LANG_RE, format_logo_entry, load_logos, normalize_logo_override
+from common import LOGO_LANG_RE, format_logo_entry, load_logos, logo_override_content, normalize_logo_override
 from correction import (IMG, NONE_WORDS, PAGE, REASON_MAX, REVERT_WORDS, cell, clip, commit_message, load_entry,
                         make_fetch, parse_bgm_id, parse_ref, ref_md, safe)
 from merge import effective
@@ -71,15 +71,14 @@ class Proposal:
         self.lang = None
         self.action = None          # set / none / revert
         self.entry = None           # 这种语言改成的 logo ({logo, aspect} 或 {none: True}); 撤销时 None
-        self.existing = None        # 仓库里现有的 logo 修正 (规整后); 文件不合法时为 {}
-        self.override = None        # 写进文件的整条修正; 撤销后一种语言也不剩时 None (删文件)
+        self.existing = None        # 仓库里这种语言现有的修正 (规整后, 针对的条目就是现在的); 没有或已作废为 None
+        self.override = None        # 写进文件的修正; 撤销时 None (删文件)
         self.auto = None            # 这种语言自动挑的 (state/logos.tsv)
         self.noop = False
         self.reason = ""
         self.verified = False
         self.candidates = []        # TMDB 上这个条目各种语言的全部 logo (这种语言的在前)
         self.seasons = []           # 条目对应 TMDB 的哪几季 (季号, 季名, 首播日)
-        self.override_logos = {}    # 改完后这个条目各语言的 logo 修正
         self.note = ""
         self.today = ""
 
@@ -89,7 +88,7 @@ class Proposal:
 
     @property
     def file(self):
-        return f"logo-overrides/{self.sid}.json"
+        return f"logo-overrides/{self.sid}.{self.lang}.json"
 
 
 def parse_lang(text):
@@ -121,8 +120,8 @@ def png_size(path):
 
 def current_entry(p):
     """这种语言现在生效的 logo 与来源: (entry, "人工" / "自动" / None)."""
-    if p.existing and p.existing.get("tmdb") == p.ref and p.lang in p.existing["logos"]:
-        return p.existing["logos"][p.lang], "人工"
+    if p.existing:
+        return p.existing, "人工"
     if p.auto is not None:
         return p.auto, "自动"
     return None, None
@@ -156,16 +155,18 @@ def propose(fields, root, issue, today):
     if p.lang is None:
         p.errors.append("「语言」要填 ja / zh / en (或其他两个字母的语言码)")
 
-    path = os.path.join(root, p.file)
-    if os.path.isfile(path):
+    path = os.path.join(root, p.file) if p.lang else None
+    if path and os.path.isfile(path):
         try:
             with open(path, encoding="utf-8") as f:
-                p.existing = normalize_logo_override(json.load(f))
+                existing = normalize_logo_override(json.load(f))
         except (ValueError, json.JSONDecodeError):
-            p.existing = {}
-    base = dict(p.existing["logos"]) if p.existing and p.existing["tmdb"] == p.ref else {}
-    if p.existing and p.existing["tmdb"] != p.ref:
-        p.warnings.append(f"这个条目原来的 logo 修正针对的是 {p.existing['tmdb']}，条目已经改成 {p.ref}，原来的修正一并清掉")
+            existing = None
+            p.warnings.append(f"仓库里现有的 {p.file} 不合法，这次整个换掉")
+        if existing and existing["tmdb"] != p.ref:
+            p.warnings.append(f"这种语言原来的 logo 修正针对的是 {existing['tmdb']}，条目已经改成 {p.ref}，原来的修正作废")
+            existing = None
+        p.existing = existing
 
     auto = load_logos(os.path.join(root, "state", "logos.tsv")).get(p.ref)
     if auto and p.lang:
@@ -174,7 +175,7 @@ def propose(fields, root, issue, today):
     text = fields.get("logo", "").strip()
     if text.lower() in REVERT_WORDS:
         p.action = "revert"
-        if p.lang and p.lang not in base:
+        if p.lang and not (path and os.path.isfile(path)):
             p.errors.append(f"这个条目的{lang_name(p.lang)} logo 没有人工修正，不用撤销")
     elif text.lower() in NONE_WORDS:
         p.action = "none"
@@ -189,20 +190,16 @@ def propose(fields, root, issue, today):
     if p.errors:
         return p
 
-    if p.action == "revert":
-        base.pop(p.lang, None)
-    else:
+    if p.action != "revert":
         was = format_logo_entry(p.auto) if p.auto is not None else None
-        entry = dict(p.entry)
         if was:
-            entry["auto_was"] = was
-        base[p.lang] = entry
-        old = (p.existing or {}).get("logos", {}).get(p.lang) if p.existing and p.existing["tmdb"] == p.ref else None
-        if old and old.get("none") == p.entry.get("none") and old.get("logo") == p.entry.get("logo"):
+            p.entry["auto_was"] = was
+        old = p.existing
+        if old and old["none"] == bool(p.entry.get("none")) and old.get("logo") == p.entry.get("logo"):
             p.noop = True
-        elif p.auto is not None and bool(p.auto.get("none")) == bool(p.entry.get("none"))                 and p.auto.get("logo") == p.entry.get("logo"):
+        elif p.auto is not None and bool(p.auto.get("none")) == bool(p.entry.get("none")) \
+                and p.auto.get("logo") == p.entry.get("logo"):
             p.warnings.append("和现在自动挑的一样：合并后这种语言就固定下来，自动挑的不再改它")
-    p.override_logos = base
     first = next((line.strip() for line in p.reason.splitlines() if line.strip()), "")
     p.note = f"{clip(first, 80)} (修正请求 #{issue})" if first else f"修正请求 #{issue}"
     p.today = today
@@ -210,13 +207,13 @@ def propose(fields, root, issue, today):
 
 
 def finish(p):
-    """核实之后 (set 时有了宽高比) 规整成要写的整条修正."""
-    if not p.override_logos:
+    """核实之后 (set 时有了宽高比) 规整成要写的修正; 撤销时 None (删文件)."""
+    if p.action == "revert":
         p.override = None
         return
     try:
         p.override = normalize_logo_override({
-            "tmdb": p.ref, "logos": p.override_logos, "title": p.name, "note": p.note, "updated": p.today,
+            "tmdb": p.ref, **p.entry, "title": p.name, "note": p.note, "updated": p.today,
         })
     except ValueError as e:
         p.errors.append(f"内容不合法：{e}")
@@ -245,14 +242,14 @@ def verify(p, fetch, image_size=png_size):
                 if size is None or not size[0] or not size[1]:
                     p.errors.append(f"这张图不在 {p.ref} 的 logo 里，TMDB 图床上也没有它 (TMDB 上的 logo 才能用)")
                     return
-                p.override_logos[p.lang]["aspect"] = round(size[0] / size[1], 3)
+                p.entry["aspect"] = round(size[0] / size[1], 3)
                 p.warnings.append(f"TMDB 接口的 logo 列表里没有这张 (多是 SVG 格式的 logo, 接口漏掉了)，按图床上的 PNG 版"
                                   f"核实、取宽高比；请确认它是 {p.ref} 的 logo")
             elif not (hit.get("aspect_ratio") or 0) > 0:
                 p.errors.append("TMDB 上这张 logo 没有宽高比，没法用")
                 return
             else:
-                p.override_logos[p.lang]["aspect"] = round(float(hit["aspect_ratio"]), 3)
+                p.entry["aspect"] = round(float(hit["aspect_ratio"]), 3)
                 image_lang = (hit.get("iso_639_1") or "").lower()
                 if image_lang != p.lang:
                     p.warnings.append(f"这张 logo 在 TMDB 上标的语言是 {image_lang or '无'}，这次用在{lang_name(p.lang)}下")
@@ -284,7 +281,7 @@ def target_md(p):
     if p.action == "revert":
         auto = "回到自动挑的：" + (logo_md(p.auto) if p.auto is not None else "还没查")
         return "撤销人工修正", auto
-    return "人工", logo_md(p.override_logos.get(p.lang) if p.override_logos else p.entry)
+    return "人工", logo_md(p.entry)
 
 
 def render_pr(p, issue, author):
@@ -403,7 +400,7 @@ def main():
             else:
                 os.makedirs(os.path.dirname(target_path), exist_ok=True)
                 with open(target_path, "w", encoding="utf-8", newline="\n") as f:
-                    json.dump(p.override, f, ensure_ascii=False, indent=2)
+                    json.dump(logo_override_content(p.override), f, ensure_ascii=False, indent=2)
                     f.write("\n")
             write("reply.md", render_summary(p))
             write("pr.md", render_pr(p, issue, author))

@@ -75,15 +75,14 @@ TMDB 的 logo 只挂在整部剧上、不标属于哪一季，多季的剧自动
 
 ### 标题 logo 的修正
 
-标题 logo 按条目、按语言修正，存成 `logo-overrides/<bgm_id>.json`：
+标题 logo 按条目、按语言修正，一种语言一个文件 `logo-overrides/<bgm_id>.<语言>.json` (同一条目不同语言的修正各改各的文件，同时开着的 PR 不冲突)，例如 `135275.ja.json`：
 
 ```json
 {
   "tmdb": "tv/65844",
-  "logos": {
-    "ja": {"logo": "/8sW8IRMpZNvPHtTZIBxbCjyYEfX.png", "aspect": 2.112, "auto_was": "/pJEQ2jW2BKsHOLqWqqLO83muRm2.png:2.383"},
-    "zh": {"none": true}
-  },
+  "logo": "/8sW8IRMpZNvPHtTZIBxbCjyYEfX.png",
+  "aspect": 2.112,
+  "auto_was": "/pJEQ2jW2BKsHOLqWqqLO83muRm2.png:2.383",
   "title": "为美好的世界献上祝福！",
   "note": "自动挑的是第三季的 (修正请求 #12)",
   "updated": "2026-10-03"
@@ -91,9 +90,9 @@ TMDB 的 logo 只挂在整部剧上、不标属于哪一季，多季的剧自动
 ```
 
 - `tmdb` 是这条修正针对的 TMDB 条目，要和对应表里这个条目现在的 `backdrop` 一致才生效 (条目被改过，旧的 logo 修正就作废)；
-- `logos` 里每种语言要么给 `logo` 与 `aspect`，要么 `none: true` (不用 logo，显示文字)；没写的语言照自动挑的。
+- 要么给 `logo` 与 `aspect` (宽 / 高)，要么 `"none": true` (这种语言不用 logo，显示文字)；没有文件的语言照自动挑的。
 
-修正请求用 `.github/ISSUE_TEMPLATE/logo.yml` 这张表单 (Izuko TV 详情页里的「标题 logo 不对」报告会自动提交它)，`correction` 工作流向 TMDB 核实这张图属于这个条目、取宽高比，生成只改 `logo-overrides/<bgm_id>.json` 的 PR，说明里列出现在与改后的 logo、这个条目这种语言的全部 logo 和条目对应 TMDB 的第几季。合并后同样由 `apply-overrides` 应用。
+修正请求用 `.github/ISSUE_TEMPLATE/logo.yml` 这张表单 (Izuko TV 详情页里的「标题 logo 不对」报告会自动提交它)，`correction` 工作流向 TMDB 核实这张图属于这个条目、取宽高比，生成只改 `logo-overrides/<bgm_id>.<语言>.json` 的 PR，说明里列出现在与改后的 logo、这个条目这种语言的全部 logo 和条目对应 TMDB 的第几季。合并后同样由 `apply-overrides` 应用。
 
 自动挑的 logo 由 `logos` 工作流每天查一轮 (`scripts/logos.py`，按 TMDB 条目存在 `state/logos.tsv`)：没查过的条目先查，查到过 logo 的 60 天、一种也没有的 14 天后再查。
 
@@ -116,7 +115,7 @@ TMDB 的 logo 只挂在整部剧上、不标属于哪一季，多季的剧自动
 map/bgm-tmdb.tsv       对应表
 map/meta.json          生成信息
 overrides/             人工修正, 每个条目一个 <bgm_id>.json
-logo-overrides/        标题 logo 的人工修正, 每个条目一个 <bgm_id>.json
+logo-overrides/        标题 logo 的人工修正, 每个条目每种语言一个 <bgm_id>.<语言>.json
 docs/                  核对页面 (GitHub Pages) 与它的数据: data/index.tsv 全部条目一览, data/s/*.json 条目详情
 state/state.tsv        每个条目上次检查的日期、结果与输入指纹 (决定下次什么时候查)
 state/logos.tsv        每个 TMDB 条目自动挑的标题 logo 与查的日期

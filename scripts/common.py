@@ -188,66 +188,62 @@ def parse_logos(text):
     return original, entries
 
 
+LOGO_FILE_RE = re.compile(r"^(\d+)\.([a-z]{2})\.json$")
+LOGO_FILE_KEYS = ("tmdb", "logo", "aspect", "none", "auto_was", "title", "note", "updated")
+
+
 def normalize_logo_override(raw: dict) -> dict:
-    """校验并规整一条标题 logo 修正 (logo-overrides/<bgm_id>.json); 不合法抛 ValueError.
+    """校验并规整一条标题 logo 修正 (logo-overrides/<bgm_id>.<语言>.json, 一种语言一个文件: 同一条目不同语言的修正各改各的文件,
+    同时开着的 PR 不互相冲突); 不合法抛 ValueError.
 
     字段: tmdb (这条修正针对的 TMDB 条目; 与对应表里这个条目现在的背景图条目一致才生效, 条目改了修正就作废),
-    logos ({语言: {logo: /xxx.png, aspect: 宽 / 高} 或 {none: true} = 这种语言不用 logo、客户端显示文字标题}; 每种语言还可带 auto_was),
-    title, note, updated 可省.
+    logo (/xxx.png) 与 aspect (宽 / 高), 或 none (true = 这种语言不用 logo, 客户端显示文字标题); auto_was, title, note, updated 可省.
     """
     if not isinstance(raw, dict):
         raise ValueError("不是 JSON 对象")
     tmdb = (raw.get("tmdb") or "").strip()
     if not REF_RE.match(tmdb):
         raise ValueError(f"tmdb 格式不对: {tmdb!r} (应为 tv/123、movie/123 或 collection/123)")
-    logos = raw.get("logos")
-    if not isinstance(logos, dict) or not logos:
-        raise ValueError("logos 应为 {语言: {logo, aspect} 或 {none: true}}, 至少一种语言")
-    out_logos = {}
-    for lang, entry in logos.items():
-        if not LOGO_LANG_RE.match(str(lang)):
-            raise ValueError(f"语言应为两个小写字母 (ja / zh / en ...): {lang!r}")
-        if not isinstance(entry, dict):
-            raise ValueError(f"logos.{lang} 不是 JSON 对象")
-        if entry.get("none"):
-            if entry.get("logo"):
-                raise ValueError(f"logos.{lang}: none 为 true 时不能再填 logo")
-            norm = {"none": True}
-        else:
-            logo = (entry.get("logo") or "").strip()
-            aspect = entry.get("aspect")
-            if not LOGO_PATH_RE.match(logo):
-                raise ValueError(f"logos.{lang}.logo 格式不对: {logo!r} (应为 /xxxx.png; 不用 logo 就写 none: true)")
-            if not isinstance(aspect, (int, float)) or isinstance(aspect, bool) or not 0.05 <= aspect <= 50:
-                raise ValueError(f"logos.{lang}.aspect 应为 logo 的宽高比 (宽 / 高): {aspect!r}")
-            norm = {"logo": logo, "aspect": round(float(aspect), 3)}
-        was = entry.get("auto_was")
-        if isinstance(was, str) and was.strip():
-            norm["auto_was"] = was.strip()
-        out_logos[str(lang)] = norm
-    out = {"tmdb": tmdb, "logos": dict(sorted(out_logos.items()))}
-    for key in ("title", "note", "updated"):
+    if raw.get("none"):
+        if raw.get("logo"):
+            raise ValueError("none 为 true 时不能再填 logo")
+        out = {"tmdb": tmdb, "none": True, "logo": None, "aspect": None}
+    else:
+        logo = (raw.get("logo") or "").strip()
+        aspect = raw.get("aspect")
+        if not LOGO_PATH_RE.match(logo):
+            raise ValueError(f"logo 格式不对: {logo!r} (应为 /xxxx.png; 不用 logo 就写 none: true)")
+        if not isinstance(aspect, (int, float)) or isinstance(aspect, bool) or not 0.05 <= aspect <= 50:
+            raise ValueError(f"aspect 应为 logo 的宽高比 (宽 / 高): {aspect!r}")
+        out = {"tmdb": tmdb, "none": False, "logo": logo, "aspect": round(float(aspect), 3)}
+    for key in ("auto_was", "title", "note", "updated"):
         value = raw.get(key)
         if isinstance(value, str) and value.strip():
             out[key] = value.strip()
     return out
 
 
+def logo_override_content(entry: dict) -> dict:
+    """写进 logo-overrides/<bgm_id>.<语言>.json 的内容: 固定字段顺序, 空字段不写."""
+    return {k: entry[k] for k in LOGO_FILE_KEYS
+            if (k == "none" and entry["none"]) or (k != "none" and entry.get(k) not in (None, ""))}
+
+
 def load_logo_overrides(directory):
-    """返回 ({id: 规整后的 logo 修正}, [(文件名, 错误)]), 同 load_overrides."""
+    """返回 ({id: {语言: 规整后的修正}}, [(文件名, 错误)]), 同 load_overrides."""
     overrides, errors = {}, []
     if not os.path.isdir(directory):
         return overrides, errors
     for name in sorted(os.listdir(directory)):
         if not name.endswith(".json"):
             continue
-        stem = name[:-5]
-        if not stem.isdigit():
-            errors.append((name, "文件名应为 <bgm_id>.json"))
+        m = LOGO_FILE_RE.match(name)
+        if not m:
+            errors.append((name, "文件名应为 <bgm_id>.<语言>.json (如 135275.ja.json)"))
             continue
         try:
             with open(os.path.join(directory, name), encoding="utf-8") as f:
-                overrides[int(stem)] = normalize_logo_override(json.load(f))
+                overrides.setdefault(int(m.group(1)), {})[m.group(2)] = normalize_logo_override(json.load(f))
         except (ValueError, json.JSONDecodeError) as e:
             errors.append((name, str(e)))
     return overrides, errors
@@ -277,13 +273,14 @@ def save_logos(path, logos):
             f.write(f"{ref}\t{r['checked']}\t{format_logos(r.get('original'), r.get('logos') or {})}\n")
 
 
-def logo_cell(ref, override, auto) -> str:
-    """对应表 logo 列: 自动挑的 (按 ref) 上面叠人工修正 (针对的条目与 ref 一致才算); 都没有 (还没查) 为空."""
+def logo_cell(ref, overrides, auto) -> str:
+    """对应表 logo 列: 自动挑的 (按 ref) 上面叠各语言的人工修正 ([overrides]: {语言: 修正}, 针对的条目与 ref 一致才算); 都没有 (还没查) 为空."""
     if not ref:
         return ""
     entries = dict((auto or {}).get("logos") or {})
-    if override and override["tmdb"] == ref:
-        entries.update(override["logos"])
+    for lang, entry in (overrides or {}).items():
+        if entry["tmdb"] == ref:
+            entries[lang] = {"none": True} if entry["none"] else {"logo": entry["logo"], "aspect": entry["aspect"]}
     if not entries:
         return ""
     return format_logos((auto or {}).get("original"), entries)

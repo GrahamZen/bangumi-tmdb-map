@@ -3,7 +3,7 @@
 - 条目记录 (docs/data/s/<id // 2000>.json): 每个查过或修正过的条目一条, 含 Bangumi 概要、自动匹配结果
   (连同匹配时收到的 TMDB 信息与备选) 与人工修正. 这是核对页面的数据, 也是其他几张表的来源.
 - 人工修正 (overrides/<bgm_id>.json) 优先于自动结果; 有修正的条目不再自动匹配, 结果也不会被覆盖.
-- 标题 logo (对应表末列): logo 修正 (logo-overrides/<bgm_id>.json) 优先, 其次按背景图条目自动挑的 (state/logos.tsv, 由 logos.py 查).
+- 标题 logo (对应表末列): logo 修正 (logo-overrides/<bgm_id>.<语言>.json) 优先, 其次按背景图条目自动挑的 (state/logos.tsv, 由 logos.py 查).
 - 对应表 (map/bgm-tmdb.tsv): 给客户端用, 收有对应的条目与人工确认没有对应的条目, 末列注明来源 (auto / manual).
 - 页面索引 (docs/data/index.tsv): 全部动画条目一行, 列表与搜索用.
 - 状态表 (state/state.tsv): 决定下一轮什么时候再查 (见 prepare.py).
@@ -225,9 +225,9 @@ def main():
             if status != "hit" and source != "manual":
                 continue
             logo = logo_cell(backdrop, logo_overrides.get(sid), auto_logos.get(backdrop) if backdrop else None)
-            override = logo_overrides.get(sid)
-            if override and override["tmdb"] != backdrop:
-                stale_logos.append((sid, override["tmdb"], backdrop))
+            for lang, override in (logo_overrides.get(sid) or {}).items():
+                if override["tmdb"] != backdrop:
+                    stale_logos.append((f"{sid}.{lang}", override["tmdb"], backdrop))
             f.write("\t".join([str(sid), backdrop or "", path or "", stills or "", source, episodes or "", logo]) + "\n")
             map_rows += 1
 
@@ -271,7 +271,7 @@ def main():
         "checked": counts["hit"] + counts["miss"],
         "entries": map_rows,
         "manual": len(overrides),
-        "logo_manual": len(logo_overrides),
+        "logo_manual": sum(len(v) for v in logo_overrides.values()),
         "hit": counts["hit"], "miss": counts["miss"], "err": counts["err"],
         "last_run": old_meta.get("last_run", stats) if args.apply_only else stats,
     }
@@ -298,8 +298,8 @@ def main():
             print(f"  {name if '/' in name or os.sep in name else 'overrides/' + name}: {message}")
         if args.apply_only:
             sys.exit(1)
-    for sid, target, backdrop in stale_logos:
-        print(f"::warning::logo-overrides/{sid}.json 针对的是 {target}, 而这个条目现在的背景图条目是 {backdrop or '(无)'}, 不生效")
+    for name, target, backdrop in stale_logos:
+        print(f"::warning::logo-overrides/{name}.json 针对的是 {target}, 而这个条目现在的背景图条目是 {backdrop or '(无)'}, 不生效")
 
 
 if __name__ == "__main__":
