@@ -3,6 +3,7 @@
 - 条目记录 (docs/data/s/<id // 2000>.json): 每个查过或修正过的条目一条, 含 Bangumi 概要、自动匹配结果
   (连同匹配时收到的 TMDB 信息与备选) 与人工修正. 这是核对页面的数据, 也是其他几张表的来源.
 - 人工修正 (overrides/<bgm_id>.json) 优先于自动结果; 有修正的条目不再自动匹配, 结果也不会被覆盖.
+- 标题 logo (对应表末列): logo 修正 (logo-overrides/<bgm_id>.json) 优先, 其次按背景图条目自动挑的 (state/logos.tsv, 由 logos.py 查).
 - 对应表 (map/bgm-tmdb.tsv): 给客户端用, 收有对应的条目与人工确认没有对应的条目, 末列注明来源 (auto / manual).
 - 页面索引 (docs/data/index.tsv): 全部动画条目一行, 列表与搜索用.
 - 状态表 (state/state.tsv): 决定下一轮什么时候再查 (见 prepare.py).
@@ -17,12 +18,13 @@ import json
 import os
 import sys
 
-from common import load_overrides, load_state, save_state
+from common import load_logo_overrides, load_logos, load_overrides, load_state, logo_cell, save_state
 
 SHARD = 2000
 MAP_HEADER = ("# bangumi-tmdb-map v1. 列: bgm_id, backdrop (TMDB 条目), backdrop_path (图片路径), "
               "stills (分集数据出处: tv/<id> 整部 / tv/<id>/season/0 只取 S0 / movie/<id>), "
-              "source (auto 自动 / manual 人工), episodes (每一集对应 TMDB 第几季第几集). 说明见 README.")
+              "source (auto 自动 / manual 人工), episodes (每一集对应 TMDB 第几季第几集), "
+              "logos (标题 logo: o=原语言 与 语言=/xxx.png:宽高比, - = 这种语言没有 logo; 空 = 还没查). 说明见 README.")
 INDEX_COLUMNS = ["id", "name", "cn", "date", "platform", "pop", "status", "source", "ref", "title", "checked"]
 
 
@@ -101,6 +103,8 @@ def main():
     ap.add_argument("--meta", required=True)
     ap.add_argument("--site", default="docs", help="核对页面目录")
     ap.add_argument("--overrides", default="overrides")
+    ap.add_argument("--logo-overrides", default="logo-overrides")
+    ap.add_argument("--logos", default="state/logos.tsv", help="logos.py 按 TMDB 条目自动挑的标题 logo")
     ap.add_argument("--apply-only", action="store_true")
     ap.add_argument("--dump-name", default="")
     ap.add_argument("--matcher", default="", help="izuko-tv 的提交, 记进 meta")
@@ -113,6 +117,10 @@ def main():
     records = load_records(args.site)
     index = load_index(args.site)
     overrides, override_errors = load_overrides(args.overrides)
+    logo_overrides, logo_errors = load_logo_overrides(args.logo_overrides)
+    override_errors += [(os.path.join(os.path.basename(args.logo_overrides), name), message)
+                        for name, message in logo_errors]
+    auto_logos = load_logos(args.logos)
     stats = {"processed": 0, "hit": 0, "miss": 0, "err": 0, "tmdb_requests": 0}
     errors = []
 
@@ -208,6 +216,7 @@ def main():
     # 对应表
     os.makedirs(os.path.dirname(args.map) or ".", exist_ok=True)
     map_rows = 0
+    stale_logos = []  # logo 修正针对的条目与现在的背景图条目对不上 (条目被改过): 不生效, 报出来
     with open(args.map, "w", encoding="utf-8", newline="\n") as f:
         f.write(MAP_HEADER + "\n")
         for sid in sorted(records):
@@ -215,7 +224,11 @@ def main():
             # 人工确认没有对应的也进表 (客户端据此不再去搜); 自动没匹配到的不进 (以后 TMDB 可能补上, 客户端自己搜)
             if status != "hit" and source != "manual":
                 continue
-            f.write("\t".join([str(sid), backdrop or "", path or "", stills or "", source, episodes or ""]) + "\n")
+            logo = logo_cell(backdrop, logo_overrides.get(sid), auto_logos.get(backdrop) if backdrop else None)
+            override = logo_overrides.get(sid)
+            if override and override["tmdb"] != backdrop:
+                stale_logos.append((sid, override["tmdb"], backdrop))
+            f.write("\t".join([str(sid), backdrop or "", path or "", stills or "", source, episodes or "", logo]) + "\n")
             map_rows += 1
 
     # 页面索引: 全部动画条目
@@ -258,6 +271,7 @@ def main():
         "checked": counts["hit"] + counts["miss"],
         "entries": map_rows,
         "manual": len(overrides),
+        "logo_manual": len(logo_overrides),
         "hit": counts["hit"], "miss": counts["miss"], "err": counts["err"],
         "last_run": old_meta.get("last_run", stats) if args.apply_only else stats,
     }
@@ -281,9 +295,11 @@ def main():
         # 每日那一轮只报告, 不能因为一个坏文件丢掉整轮的匹配结果; 推送修正时那一轮失败, 让人看到
         print(("::error::" if args.apply_only else "::warning::") + "人工修正有不合法的文件, 未生效:")
         for name, message in override_errors:
-            print(f"  overrides/{name}: {message}")
+            print(f"  {name if '/' in name or os.sep in name else 'overrides/' + name}: {message}")
         if args.apply_only:
             sys.exit(1)
+    for sid, target, backdrop in stale_logos:
+        print(f"::warning::logo-overrides/{sid}.json 针对的是 {target}, 而这个条目现在的背景图条目是 {backdrop or '(无)'}, 不生效")
 
 
 if __name__ == "__main__":

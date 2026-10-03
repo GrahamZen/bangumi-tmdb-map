@@ -1,0 +1,19 @@
+# app 里「标题 logo 不对」的报告 → 本仓库的标题 logo 修正请求 issue. 说明见 worker/README.md.
+name = "bangumi-tmdb-map-report"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[vars]
+REPO = "GrahamZen/bangumi-tmdb-map"
+
+# 每个 IP 每分钟最多 3 次 (Workers 的限频绑定, period 只能是 10 或 60 秒)
+[[ratelimits]]
+name = "REPORT_LIMITER"
+namespace_id = "1001"
+simple = { limit = 3, period = 60 }
+
+# 每个 IP 每天的上限 (可省: 建好 KV 后把 id 填上, 取消注释)
+# [[kv_namespaces]]
+# binding = "REPORTS"
+# id = "<wrangler kv namespace create REPORTS 给的 id>"

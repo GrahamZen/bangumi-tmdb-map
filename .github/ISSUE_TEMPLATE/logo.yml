@@ -1,0 +1,45 @@
+name: 修正标题 logo
+description: 某个条目显示的标题 logo 不对 (别的季的、不是这部的标题、某种语言该用文字)。在 Izuko TV 详情页里报告会自动提交这张表单。
+title: "标题 logo "
+labels: ["修正请求"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        TMDB 不标 logo 属于哪一季，多季的作品自动挑的可能是别的季的；这里按条目、按语言指定用哪一张。
+        提交后会自动检查格式、向 TMDB 核实这张图属于这个条目，生成一个修正 PR；维护者审核合并后几分钟内写进对应表，app 一般一天内用上。
+  - type: input
+    id: bgm_id
+    attributes:
+      label: Bangumi id
+      description: 条目页网址里的数字，例如 bgm.tv/subject/135275 就填 135275
+      placeholder: "135275"
+    validations:
+      required: true
+  - type: input
+    id: tmdb
+    attributes:
+      label: TMDB 条目
+      description: 可空，默认是对应表里这个条目现在的 TMDB 条目 (logo 只能从它里面挑)。填了就要和它一致。
+      placeholder: tv/65844
+  - type: input
+    id: language
+    attributes:
+      label: 语言
+      description: 这张 logo 用在哪种语言下：ja 日文、zh 中文、en 英文 (其他语言填两个字母的语言码)
+      placeholder: ja
+    validations:
+      required: true
+  - type: input
+    id: logo
+    attributes:
+      label: 标题 logo
+      description: 填图片路径 /xxxx.png，或粘贴 TMDB 图片网址；这种语言没有合适的 logo、该显示文字就填「无」；撤销这种语言的人工修正就填「撤销」。
+      placeholder: /8sW8IRMpZNvPHtTZIBxbCjyYEfX.png
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: 说明
+      description: 可空。例如自动挑的是第三季的，这一条是第一季。

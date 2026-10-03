@@ -1,0 +1,51 @@
+# 每天查一轮标题 logo: 对应表里的 TMDB 条目到期的 (没查过 / 有 logo 的 60 天 / 没有的 14 天) 重新挑日、中、英与原语言的 logo,
+# 存进 state/logos.tsv, 再按它重写对应表的 logo 列 (logo 修正一并应用). 逻辑在 scripts/logos.py 与 ci.sh 的 logos 步骤.
+name: logos
+
+on:
+  schedule:
+    # UTC 20:40, 赶在每日匹配 (22:30) 之前跑完; 两边同一个 concurrency group, 撞上了就排队
+    - cron: '40 20 * * *'
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: '最多查多少分钟 (剩下的下一轮接着查)'
+        default: '40'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: update
+  cancel-in-progress: false
+
+jobs:
+  logos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Check logos
+        env:
+          TMDB_API_TOKEN: ${{ secrets.TMDB_API_TOKEN }}
+          LOGO_MINUTES: ${{ inputs.minutes || '40' }}
+        run: scripts/ci.sh logos
+
+      - name: Commit
+        run: |
+          set -euo pipefail
+          git add map state docs
+          if git diff --cached --quiet; then echo "没有变化"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "logos $(date -u +%F): $(cat "$RUNNER_TEMP/work/summary.txt")"
+          git pull -q --rebase origin main
+          git push
+          for f in map/bgm-tmdb.tsv map/meta.json; do
+            curl -fsS "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@main/$f" > /dev/null || true
+          done

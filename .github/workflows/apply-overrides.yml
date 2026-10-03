@@ -1,11 +1,11 @@
-# 推送人工修正 (overrides/) 后立即应用到对应表与核对页面, 不跑匹配.
+# 推送人工修正 (overrides/、标题 logo 的 logo-overrides/) 后立即应用到对应表与核对页面, 不跑匹配.
 # 修正文件不合法时这一轮失败 (GitHub 会发通知), 什么也不提交.
 name: apply-overrides
 
 on:
   push:
     branches: [main]
-    paths: ['overrides/**']
+    paths: ['overrides/**', 'logo-overrides/**']
   workflow_dispatch:
 
 permissions:

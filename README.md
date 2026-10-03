@@ -21,6 +21,7 @@ https://raw.githubusercontent.com/GrahamZen/bangumi-tmdb-map/main/map/bgm-tmdb.t
 | `stills` | 分集数据 (剧照、时长、分集简介) 的出处，是 TMDB API 路径：`tv/<id>` 整部剧，按同样的规则全量索引；`tv/<id>/season/0` 只取 S0 (衍生作挂在本篇特别篇下的情形)；`movie/<id>` 单集电影；`collection/<id>` 合集 (客户端照旧自己搜) | `tv/65942` |
 | `source` | `auto` 自动匹配，`manual` 人工修正 | `auto` |
 | `episodes` | 每一集对应 TMDB 第几季第几集 (见下)；空表示没算出来，照 `stills` 全量索引、自己对集 | `S3E1` |
+| `logos` | 标题 logo，按语言 (见下)；空表示还没查 | `o=ja ja=/a.png:2.383 zh=- en=/b.png:4.159` |
 
 `episodes` 是空格分隔的几段，按离线用客户端同一套规则对出来的结果写：
 
@@ -28,6 +29,10 @@ https://raw.githubusercontent.com/GrahamZen/bangumi-tmdb-map/main/map/bgm-tmdb.t
 - `1-12:S3E1` / `7:S3E8`：本篇集号 1–12 对 S3E1–E12；单集只写一个集号；
 - `SP1-2:S0E5` / `SP12.1:S0E7`：其他类型带前缀 (SP / OP / ED / PV / MAD，没有类型的写 O)；Bangumi 夹在两集之间的特别篇集号 (如 12.1) 照原文写；
 - 没写到的集 = 没对上。有了它，客户端只需取这几季的数据，不用逐季全拉、再按日期和集名对。
+
+`logos` 是空格分隔的几段：`o=ja` 是 `backdrop` 那个 TMDB 条目的原语言；`ja=/a.png:2.383` 是这种语言用的 logo (路径拼在 `https://image.tmdb.org/t/p/w500` 之类的尺寸前缀后面) 与它的宽高比 (宽 / 高)，`-` 是这种语言没有合适的 logo、显示文字标题。每个条目都有日、中、英与原语言这几种；某种语言整段没写就是还没查。
+
+TMDB 的 logo 只挂在整部剧上、不标属于哪一季，多季的剧自动挑的 (评分最高的那张) 可能是别的季的；这类错由人工修正纠正 (见下)。
 
 人工确认 TMDB 上没有对应的条目也在表里，除 `source` 外各列为空，调用方不必再搜。表里没有的条目，要么自动匹配没找到，要么还没查过，调用方照常自己搜。
 
@@ -68,6 +73,30 @@ https://raw.githubusercontent.com/GrahamZen/bangumi-tmdb-map/main/map/bgm-tmdb.t
 - `stills` 只能给一个出处，省略就跟着 `backdrop` 那个条目；
 - 除 `backdrop` / `stills` / `none` 至少有一项外，其他字段都可省；`auto_was` 是修正时的自动结果，留着方便回看。
 
+### 标题 logo 的修正
+
+标题 logo 按条目、按语言修正，存成 `logo-overrides/<bgm_id>.json`：
+
+```json
+{
+  "tmdb": "tv/65844",
+  "logos": {
+    "ja": {"logo": "/8sW8IRMpZNvPHtTZIBxbCjyYEfX.png", "aspect": 2.112, "auto_was": "/pJEQ2jW2BKsHOLqWqqLO83muRm2.png:2.383"},
+    "zh": {"none": true}
+  },
+  "title": "为美好的世界献上祝福！",
+  "note": "自动挑的是第三季的 (修正请求 #12)",
+  "updated": "2026-10-03"
+}
+```
+
+- `tmdb` 是这条修正针对的 TMDB 条目，要和对应表里这个条目现在的 `backdrop` 一致才生效 (条目被改过，旧的 logo 修正就作废)；
+- `logos` 里每种语言要么给 `logo` 与 `aspect`，要么 `none: true` (不用 logo，显示文字)；没写的语言照自动挑的。
+
+修正请求用 `.github/ISSUE_TEMPLATE/logo.yml` 这张表单 (Izuko TV 详情页里的「标题 logo 不对」报告会自动提交它)，`correction` 工作流向 TMDB 核实这张图属于这个条目、取宽高比，生成只改 `logo-overrides/<bgm_id>.json` 的 PR，说明里列出现在与改后的 logo、这个条目这种语言的全部 logo 和条目对应 TMDB 的第几季。合并后同样由 `apply-overrides` 应用。
+
+自动挑的 logo 由 `logos` 工作流每天查一轮 (`scripts/logos.py`，按 TMDB 条目存在 `state/logos.tsv`)：没查过的条目先查，查到过 logo 的 60 天、一种也没有的 14 天后再查。
+
 推送修正后，`apply-overrides` 工作流几分钟内把它并进对应表与页面；客户端经 jsDelivr 取表，它的部分节点不认主动刷新、最长缓存 12 小时，加上客户端每天查一次表，一般一天内用上。**有修正的条目不再自动匹配，自动结果也不会覆盖它**；删掉修正文件（页面上的「撤销人工修正」）就回到自动匹配，下一轮重新查。修正文件格式不对时那一轮会失败并通知，不会提交任何东西。
 
 ## 怎么来的
@@ -87,14 +116,16 @@ https://raw.githubusercontent.com/GrahamZen/bangumi-tmdb-map/main/map/bgm-tmdb.t
 map/bgm-tmdb.tsv       对应表
 map/meta.json          生成信息
 overrides/             人工修正, 每个条目一个 <bgm_id>.json
+logo-overrides/        标题 logo 的人工修正, 每个条目一个 <bgm_id>.json
 docs/                  核对页面 (GitHub Pages) 与它的数据: data/index.tsv 全部条目一览, data/s/*.json 条目详情
 state/state.tsv        每个条目上次检查的日期、结果与输入指纹 (决定下次什么时候查)
+state/logos.tsv        每个 TMDB 条目自动挑的标题 logo 与查的日期
 scripts/               ci.sh 每日更新的全部步骤 (工作流与本地共用), prepare.py 挑任务, merge.py 合并结果与人工修正,
-                       correction.py / correction_pr.sh 处理修正请求
+                       correction.py / logo_correction.py / correction_pr.sh 处理修正请求, logos.py 挑标题 logo
 runner/                匹配器入口; 工作流把它拷进 izuko-tv 的测试源码里运行
 matcher.ref            用 izuko-tv 的哪个分支/标签
-.github/workflows/     update 每日更新, apply-overrides 推送修正后立即应用, correction 修正请求 → PR
-.github/ISSUE_TEMPLATE/ 修正请求的表单
+.github/workflows/     update 每日更新, logos 每日查标题 logo, apply-overrides 推送修正后立即应用, correction 修正请求 → PR
+.github/ISSUE_TEMPLATE/ 修正请求的表单 (条目 correction.yml, 标题 logo logo.yml)
 ```
 
 ## 本地验证

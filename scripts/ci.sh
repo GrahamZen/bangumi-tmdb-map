@@ -9,7 +9,8 @@
 #   matcher   取 izuko-tv (matcher.ref), 拷入匹配器入口, 写 local.properties
 #   match     构建并运行匹配器, 结果逐条写进 $WORK/results.jsonl
 #   merge     合并结果与人工修正 (scripts/merge.py); 没有结果时跳过
-#   apply     只应用人工修正 (推送 overrides/ 后的那一轮用); 修正文件不合法时失败
+#   apply     只应用人工修正 (推送 overrides/ 或 logo-overrides/ 后的那一轮用); 修正文件不合法时失败
+#   logos     按 TMDB 条目查标题 logo (scripts/logos.py), 再按新结果重写对应表; 要 TMDB_API_TOKEN
 #   local     本地验证: download plan matcher match merge 依次跑, 不提交
 #
 # 环境变量:
@@ -123,19 +124,30 @@ step_merge() {
   python3 "$ROOT/scripts/merge.py" --work "$WORK" --results "$WORK/results.jsonl" \
     --state "$ROOT/state/state.tsv" --map "$ROOT/map/bgm-tmdb.tsv" --meta "$ROOT/map/meta.json" \
     --site "$ROOT/docs" --overrides "$ROOT/overrides" \
+    --logo-overrides "$ROOT/logo-overrides" --logos "$ROOT/state/logos.tsv" \
     --dump-name "$(cat "$WORK/dump.name")" --matcher "$(cat "$WORK/matcher.sha" 2>/dev/null || true)" \
     --summary-out "$WORK/summary.txt"
 }
 
 step_apply() {
   python3 "$ROOT/scripts/merge.py" --apply-only --state "$ROOT/state/state.tsv" --map "$ROOT/map/bgm-tmdb.tsv" \
-    --meta "$ROOT/map/meta.json" --site "$ROOT/docs" --overrides "$ROOT/overrides" --summary-out "$WORK/summary.txt"
+    --meta "$ROOT/map/meta.json" --site "$ROOT/docs" --overrides "$ROOT/overrides" \
+    --logo-overrides "$ROOT/logo-overrides" --logos "$ROOT/state/logos.tsv" --summary-out "$WORK/summary.txt"
 }
 
-[ $# -gt 0 ] || { sed -n '2,23p' "$0"; exit 2; }
+step_logos() {
+  : "${TMDB_API_TOKEN:?缺少 TMDB_API_TOKEN}"
+  python3 "$ROOT/scripts/logos.py" --map "$ROOT/map/bgm-tmdb.tsv" --logos "$ROOT/state/logos.tsv" \
+    --minutes "${LOGO_MINUTES:-40}" --summary-out "$WORK/logos-summary.txt"
+  # 按新查到的重写对应表的 logo 列 (修正一并应用, 与 apply 同一套)
+  step_apply
+  cp "$WORK/logos-summary.txt" "$WORK/summary.txt"
+}
+
+[ $# -gt 0 ] || { sed -n '2,24p' "$0"; exit 2; }
 for s in "$@"; do
   case "$s" in
-    jdk | download | plan | matcher | match | merge | apply) echo "== $s"; "step_$s" ;;
+    jdk | download | plan | matcher | match | merge | apply | logos) echo "== $s"; "step_$s" ;;
     local) for t in jdk download plan matcher match merge; do echo "== $t"; "step_$t"; done ;;
     *) echo "未知步骤: $s" >&2; exit 2 ;;
   esac

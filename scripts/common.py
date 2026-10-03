@@ -137,3 +137,153 @@ def load_overrides(directory):
         except (ValueError, json.JSONDecodeError) as e:
             errors.append((name, str(e)))
     return overrides, errors
+
+
+# ---- 标题 logo ----
+# 对应表末列与 state/logos.tsv 里的写法: 空格分隔的几段, o=<原语言> 与 <语言>=<logo>; logo 写 /xxx.png:宽高比, 没有这种语言的 logo 写 -.
+# 例: o=ja ja=/a.png:2.38 zh=/b.png:3.1 en=-
+
+LOGO_LANGS = ("ja", "zh", "en")  # 每个条目都挑的语言, 另加条目的原语言
+LOGO_LANG_RE = re.compile(r"^[a-z]{2}$")
+LOGO_PATH_RE = re.compile(r"^/[A-Za-z0-9_\-]+\.png$")
+LOGOS_HEADER = "# ref\tchecked\tlogos (o=<原语言> <语言>=/xxx.png:宽高比 或 -)"
+
+
+def format_logo_entry(entry) -> str:
+    """一种语言的 logo: /xxx.png:宽高比; 没有为 -."""
+    if not entry or entry.get("none") or not entry.get("logo"):
+        return "-"
+    return f"{entry['logo']}:{entry['aspect']:.3f}".rstrip("0").rstrip(".")
+
+
+def parse_logo_entry(text) -> dict:
+    """format_logo_entry 的反向; 认不出抛 ValueError."""
+    if text == "-":
+        return {"none": True}
+    path, _, aspect = text.rpartition(":")
+    if not LOGO_PATH_RE.match(path):
+        raise ValueError(f"logo 格式不对: {text!r}")
+    return {"logo": path, "aspect": float(aspect)}
+
+
+def format_logos(original, entries) -> str:
+    """一个条目的各语言 logo → 一格; 常用的三种在前, 其余按语言码."""
+    parts = [f"o={original}"] if original else []
+    for lang in sorted(entries, key=lambda x: (LOGO_LANGS.index(x) if x in LOGO_LANGS else len(LOGO_LANGS), x)):
+        parts.append(f"{lang}={format_logo_entry(entries[lang])}")
+    return " ".join(parts)
+
+
+def parse_logos(text):
+    """format_logos 的反向: (原语言, {语言: logo}); 认不出的段抛 ValueError."""
+    original, entries = "", {}
+    for part in (text or "").split():
+        key, _, value = part.partition("=")
+        if key == "o":
+            original = value
+        elif LOGO_LANG_RE.match(key):
+            entries[key] = parse_logo_entry(value)
+        else:
+            raise ValueError(f"认不出: {part!r}")
+    return original, entries
+
+
+def normalize_logo_override(raw: dict) -> dict:
+    """校验并规整一条标题 logo 修正 (logo-overrides/<bgm_id>.json); 不合法抛 ValueError.
+
+    字段: tmdb (这条修正针对的 TMDB 条目; 与对应表里这个条目现在的背景图条目一致才生效, 条目改了修正就作废),
+    logos ({语言: {logo: /xxx.png, aspect: 宽 / 高} 或 {none: true} = 这种语言不用 logo、客户端显示文字标题}; 每种语言还可带 auto_was),
+    title, note, updated 可省.
+    """
+    if not isinstance(raw, dict):
+        raise ValueError("不是 JSON 对象")
+    tmdb = (raw.get("tmdb") or "").strip()
+    if not REF_RE.match(tmdb):
+        raise ValueError(f"tmdb 格式不对: {tmdb!r} (应为 tv/123、movie/123 或 collection/123)")
+    logos = raw.get("logos")
+    if not isinstance(logos, dict) or not logos:
+        raise ValueError("logos 应为 {语言: {logo, aspect} 或 {none: true}}, 至少一种语言")
+    out_logos = {}
+    for lang, entry in logos.items():
+        if not LOGO_LANG_RE.match(str(lang)):
+            raise ValueError(f"语言应为两个小写字母 (ja / zh / en ...): {lang!r}")
+        if not isinstance(entry, dict):
+            raise ValueError(f"logos.{lang} 不是 JSON 对象")
+        if entry.get("none"):
+            if entry.get("logo"):
+                raise ValueError(f"logos.{lang}: none 为 true 时不能再填 logo")
+            norm = {"none": True}
+        else:
+            logo = (entry.get("logo") or "").strip()
+            aspect = entry.get("aspect")
+            if not LOGO_PATH_RE.match(logo):
+                raise ValueError(f"logos.{lang}.logo 格式不对: {logo!r} (应为 /xxxx.png; 不用 logo 就写 none: true)")
+            if not isinstance(aspect, (int, float)) or isinstance(aspect, bool) or not 0.05 <= aspect <= 50:
+                raise ValueError(f"logos.{lang}.aspect 应为 logo 的宽高比 (宽 / 高): {aspect!r}")
+            norm = {"logo": logo, "aspect": round(float(aspect), 3)}
+        was = entry.get("auto_was")
+        if isinstance(was, str) and was.strip():
+            norm["auto_was"] = was.strip()
+        out_logos[str(lang)] = norm
+    out = {"tmdb": tmdb, "logos": dict(sorted(out_logos.items()))}
+    for key in ("title", "note", "updated"):
+        value = raw.get(key)
+        if isinstance(value, str) and value.strip():
+            out[key] = value.strip()
+    return out
+
+
+def load_logo_overrides(directory):
+    """返回 ({id: 规整后的 logo 修正}, [(文件名, 错误)]), 同 load_overrides."""
+    overrides, errors = {}, []
+    if not os.path.isdir(directory):
+        return overrides, errors
+    for name in sorted(os.listdir(directory)):
+        if not name.endswith(".json"):
+            continue
+        stem = name[:-5]
+        if not stem.isdigit():
+            errors.append((name, "文件名应为 <bgm_id>.json"))
+            continue
+        try:
+            with open(os.path.join(directory, name), encoding="utf-8") as f:
+                overrides[int(stem)] = normalize_logo_override(json.load(f))
+        except (ValueError, json.JSONDecodeError) as e:
+            errors.append((name, str(e)))
+    return overrides, errors
+
+
+def load_logos(path):
+    """按 TMDB 条目自动挑的标题 logo (logos.py 写): {ref: {checked, original, logos: {语言: logo}}}."""
+    logos = {}
+    if not os.path.isfile(path):
+        return logos
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            if not line.strip() or line.startswith("#"):
+                continue
+            ref, checked, text = (line.rstrip("\n").split("\t") + [""])[:3]
+            original, entries = parse_logos(text)
+            logos[ref] = {"checked": checked, "original": original, "logos": entries}
+    return logos
+
+
+def save_logos(path, logos):
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(LOGOS_HEADER + "\n")
+        for ref in sorted(logos):
+            r = logos[ref]
+            f.write(f"{ref}\t{r['checked']}\t{format_logos(r.get('original'), r.get('logos') or {})}\n")
+
+
+def logo_cell(ref, override, auto) -> str:
+    """对应表 logo 列: 自动挑的 (按 ref) 上面叠人工修正 (针对的条目与 ref 一致才算); 都没有 (还没查) 为空."""
+    if not ref:
+        return ""
+    entries = dict((auto or {}).get("logos") or {})
+    if override and override["tmdb"] == ref:
+        entries.update(override["logos"])
+    if not entries:
+        return ""
+    return format_logos((auto or {}).get("original"), entries)

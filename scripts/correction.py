@@ -62,7 +62,8 @@ def parse_form(body):
     for k, lines in sections.items():
         value = "\n".join(lines).strip()
         fields[k] = "" if value == "_No response_" else value
-    if "bgm_id" not in fields or "tmdb" not in fields:
+    # 标题 logo 修正表单 (logo_correction.py) 也有这两项, 看有没有它独有的那一项
+    if "bgm_id" not in fields or "tmdb" not in fields or re.search(r"^###\s+标题 logo\s*$", body or "", re.M):
         return None
     return fields
 
