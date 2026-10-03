@@ -36,8 +36,39 @@ function from(app) {
   return app ? `来自 Izuko TV ${app} 的报告` : "来自 Izuko TV 的报告";
 }
 
-function normalized(issue) {
-  return (issue.body || "").replace(/\r\n/g, "\n");
+// 表单值的写法 (同 scripts/correction.py 与 logo_correction.py): 网页上手填的 issue 可能写「无」「日文」或贴网址
+const NONE_WORDS = new Set(["无", "没有", "无对应", "没有对应", "none"]);
+const LANG_WORDS = { 日文: "ja", 日语: "ja", 中文: "zh", 汉语: "zh", 英文: "en", 英语: "en" };
+
+/** issue 正文 (表单渲染出的) 里「### [heading]」那一项的值; 没填 (_No response_) 或没有这一项为空串. */
+function section(issue, heading) {
+  const lines = (issue.body || "").replace(/\r\n/g, "\n").split("\n");
+  const start = lines.findIndex((l) => l.trim() === `### ${heading}`);
+  if (start < 0) return "";
+  const end = lines.findIndex((l, i) => i > start && /^###\s/.test(l));
+  const value = lines.slice(start + 1, end < 0 ? undefined : end).join("\n").trim();
+  return value === "_No response_" ? "" : value;
+}
+
+function isNone(value) {
+  return NONE_WORDS.has(value.trim().toLowerCase());
+}
+
+/** logo 值 → 文件名 (不带扩展名, SVG 与同名 PNG 算同一张); 认不出为 null. */
+function logoName(value) {
+  const m = /\/([A-Za-z0-9_-]+)\.(?:png|svg)(?:[?#]\S*)?$/.exec(value.trim());
+  return m ? m[1] : null;
+}
+
+/** 条目值 (tv/123 或 TMDB 网址) → tv/123; 认不出为 null. */
+function refOf(value) {
+  const m = /\b(tv|movie|collection)\/(\d+)/.exec(value);
+  return m ? `${m[1]}/${m[2]}` : null;
+}
+
+function langOf(value) {
+  const v = value.trim();
+  return LANG_WORDS[v] || v.toLowerCase();
 }
 
 /**
@@ -50,14 +81,17 @@ const KINDS = {
     if (typeof b.language !== "string" || !LANG_RE.test(b.language)) return null;
     const logo = b.logo ?? null;
     if (logo !== null && (typeof logo !== "string" || !LOGO_RE.test(logo))) return null;
-    const lang = `### 语言\n\n${b.language}\n`;
-    const logoText = `### 标题 logo\n\n${logo ?? "无"}\n`;
     const titleRe = new RegExp(`^标题 logo ${b.bgm_id}( |$)`);
+    const name = logo && logoName(logo);
     return {
       title: `标题 logo ${b.bgm_id}`,
-      body: `### Bangumi id\n\n${b.bgm_id}\n\n### TMDB 条目\n\n${b.tmdb}\n\n${lang}\n${logoText}\n### 说明\n\n${from(b.app)}。\n`,
-      samePlace: (i) => titleRe.test(i.title) && normalized(i).includes(lang),
-      sameContent: (i) => normalized(i).includes(logoText),
+      body: `### Bangumi id\n\n${b.bgm_id}\n\n### TMDB 条目\n\n${b.tmdb}\n\n### 语言\n\n${b.language}\n\n` +
+        `### 标题 logo\n\n${logo ?? "无"}\n\n### 说明\n\n${from(b.app)}。\n`,
+      samePlace: (i) => titleRe.test(i.title) && langOf(section(i, "语言")) === b.language,
+      sameContent: (i) => {
+        const value = section(i, "标题 logo");
+        return name ? logoName(value) === name : isNone(value);
+      },
     };
   },
   "/entry-report": (b) => {
@@ -65,15 +99,17 @@ const KINDS = {
     if (tmdb !== null && (typeof tmdb !== "string" || !REF_RE.test(tmdb))) return null;
     const backdrop = b.backdrop ?? null;
     if (backdrop !== null && (tmdb === null || typeof backdrop !== "string" || !BACKDROP_RE.test(backdrop))) return null;
-    const tmdbText = `### TMDB 条目\n\n${tmdb ?? "无"}\n`;
     // correction_pr.sh 改的标题: 修正 / 确认无对应 / 撤销人工修正
     const titleRe = new RegExp(`^(修正|确认无对应|撤销人工修正) ${b.bgm_id}( |$)`);
     return {
       title: `修正 ${b.bgm_id}`,
-      body: `### Bangumi id\n\n${b.bgm_id}\n\n${tmdbText}\n### 背景图\n\n${backdrop ?? "_No response_"}\n\n` +
+      body: `### Bangumi id\n\n${b.bgm_id}\n\n### TMDB 条目\n\n${tmdb ?? "无"}\n\n### 背景图\n\n${backdrop ?? "_No response_"}\n\n` +
         `### 分集数据\n\n_No response_\n\n### 说明\n\n${from(b.app)}。\n`,
       samePlace: (i) => titleRe.test(i.title),
-      sameContent: (i) => normalized(i).includes(tmdbText),
+      sameContent: (i) => {
+        const value = section(i, "TMDB 条目");
+        return tmdb ? refOf(value) === tmdb : isNone(value);
+      },
     };
   },
 };
