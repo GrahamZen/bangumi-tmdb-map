@@ -137,12 +137,16 @@ const LANGS = { ja: "日文", zh: "中文", en: "英文", ko: "韩文" };
 const TOKEN_URL = "https://github.com/settings/personal-access-tokens/new?name=bangumi-tmdb-map+review" +
   "&description=" + encodeURIComponent("修正请求审核页 (docs/review.html)") +
   "&target_name=GrahamZen&expires_in=90&contents=write&pull_requests=write&issues=write";
+const TOKENS_URL = "https://github.com/settings/personal-access-tokens";
+// 各操作要的 token 权限 (fine-grained token 缺权限时 GitHub 只回「Resource not accessible by personal access token」)
+const NEEDS = { merge: "Contents", close: "Pull requests", pick: "Issues" };
 // 换一张之后等工作流重新生成 PR: 每 5 秒看一次, 最多 3 分钟
 const REGEN_POLL_MS = 5000;
 const REGEN_POLL_MAX = 36;
 
 let token = loadToken();
-let me = null;            // {login, canWrite}; 没 token 或 token 不对为 null
+let me = null;            // {login, canWrite, writeOk}; 没 token 或 token 不对为 null
+                          // canWrite 是账号对仓库的权限; writeOk 是 token 本身能不能写 (null = 还没查或查不了)
 let authError = "";
 let prs = [];             // {number, title, url, issue, review, status: {text, cls}, done, busy}
 const selected = new Set();
@@ -188,6 +192,7 @@ async function gh(path, { method = "GET", body } = {}) {
   if (!response.ok) {
     const error = new Error((data && data.message) || `HTTP ${response.status}`);
     error.status = response.status;
+    error.tokenPermission = response.status === 403 && /not accessible by personal access token/i.test(error.message);
     throw error;
   }
   return data;
@@ -199,7 +204,7 @@ async function loadUser() {
   if (!token) return;
   try {
     const [user, repo] = await Promise.all([gh("/user"), gh(`/repos/${REPO}`)]);
-    me = { login: user.login, canWrite: !!(repo.permissions && repo.permissions.push) };
+    me = { login: user.login, canWrite: !!(repo.permissions && repo.permissions.push), writeOk: null };
   } catch (e) {
     // 只在 token 本身不对时丢掉它; 网络出错留着, 刷新再试
     if (e.status === 401) saveToken("", false);
@@ -207,12 +212,40 @@ async function loadUser() {
   }
 }
 
+// token 能不能写本仓库: 对一个开着的 PR 发空的 PATCH (什么也不改, 不留记录); 没有开着的 PR 就不查.
+// 账号有写权限不代表 token 有: 建 token 时 Repository access 停在默认的 Public repositories 就只能读.
+async function checkWrite() {
+  if (!me || !me.canWrite || me.writeOk !== null) return;
+  const open = prs.find((p) => !p.done);
+  if (!open) return;
+  try {
+    await gh(`/repos/${REPO}/pulls/${open.number}`, { method: "PATCH", body: {} });
+    me.writeOk = true;
+  } catch (e) {
+    if (e.tokenPermission || e.status === 403 || e.status === 404) me.writeOk = false;
+  }
+  renderAuth();
+  render();
+}
+
+function canAct() { return !!(me && me.canWrite && me.writeOk !== false); }
+
+function fixTokenHint() {
+  return `去 <a href="${TOKENS_URL}" target="_blank" rel="noopener">token 设置</a> 里编辑这个 token：Repository access 选
+    Only select repositories 并选上 <span class="mono">${REPO}</span>，Permissions 里 Contents、Pull requests、Issues 都给 Read and write，
+    保存后刷新这一页 (token 不用换)。`;
+}
+
 function renderAuth() {
   const el = $("auth");
   if (me) {
-    el.innerHTML = `<div class="bar"><span>已用 <strong>@${esc(me.login)}</strong> 的 token${me.canWrite ? "" :
-      "，<span class=\"chip bad\">但它没有本仓库的写权限</span>"}</span><span class="grow"></span>` +
-      `<button class="ghost" id="logout">不再用这个 token</button></div>`;
+    let note = "";
+    if (!me.canWrite) note = "，<span class=\"chip bad\">但这个账号没有本仓库的写权限</span>";
+    else if (me.writeOk === false) note = "，<span class=\"chip bad\">但这个 token 不能写本仓库</span>";
+    else if (me.writeOk) note = "，<span class=\"chip ok\">能写本仓库</span>";
+    el.innerHTML = `<div class="bar"><span>已用 <strong>@${esc(me.login)}</strong> 的 token${note}</span><span class="grow"></span>` +
+      `<button class="ghost" id="logout">不再用这个 token</button></div>` +
+      (me.canWrite && me.writeOk === false ? `<div class="msg small">多半是建 token 时 Repository access 停在了默认的 Public repositories (只读)。${fixTokenHint()}</div>` : "");
     $("logout").onclick = () => { saveToken("", false); me = null; renderAuth(); render(); };
     return;
   }
@@ -222,8 +255,9 @@ function renderAuth() {
       <button id="save-token">用这个 token</button>
     </div>
     <div class="small muted" style="margin-top:8px">
-      <a href="${TOKEN_URL}" target="_blank" rel="noopener">新建一个 fine-grained token</a>：Repository access 只选
-      <span class="mono">${REPO}</span>，权限给 Contents、Pull requests、Issues 三项的 Read and write。
+      <a href="${TOKEN_URL}" target="_blank" rel="noopener">新建一个 fine-grained token</a> (权限已经预填好)：
+      <strong>Repository access 要改成 Only select repositories 并选上 <span class="mono">${REPO}</span></strong>
+      (默认的 Public repositories 只能读)，Permissions 里确认 Contents、Pull requests、Issues 三项是 Read and write。
       token 只存在这个浏览器里，只发给 api.github.com。
     </div>
     ${authError ? `<div class="msg bad">${esc(authError)}</div>` : ""}`;
@@ -234,6 +268,7 @@ function renderAuth() {
     await loadUser();
     renderAuth();
     render();
+    await checkWrite();
   };
 }
 
@@ -277,6 +312,7 @@ async function loadPrs() {
     .sort((a, b) => a.number - b.number);
   for (const n of [...selected]) if (!prs.some((p) => p.number === n)) selected.delete(n);
   render();
+  await checkWrite();
 }
 
 function visible() {
@@ -299,7 +335,7 @@ function render() {
   const selectable = shown.filter((p) => !p.done);
   $("all").checked = selectable.length > 0 && selectable.every((p) => selected.has(p.number));
   const count = [...selected].filter((n) => prs.some((p) => p.number === n && !p.done)).length;
-  const canWrite = !!(me && me.canWrite);
+  const canWrite = canAct();
   $("merge-selected").disabled = !canWrite || !count;
   $("close-selected").disabled = !canWrite || !count;
   $("merge-selected").textContent = count ? `合并选中 (${count})` : "合并选中";
@@ -308,7 +344,7 @@ function render() {
 
 function card(p, samePlace) {
   const r = p.review;
-  const canWrite = !!(me && me.canWrite) && !p.busy && !p.done;
+  const canWrite = canAct() && !p.busy && !p.done;
   const others = samePlace.filter((n) => n !== p.number);
   let head, body = "";
   const links = [`<a href="${esc(p.url)}" target="_blank" rel="noopener">PR #${p.number}</a>`,
@@ -414,6 +450,15 @@ function entryBody(r) {
 // ---- 操作 ----
 function setStatus(p, text, cls) { p.status = { text, cls }; render(); }
 
+function failure(e, action) {
+  if (e.tokenPermission) {
+    if (me) me.writeOk = action === "close" ? false : me.writeOk;
+    renderAuth();
+    return `失败：token 没有 ${NEEDS[action]} 的写权限。去 GitHub 的 token 设置里给它加上 (Read and write)，保存后刷新这一页`;
+  }
+  return `失败：${e.message}`;
+}
+
 async function mergePr(p) {
   // main 刚被别的合并或 apply-overrides 推进时, GitHub 偶尔回「Base branch was modified」: 隔几秒再试
   for (let attempt = 0; ; attempt++) {
@@ -441,7 +486,7 @@ async function act(p, action) {
     setStatus(p, action === "merge" ? "已合并，几分钟内写进对应表" : "已关闭，issue 会跟着关掉", "ok");
   } catch (e) {
     const conflict = /not mergeable/i.test(e.message);
-    setStatus(p, conflict ? "合不了：和已合并的修正冲突 (多半是同一处已经合了别的)" : `失败：${e.message}`, "bad");
+    setStatus(p, conflict ? "合不了：和已合并的修正冲突 (多半是同一处已经合了别的)" : failure(e, action), "bad");
   } finally {
     p.busy = false;
     render();
@@ -507,7 +552,7 @@ async function pick(p, logo) {
     }
     setStatus(p, "issue 已改，PR 还没更新完，过会儿点「刷新」", "busy");
   } catch (e) {
-    setStatus(p, `失败：${e.message}`, "bad");
+    setStatus(p, failure(e, "pick"), "bad");
   } finally {
     p.busy = false;
     render();
