@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>修正请求审核</title>
+<meta name="description" content="一页看完待审的修正请求 PR (对应条目与标题 logo), 批量合并或不采纳">
+<meta name="robots" content="noindex">
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --text: #1d2129; --muted: #6b7280; --line: #e3e6eb;
+  --accent: #2563eb; --accent-bg: #e8efff; --ok: #0f7a3d; --ok-bg: #e3f6ea; --warn: #9a5b00; --warn-bg: #fff2d6;
+  --bad: #b42318; --bad-bg: #fde8e7; --manual: #7c3aed; --manual-bg: #f0e8ff; --code: #f0f2f5;
+  --stage-dark: #16181d; --stage-light: #eceef1;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121418; --panel: #1b1e24; --text: #e6e8eb; --muted: #9aa1ab; --line: #2c3139;
+    --accent: #7aa7ff; --accent-bg: #1e2a44; --ok: #5fd08f; --ok-bg: #173226; --warn: #f0b458; --warn-bg: #3a2c12;
+    --bad: #ff8a80; --bad-bg: #3d1c1a; --manual: #c4a5ff; --manual-bg: #2d2242; --code: #23272e;
+    --stage-dark: #0c0d10; --stage-light: #e6e8eb;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 14px/1.55 system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+header { padding: 20px 16px 8px; max-width: 1100px; margin: 0 auto; }
+header h1 { margin: 0; font-size: 20px; }
+header .meta { color: var(--muted); margin-top: 4px; }
+main { max-width: 1100px; margin: 0 auto; padding: 0 16px 48px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-top: 12px; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.bar .grow { flex: 1 1 auto; }
+input, select, button { font: inherit; color: inherit; }
+input[type=password], select { background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 7px 10px; }
+input[type=password] { flex: 1 1 260px; min-width: 0; }
+input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+button { background: var(--accent); color: #fff; border: 0; border-radius: 7px; padding: 7px 14px; cursor: pointer; }
+button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+button.danger { background: transparent; color: var(--bad); border: 1px solid var(--line); }
+button:disabled { opacity: .45; cursor: default; }
+label.check { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; user-select: none; }
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+.mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 12px; overflow-wrap: anywhere; }
+.chip { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; background: var(--code); color: var(--muted); white-space: nowrap; }
+.chip.logo { background: var(--manual-bg); color: var(--manual); }
+.chip.entry { background: var(--accent-bg); color: var(--accent); }
+.chip.bad { background: var(--bad-bg); color: var(--bad); }
+.chip.ok { background: var(--ok-bg); color: var(--ok); }
+.chip.warn { background: var(--warn-bg); color: var(--warn); }
+.msg { margin-top: 8px; }
+.msg.bad { color: var(--bad); }
+.msg.ok { color: var(--ok); }
+.empty { color: var(--muted); padding: 24px 0; text-align: center; }
+
+.pr { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0 12px; }
+.pr + .pr { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 16px; }
+.pr.done { opacity: .55; }
+.pr > input[type=checkbox] { margin-top: 4px; width: 16px; height: 16px; }
+.pr .title { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.pr .title strong { font-size: 15px; }
+.pr .links { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; margin-top: 2px; }
+.pr .sub { margin-top: 4px; }
+.compare { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr); gap: 10px; align-items: start; margin-top: 10px; }
+.compare .arrow { align-self: center; text-align: center; color: var(--muted); font-size: 18px; }
+.side-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.stage { height: 112px; border-radius: 8px; background: var(--stage-dark); display: flex; align-items: center; justify-content: center; padding: 10px 14px; }
+body.light-stage .stage, body.light-stage .cand { background: var(--stage-light); }
+.stage img { max-width: 100%; max-height: 92px; object-fit: contain; }
+.stage.text { color: #c9ced6; font-size: 13px; }
+body.light-stage .stage.text { color: #4b5260; }
+.backdrop { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; background: var(--code); display: block; }
+.noimg { width: 100%; aspect-ratio: 16 / 9; border-radius: 8px; background: var(--code); display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 12px; }
+.cands { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.cand { width: 118px; height: 80px; padding: 6px; border-radius: 7px; border: 2px solid transparent; background: var(--stage-dark);
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 2px; color: #c9ced6; }
+body.light-stage .cand { color: #4b5260; }
+.cand img { max-width: 100%; max-height: 50px; object-fit: contain; flex: 1 1 auto; min-height: 0; }
+.cand span { font-size: 11px; line-height: 1.2; }
+.cand.text-option { justify-content: center; font-size: 12px; }
+.cand.on { border-color: var(--ok); }
+.cand.now:not(.on) { border-color: var(--line); border-style: dashed; }
+.cand:not(:disabled):hover { border-color: var(--accent); }
+details.cand-list summary { cursor: pointer; color: var(--muted); font-size: 12px; margin-top: 10px; }
+.warnings { margin: 8px 0 0; padding-left: 18px; color: var(--warn); font-size: 13px; }
+.reason { white-space: pre-wrap; background: var(--code); border-radius: 7px; padding: 6px 10px; margin-top: 8px; font-size: 13px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.status.busy { color: var(--muted); }
+.status.ok { color: var(--ok); }
+.status.bad { color: var(--bad); }
+@media (max-width: 560px) {
+  .compare { grid-template-columns: minmax(0, 1fr); }
+  .compare .arrow { transform: rotate(90deg); }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>修正请求审核</h1>
+  <div class="meta"><span id="summary">加载中…</span> · <a href="./">对应表核对页</a> · <a href="https://github.com/GrahamZen/bangumi-tmdb-map/pulls" target="_blank" rel="noopener">GitHub 上的 PR</a></div>
+</header>
+<main>
+  <div class="panel" id="auth"></div>
+  <div class="panel">
+    <div class="bar">
+      <label class="check"><input type="checkbox" id="all"> 全选</label>
+      <select id="kind">
+        <option value="">全部</option>
+        <option value="logo">标题 logo</option>
+        <option value="entry">对应条目</option>
+      </select>
+      <label class="check small"><input type="checkbox" id="light"> logo 放浅色底上看</label>
+      <span class="grow"></span>
+      <button id="merge-selected" disabled>合并选中</button>
+      <button id="close-selected" class="danger" disabled>不采纳选中</button>
+      <button id="refresh" class="ghost">刷新</button>
+    </div>
+    <div id="list" style="margin-top:14px"></div>
+  </div>
+</main>
+<script>
+"use strict";
+// 待审的修正请求 = 开着的、分支名是 correction/issue-<n> 的 PR (由 correction 工作流生成). 每个 PR 说明末尾的
+// HTML 注释里有给这一页读的数据 (scripts/correction.py 的 review_comment): 现在与改成的样子、标题 logo 的候选.
+// 合并 / 不采纳 / 换一张 都直接调 GitHub 接口, 要一个只给本仓库的 token; 之后关 issue、删分支、写进对应表照旧由工作流做.
+// 没有 token 也能看 (未登录的接口每小时 60 次).
+const REPO = "GrahamZen/bangumi-tmdb-map";
+const API = "https://api.github.com";
+const IMG = "https://image.tmdb.org/t/p/";
+const TOKEN_KEY = "bangumi-tmdb-map/review-token";
+const BRANCH_RE = /^correction\/issue-(\d+)$/;
+const PATH_RE = /^\/[A-Za-z0-9_-]+\.(?:png|jpg|jpeg|webp)$/;
+const LANGS = { ja: "日文", zh: "中文", en: "英文", ko: "韩文" };
+const TOKEN_URL = "https://github.com/settings/personal-access-tokens/new?name=bangumi-tmdb-map+review" +
+  "&description=" + encodeURIComponent("修正请求审核页 (docs/review.html)") +
+  "&target_name=GrahamZen&expires_in=90&contents=write&pull_requests=write&issues=write";
+// 换一张之后等工作流重新生成 PR: 每 5 秒看一次, 最多 3 分钟
+const REGEN_POLL_MS = 5000;
+const REGEN_POLL_MAX = 36;
+
+let token = loadToken();
+let me = null;            // {login, canWrite}; 没 token 或 token 不对为 null
+let authError = "";
+let prs = [];             // {number, title, url, issue, review, status: {text, cls}, done, busy}
+const selected = new Set();
+
+const $ = (id) => document.getElementById(id);
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+function langName(lang) { return lang ? (LANGS[lang] || lang) : "未标语言"; }
+function safePath(path) { return typeof path === "string" && PATH_RE.test(path) ? path : null; }
+function tmdbLink(ref) {
+  const m = /^(tv|movie|collection)\/(\d+)$/.exec(ref || "");
+  return m ? `<a class="mono" href="https://www.themoviedb.org/${m[1]}/${m[2]}" target="_blank" rel="noopener">${esc(ref)}</a>`
+    : `<span class="mono">${esc(ref || "—")}</span>`;
+}
+
+// ---- token: 默认记在这台电脑的浏览器里; 不勾「记住」就只在这个标签页里用 ----
+function loadToken() {
+  for (const store of ["localStorage", "sessionStorage"]) {
+    try {
+      const t = window[store].getItem(TOKEN_KEY);
+      if (t) return t;
+    } catch { /* 存储不可用: 当没有 */ }
+  }
+  return "";
+}
+function saveToken(t, remember) {
+  token = t;
+  for (const store of ["localStorage", "sessionStorage"]) {
+    try { window[store].removeItem(TOKEN_KEY); } catch { /* 忽略 */ }
+  }
+  if (!t) return;
+  try { window[remember ? "localStorage" : "sessionStorage"].setItem(TOKEN_KEY, t); } catch { /* 只留在内存里 */ }
+}
+
+async function gh(path, { method = "GET", body } = {}) {
+  const headers = { accept: "application/vnd.github+json", "x-github-api-version": "2022-11-28" };
+  if (token) headers.authorization = `Bearer ${token}`;
+  if (body) headers["content-type"] = "application/json";
+  const response = await fetch(API + path, { method, headers, body: body ? JSON.stringify(body) : undefined, cache: "no-store" });
+  const data = response.status === 204 ? null : await response.json().catch(() => null);
+  if (!response.ok) {
+    const error = new Error((data && data.message) || `HTTP ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
+  return data;
+}
+
+async function loadUser() {
+  me = null;
+  authError = "";
+  if (!token) return;
+  try {
+    const [user, repo] = await Promise.all([gh("/user"), gh(`/repos/${REPO}`)]);
+    me = { login: user.login, canWrite: !!(repo.permissions && repo.permissions.push) };
+  } catch (e) {
+    // 只在 token 本身不对时丢掉它; 网络出错留着, 刷新再试
+    if (e.status === 401) saveToken("", false);
+    authError = e.status === 401 ? "token 不对或已过期" : `没能核对 token：${e.message}`;
+  }
+}
+
+function renderAuth() {
+  const el = $("auth");
+  if (me) {
+    el.innerHTML = `<div class="bar"><span>已用 <strong>@${esc(me.login)}</strong> 的 token${me.canWrite ? "" :
+      "，<span class=\"chip bad\">但它没有本仓库的写权限</span>"}</span><span class="grow"></span>` +
+      `<button class="ghost" id="logout">不再用这个 token</button></div>`;
+    $("logout").onclick = () => { saveToken("", false); me = null; renderAuth(); render(); };
+    return;
+  }
+  el.innerHTML = `<div class="bar">
+      <input type="password" id="token" placeholder="GitHub token (合并、不采纳、换一张要用)" autocomplete="off">
+      <label class="check small"><input type="checkbox" id="remember" checked> 记在这台电脑上</label>
+      <button id="save-token">用这个 token</button>
+    </div>
+    <div class="small muted" style="margin-top:8px">
+      <a href="${TOKEN_URL}" target="_blank" rel="noopener">新建一个 fine-grained token</a>：Repository access 只选
+      <span class="mono">${REPO}</span>，权限给 Contents、Pull requests、Issues 三项的 Read and write。
+      token 只存在这个浏览器里，只发给 api.github.com。
+    </div>
+    ${authError ? `<div class="msg bad">${esc(authError)}</div>` : ""}`;
+  $("save-token").onclick = async () => {
+    const t = $("token").value.trim();
+    if (!t) return;
+    saveToken(t, $("remember").checked);
+    await loadUser();
+    renderAuth();
+    render();
+  };
+}
+
+// ---- PR 列表 ----
+function parseReview(body) {
+  const m = /<!-- review ([\s\S]*?) -->/.exec(body || "");
+  if (!m) return null;
+  try { return JSON.parse(m[1]); } catch { return null; }
+}
+
+function placeKey(pr) {
+  const r = pr.review;
+  if (!r) return `pr:${pr.number}`;
+  return r.kind === "logo" ? `logo:${r.sid}:${r.lang}` : `entry:${r.sid}`;
+}
+
+async function loadPrs() {
+  $("summary").textContent = "加载中…";
+  const list = [];
+  try {
+    for (let page = 1; page <= 3; page++) {
+      const batch = await gh(`/repos/${REPO}/pulls?state=open&per_page=100&page=${page}`);
+      list.push(...batch);
+      if (batch.length < 100) break;
+    }
+  } catch (e) {
+    $("summary").textContent = "加载失败";
+    $("list").innerHTML = `<div class="msg bad">没能取到 PR 列表：${esc(e.message)}${e.status === 403 && !token ? "（未登录的接口每小时 60 次，填 token 后不受这个限制）" : ""}</div>`;
+    return;
+  }
+  const old = new Map(prs.map((p) => [p.number, p]));
+  prs = list
+    .filter((p) => p.head && p.head.repo && p.head.repo.full_name === REPO && BRANCH_RE.test(p.head.ref))
+    .map((p) => {
+      const prev = old.get(p.number);
+      return {
+        number: p.number, title: p.title, url: p.html_url, issue: Number(BRANCH_RE.exec(p.head.ref)[1]),
+        review: parseReview(p.body), status: prev && prev.busy ? prev.status : null, busy: !!(prev && prev.busy), done: false,
+      };
+    })
+    .sort((a, b) => a.number - b.number);
+  for (const n of [...selected]) if (!prs.some((p) => p.number === n)) selected.delete(n);
+  render();
+}
+
+function visible() {
+  const kind = $("kind").value;
+  return prs.filter((p) => !kind || (p.review ? p.review.kind === kind : false));
+}
+
+function render() {
+  const shown = visible();
+  const open = prs.filter((p) => !p.done);
+  const logos = open.filter((p) => p.review && p.review.kind === "logo").length;
+  $("summary").textContent = open.length ? `${open.length} 个待审 (标题 logo ${logos} · 对应条目 ${open.length - logos})` : "没有待审的修正请求";
+  const groups = new Map();
+  for (const p of open) {
+    const key = placeKey(p);
+    groups.set(key, [...(groups.get(key) || []), p.number]);
+  }
+  $("list").innerHTML = shown.length ? shown.map((p) => card(p, groups.get(placeKey(p)) || [])).join("")
+    : `<div class="empty">${prs.length ? "这一类没有待审的" : "没有待审的修正请求"}</div>`;
+  const selectable = shown.filter((p) => !p.done);
+  $("all").checked = selectable.length > 0 && selectable.every((p) => selected.has(p.number));
+  const count = [...selected].filter((n) => prs.some((p) => p.number === n && !p.done)).length;
+  const canWrite = !!(me && me.canWrite);
+  $("merge-selected").disabled = !canWrite || !count;
+  $("close-selected").disabled = !canWrite || !count;
+  $("merge-selected").textContent = count ? `合并选中 (${count})` : "合并选中";
+  $("close-selected").textContent = count ? `不采纳选中 (${count})` : "不采纳选中";
+}
+
+function card(p, samePlace) {
+  const r = p.review;
+  const canWrite = !!(me && me.canWrite) && !p.busy && !p.done;
+  const others = samePlace.filter((n) => n !== p.number);
+  let head, body = "";
+  const links = [`<a href="${esc(p.url)}" target="_blank" rel="noopener">PR #${p.number}</a>`,
+    `<a href="https://github.com/${REPO}/issues/${p.issue}" target="_blank" rel="noopener">issue #${p.issue}</a>`];
+  if (r) {
+    const kind = r.kind === "logo" ? `<span class="chip logo">标题 logo · ${esc(langName(r.lang))}</span>`
+      : `<span class="chip entry">${esc({ set: "修正对应", none: "确认无对应", revert: "撤销人工修正" }[r.action] || "对应条目")}</span>`;
+    head = `${kind}<strong>${esc(r.name)}</strong>${r.original && r.original !== r.name ? `<span class="muted">${esc(r.original)}</span>` : ""}`;
+    links.push(`<a href="https://bgm.tv/subject/${Number(r.sid)}" target="_blank" rel="noopener">Bangumi ${Number(r.sid)}</a>`,
+      `<a href="./#${Number(r.sid)}" target="_blank" rel="noopener">核对页</a>`);
+    body = r.kind === "logo" ? logoBody(p, r, canWrite) : entryBody(r);
+    if (r.warnings && r.warnings.length) body += `<ul class="warnings">${r.warnings.map((w) => `<li>${esc(w)}</li>`).join("")}</ul>`;
+    if (r.reason) body += `<div class="reason">${esc(r.reason)}</div>`;
+  } else {
+    head = `<strong>${esc(p.title)}</strong>`;
+    body = `<div class="msg muted small">这个 PR 的说明里没有审核数据 (生成它的脚本早于这一页)，内容去 GitHub 上看；编辑一下对应 issue 会按新格式重新生成。</div>`;
+  }
+  if (others.length) head += `<span class="chip bad">同一处还有 ${others.map((n) => `#${n}`).join("、")}，只能合一个</span>`;
+  const status = p.status ? `<span class="status ${p.status.cls}">${esc(p.status.text)}</span>` : "";
+  return `<div class="pr${p.done ? " done" : ""}" data-pr="${p.number}">
+    <input type="checkbox" data-action="select" ${selected.has(p.number) ? "checked" : ""} ${p.done ? "disabled" : ""} aria-label="选中 #${p.number}">
+    <div>
+      <div class="title">${head}</div>
+      <div class="links">${links.join("")}</div>
+      ${body}
+      <div class="actions">
+        <button data-action="merge" ${canWrite ? "" : "disabled"}>合并</button>
+        <button data-action="close" class="danger" ${canWrite ? "" : "disabled"}>不采纳</button>
+        ${status}
+      </div>
+    </div>
+  </div>`;
+}
+
+function logoStage(state) {
+  if (!state) return `<div class="stage text">还没查</div>`;
+  if (state.unknown) return `<div class="stage text">自动的还没查</div>`;
+  const path = safePath(state.logo);
+  if (state.none || !path) return `<div class="stage text">不用 logo，显示文字标题</div>`;
+  return `<div class="stage"><img src="${IMG}w300${path}" alt="${esc(path)}" loading="lazy"></div><div class="mono muted" style="margin-top:2px">${esc(path)}</div>`;
+}
+
+function logoBody(p, r, canWrite) {
+  let out = "";
+  const sub = [`TMDB ${tmdbLink(r.ref)}`];
+  if (r.seasons && r.seasons.length) {
+    sub.push("对应 " + r.seasons.map(([n, name, date]) => `第 ${Number(n)} 季${name ? `「${esc(name)}」` : ""}${date ? ` (${esc(date)})` : ""}`).join("、"));
+  }
+  if (r.action === "set" && r.verified && !r.in_api) sub.push(`<span class="chip warn">接口列表里没有这张 (SVG)，按图床 PNG 版核实</span>`);
+  out += `<div class="sub small muted">${sub.join(" · ")}</div>`;
+  const nowLabel = r.now ? (r.now.source === "人工" ? "现在 (人工修正)" : "现在 (自动挑的)") : "现在";
+  const thenLabel = r.then && r.then.revert ? "撤销人工修正，回到自动挑的" : "改成";
+  out += `<div class="compare">
+    <div><div class="side-label">${nowLabel}</div>${logoStage(r.now)}</div>
+    <div class="arrow">→</div>
+    <div><div class="side-label">${thenLabel}</div>${logoStage(r.then)}</div>
+  </div>`;
+  const cands = (r.candidates || []).filter((c) => safePath(c.path));
+  if (r.action !== "revert") {
+    const chosen = r.then && !r.then.none ? r.then.logo : null;
+    const nowPath = r.now && !r.now.none ? r.now.logo : null;
+    const buttons = cands.map((c) => {
+      const cls = ["cand", c.path === chosen ? "on" : "", c.path === nowPath ? "now" : ""].join(" ");
+      const tip = `${c.path} · ${langName(c.lang)}${c.path === nowPath ? " · 现在用的" : ""}`;
+      return `<button class="${cls}" data-action="pick" data-logo="${esc(c.path)}" title="${esc(tip)}" ${canWrite ? "" : "disabled"}>` +
+        `<img src="${IMG}w185${c.path}" alt="" loading="lazy"><span>${esc(langName(c.lang))}${c.path === nowPath ? " · 现在" : ""}</span></button>`;
+    });
+    buttons.push(`<button class="cand text-option${r.then && r.then.none ? " on" : ""}" data-action="pick" data-logo="" ${canWrite ? "" : "disabled"}>用文字标题</button>`);
+    out += `<details class="cand-list"${cands.length <= 8 ? " open" : ""}><summary>TMDB 上这个条目的 logo ${cands.length} 张 (${esc(langName(r.lang))}的在前)，点一张改成它</summary>` +
+      `<div class="cands">${buttons.join("")}</div></details>`;
+  }
+  return out;
+}
+
+function entrySide(s) {
+  if (!s) return `<div class="noimg">—</div>`;
+  if (s.none) return `<div class="noimg">确认 TMDB 上没有对应 (客户端不出图)</div>`;
+  const path = safePath(s.path);
+  const lines = [];
+  if (s.result) lines.push(`<span class="chip">${esc(s.result)}</span>`);
+  if (s.ref) lines.push(`${tmdbLink(s.ref)} ${esc(s.title || "")}${s.date ? ` <span class="muted">(${esc(s.date)})</span>` : ""}`);
+  if (s.original && s.original !== s.title) lines.push(`<span class="muted">${esc(s.original)}</span>`);
+  if (s.stills) lines.push(`<span class="small muted">分集数据 ${tmdbLink(s.stills)}</span>`);
+  if (!s.ref && !s.revert) lines.push(`<span class="muted">没有对应</span>`);
+  return (path ? `<img class="backdrop" src="${IMG}w300${path}" alt="" loading="lazy">`
+    : `<div class="noimg">${s.ref ? "没指定背景图，客户端按条目自己挑" : "没有背景图"}</div>`) +
+    `<div class="small" style="margin-top:4px">${lines.join("<br>")}</div>`;
+}
+
+function entryBody(r) {
+  const thenLabel = r.then && r.then.revert ? "撤销人工修正，回到自动匹配 (下一轮重新查)；上次的自动结果" : "改成";
+  let out = `<div class="compare">
+    <div><div class="side-label">现在</div>${entrySide(r.now)}</div>
+    <div class="arrow">→</div>
+    <div><div class="side-label">${thenLabel}</div>${entrySide(r.then)}</div>
+  </div>`;
+  if (r.action === "set") {
+    out += `<div class="small muted" style="margin-top:6px">TMDB 核实：${r.verified ? "条目存在" + (r.image_ok ? "，背景图属于这个条目" : "") : "没有核实"}</div>`;
+  }
+  return out;
+}
+
+// ---- 操作 ----
+function setStatus(p, text, cls) { p.status = { text, cls }; render(); }
+
+async function mergePr(p) {
+  // main 刚被别的合并或 apply-overrides 推进时, GitHub 偶尔回「Base branch was modified」: 隔几秒再试
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await gh(`/repos/${REPO}/pulls/${p.number}/merge`, { method: "PUT", body: { merge_method: "squash" } });
+      return;
+    } catch (e) {
+      if (attempt < 2 && (e.status === 405 || e.status === 409) && !/not mergeable/i.test(e.message)) {
+        await sleep(3000);
+        continue;
+      }
+      throw e;
+    }
+  }
+}
+
+async function act(p, action) {
+  p.busy = true;
+  setStatus(p, action === "merge" ? "合并中…" : "关闭中…", "busy");
+  try {
+    if (action === "merge") await mergePr(p);
+    else await gh(`/repos/${REPO}/pulls/${p.number}`, { method: "PATCH", body: { state: "closed" } });
+    p.done = true;
+    selected.delete(p.number);
+    setStatus(p, action === "merge" ? "已合并，几分钟内写进对应表" : "已关闭，issue 会跟着关掉", "ok");
+  } catch (e) {
+    const conflict = /not mergeable/i.test(e.message);
+    setStatus(p, conflict ? "合不了：和已合并的修正冲突 (多半是同一处已经合了别的)" : `失败：${e.message}`, "bad");
+  } finally {
+    p.busy = false;
+    render();
+  }
+}
+
+async function batch(action) {
+  const list = prs.filter((p) => selected.has(p.number) && !p.done);
+  if (!list.length) return;
+  if (action === "merge") {
+    const keys = new Map();
+    for (const p of list) keys.set(placeKey(p), [...(keys.get(placeKey(p)) || []), p.number]);
+    const clash = [...keys.values()].find((ns) => ns.length > 1);
+    if (clash) {
+      alert(`${clash.map((n) => `#${n}`).join("、")} 改的是同一处，只能合其中一个。`);
+      return;
+    }
+  }
+  const verb = action === "merge" ? "合并" : "不采纳 (关闭)";
+  if (!confirm(`${verb}选中的 ${list.length} 个修正请求？`)) return;
+  for (const p of list) await act(p, action);
+  setTimeout(loadPrs, 2000);
+}
+
+function setLogoSection(body, value) {
+  const lines = String(body || "").replace(/\r\n/g, "\n").split("\n");
+  const start = lines.findIndex((l) => l.trim() === "### 标题 logo");
+  if (start < 0) return null;
+  let end = lines.findIndex((l, i) => i > start && /^###\s/.test(l));
+  if (end < 0) end = lines.length;
+  return [...lines.slice(0, start + 1), "", value, "", ...lines.slice(end)].join("\n");
+}
+
+async function pick(p, logo) {
+  const r = p.review;
+  const target = logo ? logo : "无";
+  if (r.then && ((logo && r.then.logo === logo && !r.then.none) || (!logo && r.then.none))) return;
+  if (!confirm(`把 #${p.number} 改成${logo ? ` ${logo}` : "用文字标题"}？会改 issue #${p.issue} 并重新生成这个 PR (约半分钟)。`)) return;
+  p.busy = true;
+  setStatus(p, "改 issue…", "busy");
+  try {
+    const issue = await gh(`/repos/${REPO}/issues/${p.issue}`);
+    const body = setLogoSection(issue.body, target);
+    if (body === null) throw new Error("issue 里找不到「标题 logo」这一项");
+    await gh(`/repos/${REPO}/issues/${p.issue}`, { method: "PATCH", body: { body } });
+    setStatus(p, "等工作流重新生成 PR…", "busy");
+    for (let i = 0; i < REGEN_POLL_MAX; i++) {
+      await sleep(REGEN_POLL_MS);
+      const fresh = await gh(`/repos/${REPO}/pulls/${p.number}`);
+      if (fresh.state !== "open") {
+        p.done = true;
+        selected.delete(p.number);
+        setStatus(p, "PR 被关掉了 (和现有的修正一样，或改出来的内容没法处理)，原因见 issue", "bad");
+        return;
+      }
+      const review = parseReview(fresh.body);
+      if (review && review.then && (logo ? review.then.logo === logo && !review.then.none : review.then.none)) {
+        p.review = review;
+        p.title = fresh.title;
+        setStatus(p, "已改好", "ok");
+        return;
+      }
+    }
+    setStatus(p, "issue 已改，PR 还没更新完，过会儿点「刷新」", "busy");
+  } catch (e) {
+    setStatus(p, `失败：${e.message}`, "bad");
+  } finally {
+    p.busy = false;
+    render();
+  }
+}
+
+$("list").addEventListener("click", (event) => {
+  const target = event.target.closest("[data-action]");
+  if (!target) return;
+  const p = prs.find((x) => x.number === Number(target.closest("[data-pr]").dataset.pr));
+  if (!p) return;
+  const action = target.dataset.action;
+  if (action === "select") {
+    if (target.checked) selected.add(p.number); else selected.delete(p.number);
+    render();
+  } else if (action === "merge" || action === "close") {
+    if (!confirm(`${action === "merge" ? "合并" : "不采纳 (关闭)"} #${p.number}？`)) return;
+    act(p, action);
+  } else if (action === "pick") {
+    pick(p, target.dataset.logo || "");
+  }
+});
+$("all").addEventListener("change", () => {
+  for (const p of visible()) {
+    if (p.done) continue;
+    if ($("all").checked) selected.add(p.number); else selected.delete(p.number);
+  }
+  render();
+});
+$("kind").addEventListener("change", render);
+$("light").addEventListener("change", () => document.body.classList.toggle("light-stage", $("light").checked));
+$("merge-selected").addEventListener("click", () => batch("merge"));
+$("close-selected").addEventListener("click", () => batch("close"));
+$("refresh").addEventListener("click", loadPrs);
+
+(async () => {
+  await loadUser();
+  renderAuth();
+  await loadPrs();
+})();
+</script>
+</body>
+</html>

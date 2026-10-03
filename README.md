@@ -52,6 +52,7 @@ TMDB 的 logo 只挂在整部剧上、不标属于哪一季，多季的剧自动
 1. 页面打开一个内容已经填好的 issue（表单在 `.github/ISSUE_TEMPLATE/correction.yml`，也可以直接在仓库里新建 issue 手填），确认后提交；
 2. `correction` 工作流检查格式、向 TMDB 核实条目存在、背景图属于这个条目，生成一个只改 `overrides/<bgm_id>.json` 的 PR，把现在与改后的结果（含背景图预览）列在 PR 说明里，并在 issue 里回复；格式不对时在 issue 里说明哪里不对，改了 issue 会重新检查；
 3. 维护者审核：合并后几分钟内写进对应表，issue 随之关闭；不采纳就关掉 PR，issue 一起关掉。提交者关掉 issue 也会撤回 PR。
+   待审的修正请求 (条目与标题 logo) 可以在[审核页](https://grahamzen.github.io/bangumi-tmdb-map/review.html)一页看完：现在与改成的图并排，勾选后批量合并或不采纳，标题 logo 还能直接点另一张候选改掉 (改的是 issue，PR 跟着重新生成)。页面读 PR 说明末尾 HTML 注释里的数据 (`correction.py` 的 `review_comment`)；合并等操作要填一个只给本仓库 Contents / Pull requests / Issues 读写权限的 fine-grained token，只存在浏览器里。
 
 仓库维护者也可以不经请求，点页面上的「新建修正文件」直接提交到 `main`。
 
@@ -92,7 +93,7 @@ TMDB 的 logo 只挂在整部剧上、不标属于哪一季，多季的剧自动
 - `tmdb` 是这条修正针对的 TMDB 条目，要和对应表里这个条目现在的 `backdrop` 一致才生效 (条目被改过，旧的 logo 修正就作废)；
 - 要么给 `logo` 与 `aspect` (宽 / 高)，要么 `"none": true` (这种语言不用 logo，显示文字)；没有文件的语言照自动挑的。
 
-修正请求用 `.github/ISSUE_TEMPLATE/logo.yml` 这张表单 (Izuko TV 详情页里的「标题 logo 不对」报告会自动提交它)，`correction` 工作流向 TMDB 核实这张图属于这个条目、取宽高比，生成只改 `logo-overrides/<bgm_id>.<语言>.json` 的 PR，说明里列出现在与改后的 logo、这个条目这种语言的全部 logo 和条目对应 TMDB 的第几季。合并后同样由 `apply-overrides` 应用。
+修正请求用 `.github/ISSUE_TEMPLATE/logo.yml` 这张表单 (Izuko TV 详情页「反馈」里的「标题 logo 不对」会自动提交它)，`correction` 工作流向 TMDB 核实这张图属于这个条目、取宽高比，生成只改 `logo-overrides/<bgm_id>.<语言>.json` 的 PR，说明里列出现在与改后的 logo、这个条目各种语言的全部 logo 和条目对应 TMDB 的第几季。合并后同样由 `apply-overrides` 应用。
 
 自动挑的 logo 由 `logos` 工作流每天查一轮 (`scripts/logos.py`，按 TMDB 条目存在 `state/logos.tsv`)：没查过的条目先查，查到过 logo 的 60 天、一种也没有的 14 天后再查。
 
@@ -127,7 +128,7 @@ report-endpoints.json  中转地址清单 (Izuko TV 每天拉一次; 部署时 w
 matcher.ref            用 izuko-tv 的哪个分支/标签
 .github/workflows/     update 每日更新, logos 每日查标题 logo, apply-overrides 推送修正后立即应用, correction 修正请求 → PR,
                        worker 部署报告中转
-.github/ISSUE_TEMPLATE/ 修正请求的表单 (条目 correction.yml, 标题 logo logo.yml)
+.github/ISSUE_TEMPLATE/ 修正请求的表单 (条目 correction.yml, 标题 logo logo.yml); 审核页是 docs/review.html
 ```
 
 ## 本地验证

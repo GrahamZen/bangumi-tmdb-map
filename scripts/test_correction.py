@@ -225,6 +225,13 @@ class RenderTest(unittest.TestCase):
         # 说明原样放进代码块, 结束标记被换掉
         reason_block = body.split("~~~text\n", 1)[1].split("\n~~~\n", 1)[0]
         self.assertIn("@everyone <img src=x> ～～～", reason_block)
+        # 给审核页的数据: 注释里没有 @、#、「--」
+        comment = body.split("<!-- review ", 1)[1].split(" -->", 1)[0]
+        self.assertFalse(any(x in comment for x in ("@", "#", "--")))
+        review = correction.parse_review(body)
+        self.assertEqual(("entry", 12, 554346, "set"), (review["kind"], review["issue"], review["sid"], review["action"]))
+        self.assertEqual({"ref": "tv/38693", "path": "/bd.jpg"}, {k: review["then"][k] for k in ("ref", "path")})
+        self.assertIn("@everyone", review["reason"])
 
     def test_cells_escape(self):
         self.assertEqual(correction.cell("a|b <c> @d"), "a\\|b &lt;c&gt; @​d")
@@ -240,6 +247,9 @@ class RenderTest(unittest.TestCase):
         body = correction.render_pr(p, 3, "u")
         self.assertIn("人工 · 有对应", body)
         self.assertIn("回到自动匹配", body)
+        review = correction.parse_review(body)
+        self.assertTrue(review["then"]["revert"])
+        self.assertTrue(review["now"]["result"].startswith("人工"))
 
 
 class MainTest(unittest.TestCase):

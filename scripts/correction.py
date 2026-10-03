@@ -10,7 +10,7 @@ issue 是任何人都能写的: 这里只把它当数据, 每个字段按格式�
   result.json  {"status": skip | invalid | noop | ok, "bgm_id", "action": set | none | revert,
                 "file", "pr_title", "issue_title"}
   reply.md     回复 issue 的内容 (ok 时 correction_pr.sh 在前面加上 PR 编号)
-  pr.md / commit.txt  PR 说明与提交说明 (ok)
+  pr.md / commit.txt  PR 说明与提交说明 (ok); PR 说明末尾藏着给审核页读的数据 (review_comment)
   修正文件直接写进 (撤销时删出) 仓库的 overrides/.
 """
 import argparse
@@ -28,6 +28,7 @@ from common import normalize_override
 from merge import SHARD, effective
 
 PAGE = "https://grahamzen.github.io/bangumi-tmdb-map/"
+REVIEW_PAGE = PAGE + "review.html"
 TMDB_SITE = "https://www.themoviedb.org/"
 IMG = "https://image.tmdb.org/t/p/"
 API = "https://api.tmdb.org/3"
@@ -379,6 +380,45 @@ def target_rows(p):
     return "人工 · 有对应", entity, image, stills
 
 
+def review_comment(data):
+    """PR 说明末尾给审核页 (docs/review.html) 读的数据: JSON 藏在 HTML 注释里, GitHub 上看不到.
+    「-」「@」「#」只会出现在 JSON 字符串里, 换成转义写法: 免得「--」提前结束注释, 说明里的 @某人、#123 也不会被 GitHub 当成提醒和引用."""
+    text = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+    for ch, escaped in (("-", "\\u002d"), ("@", "\\u0040"), ("#", "\\u0023")):
+        text = text.replace(ch, escaped)
+    return "<!-- review " + text + " -->"
+
+
+def parse_review(body):
+    """review_comment 的逆过程 (单测用; 审核页里是同样的写法)."""
+    m = re.search(r"<!-- review (.*?) -->", body or "", re.S)
+    return json.loads(m.group(1)) if m else None
+
+
+def review_data(p, issue, author):
+    """条目修正给审核页的数据: 现在与改成的条目、背景图、分集数据出处."""
+    status, source, backdrop, path, stills, title, _ = effective(p.rec)
+    data = {
+        "kind": "entry", "issue": issue, "author": author, "sid": p.sid, "name": p.name,
+        "original": (p.row or {}).get("name") or "", "action": p.action,
+        "now": {"result": current_rows(p.rec)[0], "ref": backdrop or None, "title": title or "", "path": path or None,
+                "stills": stills or None},
+        "warnings": p.warnings, "verified": p.verified, "image_ok": p.image_ok, "reason": clip(p.reason.strip(), 400),
+    }
+    o = p.override
+    if p.action == "revert":
+        auto = p.rec.get("auto") or {}
+        data["then"] = {"revert": True, "ref": auto.get("backdrop") if auto.get("status") == "hit" else None,
+                        "title": (auto.get("tmdb") or {}).get("name") or "", "path": auto.get("backdropPath")}
+    elif o["none"]:
+        data["then"] = {"none": True}
+    else:
+        e = p.entity or {}
+        data["then"] = {"ref": o["backdrop"], "title": e.get("name") or "", "original": e.get("original") or "",
+                        "date": e.get("date") or "", "path": o["backdrop_path"], "stills": o["stills"][0] if o["stills"] else None}
+    return data
+
+
 def render_pr(p, issue, author):
     sid, row = p.sid, p.row
     lines = [f"修正请求 #{issue}，由 @{author} 提交。", ""]
@@ -400,8 +440,9 @@ def render_pr(p, issue, author):
         if len(reason) > REASON_MAX:
             reason = reason[:REASON_MAX] + "\n…(太长，截断了；全文见 issue)"
         lines += ["", "<details><summary>提交者的说明</summary>", "", "~~~text", reason, "~~~", "", "</details>"]
-    lines += ["", "合并后 apply-overrides 几分钟内把它并进对应表与核对页 (app 经 jsDelivr 取表, 一般一天内用上)；不采纳就直接关闭这个 PR，issue 会一起关掉。",
-              "", f"Closes #{issue}", ""]
+    lines += ["", "合并后 apply-overrides 几分钟内把它并进对应表与核对页 (app 经 jsDelivr 取表, 一般一天内用上)；不采纳就直接关闭这个 PR，issue 会一起关掉。"
+              f"也可以在[审核页]({REVIEW_PAGE})和别的修正请求一起处理。",
+              "", f"Closes #{issue}", "", review_comment(review_data(p, issue, author)), ""]
     return "\n".join(lines)
 
 

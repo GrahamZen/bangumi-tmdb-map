@@ -18,8 +18,8 @@ import urllib.error
 import urllib.request
 
 from common import LOGO_LANG_RE, format_logo_entry, load_logos, logo_override_content, normalize_logo_override
-from correction import (IMG, NONE_WORDS, PAGE, REASON_MAX, REVERT_WORDS, cell, clip, commit_message, load_entry,
-                        make_fetch, parse_bgm_id, parse_ref, ref_md, safe)
+from correction import (IMG, NONE_WORDS, PAGE, REASON_MAX, REVERT_WORDS, REVIEW_PAGE, cell, clip, commit_message,
+                        load_entry, make_fetch, parse_bgm_id, parse_ref, ref_md, review_comment, safe)
 from merge import effective
 
 FORM = {"Bangumi id": "bgm_id", "TMDB 条目": "tmdb", "语言": "language", "标题 logo": "logo", "说明": "reason"}
@@ -29,6 +29,7 @@ PNG_RENDITION = "https://image.tmdb.org/t/p/w92"
 LANG_WORDS = {"日文": "ja", "日语": "ja", "中文": "zh", "汉语": "zh", "英文": "en", "英语": "en"}
 LANG_NAMES = {"ja": "日文", "zh": "中文", "en": "英文"}
 GALLERY_MAX = 12
+REVIEW_CANDIDATES_MAX = 40
 
 
 def parse_form(body):
@@ -284,6 +285,32 @@ def target_md(p):
     return "人工", logo_md(p.entry)
 
 
+def logo_state(entry):
+    """{logo, none} 两种写法 (修正 / 自动挑的) 统一成审核页用的 {logo, none}; 还没查为 None."""
+    if entry is None:
+        return None
+    return {"logo": None if entry.get("none") else entry.get("logo"), "none": bool(entry.get("none"))}
+
+
+def review_data(p, issue, author):
+    """标题 logo 修正给审核页的数据: 现在与改成的 logo、TMDB 上各语言的候选 (换一张时从这里挑)、条目对应的季."""
+    now, source = current_entry(p)
+    if p.action == "revert":
+        then = dict(logo_state(p.auto) or {"logo": None, "none": False}, revert=True, unknown=p.auto is None)
+    else:
+        then = logo_state(p.entry)
+    return {
+        "kind": "logo", "issue": issue, "author": author, "sid": p.sid, "name": p.name,
+        "original": (p.row or {}).get("name") or "", "ref": p.ref, "lang": p.lang, "action": p.action,
+        "now": dict(logo_state(now), source=source) if now is not None else None,
+        "then": then,
+        "candidates": [{"path": x["file_path"], "lang": image_language(x), "aspect": x.get("aspect_ratio")}
+                       for x in p.candidates[:REVIEW_CANDIDATES_MAX]],
+        "in_api": any(x.get("file_path") == (p.entry or {}).get("logo") for x in p.candidates),
+        "seasons": p.seasons, "warnings": p.warnings, "verified": p.verified, "reason": clip(p.reason.strip(), 400),
+    }
+
+
 def render_pr(p, issue, author):
     lines = [f"标题 logo 修正请求 #{issue}，由 @{author} 提交。", ""]
     head = f"**{cell(p.name)}**"
@@ -328,8 +355,9 @@ def render_pr(p, issue, author):
         if len(reason) > REASON_MAX:
             reason = reason[:REASON_MAX] + "\n…(太长，截断了；全文见 issue)"
         lines += ["", "<details><summary>提交者的说明</summary>", "", "~~~text", reason, "~~~", "", "</details>"]
-    lines += ["", "合并后 apply-overrides 几分钟内把它并进对应表 (app 经 jsDelivr 取表, 一般一天内用上)；不采纳就直接关闭这个 PR，issue 会一起关掉。",
-              "", f"Closes #{issue}", ""]
+    lines += ["", "合并后 apply-overrides 几分钟内把它并进对应表 (app 经 jsDelivr 取表, 一般一天内用上)；不采纳就直接关闭这个 PR，issue 会一起关掉。"
+              f"也可以在[审核页]({REVIEW_PAGE})和别的修正请求一起处理。",
+              "", f"Closes #{issue}", "", review_comment(review_data(p, issue, author)), ""]
     return "\n".join(lines)
 
 

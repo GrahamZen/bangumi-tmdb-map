@@ -115,6 +115,13 @@ class ProposeTest(unittest.TestCase):
         self.assertIn("/base.png</code> 日文 ✅", pr)
         self.assertIn("第 1 季「シーズン1」", pr)
         self.assertIn("Closes #21", pr)
+        review = correction.parse_review(pr)
+        self.assertEqual(("logo", "ja", "tv/65844"), (review["kind"], review["lang"], review["ref"]))
+        self.assertEqual({"logo": "/s3.png", "none": False, "source": "自动"}, review["now"])
+        self.assertEqual({"logo": "/base.png", "none": False}, review["then"])
+        self.assertEqual([("/s3.png", "ja"), ("/base.png", "ja"), ("/en.png", "en")],
+                         [(c["path"], c["lang"]) for c in review["candidates"]])
+        self.assertTrue(review["in_api"])
 
     def test_text_instead_of_a_logo(self):
         p = run(Repo(), language="zh", logo="无")
@@ -135,7 +142,11 @@ class ProposeTest(unittest.TestCase):
         p = run(Repo({"ja": {"tmdb": "tv/65844", "logo": "/base.png", "aspect": 2.112}}), logo="撤销")
         self.assertEqual([], p.errors)
         self.assertIsNone(p.override)
-        self.assertIn("撤销人工修正", logo_correction.render_pr(p, 21, "someone"))
+        pr = logo_correction.render_pr(p, 21, "someone")
+        self.assertIn("撤销人工修正", pr)
+        review = correction.parse_review(pr)
+        self.assertEqual({"logo": "/base.png", "none": False, "source": "人工"}, review["now"])
+        self.assertEqual({"logo": "/s3.png", "none": False, "revert": True, "unknown": False}, review["then"])
 
     def test_revert_without_an_override(self):
         p = run(Repo(), logo="撤销")
