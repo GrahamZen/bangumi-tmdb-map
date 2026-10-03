@@ -7,13 +7,13 @@ workers_dev = true
 [vars]
 REPO = "GrahamZen/bangumi-tmdb-map"
 
-# 每个 IP 每分钟最多 3 次 (Workers 的限频绑定, period 只能是 10 或 60 秒)
+# 每个 IP 每分钟最多 5 次 (Workers 的限频绑定, period 只能是 10 或 60 秒)
 [[ratelimits]]
 name = "REPORT_LIMITER"
 namespace_id = "1001"
-simple = { limit = 3, period = 60 }
+simple = { limit = 5, period = 60 }
 
-# 每个 IP 每天的上限 (可省: 建好 KV 后把 id 填上, 取消注释)
-# [[kv_namespaces]]
-# binding = "REPORTS"
-# id = "<wrangler kv namespace create REPORTS 给的 id>"
+# 每个 IP 每天、全站每天的计数 (见 src/index.js 开头)
+[[kv_namespaces]]
+binding = "REPORTS"
+id = "09cd1f3fbb104855b438b4f3d94e2843"

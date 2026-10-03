@@ -5,12 +5,18 @@
 //   {"bgm_id": 135275, "tmdb": "tv/65844", "language": "ja", "logo": "/x.png" 或 null (= 用文字), "app": "1.0.4"}
 // POST /entry-report  对应的 TMDB 条目不对 (表单 .github/ISSUE_TEMPLATE/correction.yml)
 //   {"bgm_id": 135275, "tmdb": "tv/65844" 或 null (= TMDB 上没有对应), "backdrop": "/x.jpg" 或 null, "app": "1.0.4"}
-// → 200 {"status": "created" | "duplicate", "issue": 12}; 格式不对 400, 太频繁 429, GitHub 出错 502.
+// 请求要带 X-Izuko-Client 头 (app 填版本号), 没有的 403 —— 挡掉随手乱发的, 不算防护 (头谁都能伪造).
+// → 200 {"status": "created" | "duplicate", "issue": 12}; 格式不对 400, 没带头 403, 太频繁 429, GitHub 出错 502.
+//
+// 防刷靠封顶: 每个 IP 每分钟 5 次 (REPORT_LIMITER), 每个 IP 每天 30 次、全站每天 100 次写 GitHub (开 issue 或在已有的里记一笔;
+// 计数在 KV, 跨地区最终一致, 是约数) —— 最坏一天多出一百来个 issue, 正常的反馈量到不了.
 //
 // 绑定: REPORT_GITHUB_TOKEN (secret, 只给本仓库 Issues 读写的 fine-grained token), REPO (vars),
-//       REPORT_LIMITER (ratelimit, 每个 IP 每分钟), REPORTS (KV, 可省: 每个 IP 每天的上限).
+//       REPORT_LIMITER (ratelimit), REPORTS (KV).
 
-const DAILY_LIMIT = 30;
+const IP_DAILY_LIMIT = 30;
+const SITE_DAILY_LIMIT = 100;
+const CLIENT_HEADER = "x-izuko-client";
 const REF_RE = /^(tv|movie|collection)\/\d{1,9}$/;
 const LANG_RE = /^[a-z]{2}$/;
 const LOGO_RE = /^\/[A-Za-z0-9_-]{1,64}\.png$/;
@@ -91,11 +97,15 @@ async function findOpen(env, report) {
   return same ? same.number : null;
 }
 
-async function overDailyLimit(env, ip) {
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/** KV 里的计数到了 [limit] 就返回 true; 没到就加一 (先查后加, 并发时可能多放过一两次, 够用). 没绑 KV 时不限. */
+async function overLimit(env, key, limit) {
   if (!env.REPORTS) return false;
-  const key = `ip:${ip}:${new Date().toISOString().slice(0, 10)}`;
   const count = parseInt((await env.REPORTS.get(key)) || "0", 10);
-  if (count >= DAILY_LIMIT) return true;
+  if (count >= limit) return true;
   await env.REPORTS.put(key, String(count + 1), { expirationTtl: 2 * 24 * 3600 });
   return false;
 }
@@ -105,6 +115,7 @@ export default {
     const url = new URL(request.url);
     if (!KINDS[url.pathname]) return json({ error: "not_found" }, 404);
     if (request.method !== "POST") return json({ error: "method_not_allowed" }, 405);
+    if (!APP_RE.test(request.headers.get(CLIENT_HEADER) || "")) return json({ error: "forbidden" }, 403);
     const ip = request.headers.get("cf-connecting-ip") || "unknown";
     if (env.REPORT_LIMITER) {
       const { success } = await env.REPORT_LIMITER.limit({ key: ip });
@@ -117,7 +128,9 @@ export default {
       report = null;
     }
     if (!report) return json({ error: "bad_request" }, 400);
-    if (await overDailyLimit(env, ip)) return json({ error: "rate_limited" }, 429);
+    if (await overLimit(env, `ip:${ip}:${today()}`, IP_DAILY_LIMIT)) return json({ error: "rate_limited" }, 429);
+    // 全站封顶: 每次写 GitHub (开 issue 或记一笔) 都算
+    if (await overLimit(env, `site:${today()}`, SITE_DAILY_LIMIT)) return json({ error: "rate_limited" }, 429);
     try {
       const existing = await findOpen(env, report);
       if (existing) {

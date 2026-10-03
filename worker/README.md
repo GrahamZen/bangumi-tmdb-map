@@ -7,8 +7,11 @@ Izuko TV 详情页的「反馈」里报告的两类问题经这里转成本仓�
 
 电视上没法登录 GitHub，令牌也不能放进 app，所以经这里转一道。
 
-Worker 只做三件事：检查字段格式；按 IP 限频 (每分钟 3 次，配了 KV 再加每天 30 次)；同一条目、同一语言、同一张图已经有开着的请求时，
-只在那个 issue 里留一句「又收到一次」，不重复开。
+Worker 只做这几件事：
+- 检查字段格式 (只收条目 id、`tv/123`、图片路径、两个字母的语言码，issue 正文是模板拼的，写不进任意文字)；请求要带 `X-Izuko-Client` 头
+  (app 填版本号)，没有的拒掉 —— 只挡随手乱发的，头谁都能伪造；
+- 封顶防刷：每个 IP 每分钟 5 次、每天 30 次，全站每天 100 次写 GitHub (开 issue 或在已有的里记一笔)；计数在 KV，是约数；
+- 同一条请求已经有开着的 issue 时，只在里面留一句「又收到一次」，不重复开。
 
 ## 部署
 
@@ -30,8 +33,6 @@ gh workflow run worker.yml -R GrahamZen/bangumi-tmdb-map
 
 Cloudflare 账号第一次用 Workers 时要先在控制台的 Workers & Pages 里点开一次，注册 `workers.dev` 子域，否则部署会报没有子域。
 
-(可省) 每天的上限：建一个 KV 命名空间，把 id 填进 `wrangler.toml` 里注释掉的那段。
-
 `workers.dev` 在中国大陆多半连不上；要给大陆用户用，给 Worker 绑一个自定义域名，把根地址加在 `report-endpoints.json` 的前面。
 
 ## 试一下
@@ -39,5 +40,5 @@ Cloudflare 账号第一次用 Workers 时要先在控制台的 Workers & Pages �
 格式不对的请求返回 400，不会开 issue，可以拿来看 Worker 在不在：
 
 ```
-curl -X POST https://<地址>/logo-report -H 'content-type: application/json' -d '{}'
+curl -X POST https://<地址>/logo-report -H 'content-type: application/json' -H 'x-izuko-client: test' -d '{}'
 ```
