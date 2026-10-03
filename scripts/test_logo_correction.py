@@ -188,6 +188,35 @@ class ProposeTest(unittest.TestCase):
         self.assertTrue(any("没有 TMDB 条目" in e for e in p.errors))
 
 
+class NotListedTest(unittest.TestCase):
+    """「列表里没有」: 不改文件、不开 PR, 只回复 issue (status await), 等维护者补图."""
+
+    def test_propose(self):
+        p = Repo().propose(logo="列表里没有")
+        self.assertEqual(([], "not_listed", None), (p.errors, p.action, p.entry))
+        reply = logo_correction.render_await(p)
+        self.assertIn("https://www.themoviedb.org/tv/65844/images/logos?image_language=ja", reply)
+
+    def test_still_checks_the_request(self):
+        p = Repo().propose(bgm_id="554346", logo="列表里没有")
+        self.assertTrue(any("没有 TMDB 条目" in e for e in p.errors))
+
+    def test_main_writes_no_file(self):
+        repo = Repo()
+        with tempfile.TemporaryDirectory() as out:
+            env = dict(os.environ, ISSUE_NUMBER="21", ISSUE_BODY=form(logo="列表里没有"), ISSUE_AUTHOR="someone",
+                       ISSUE_AUTHOR_ID="42", TMDB_API_TOKEN="", PYTHONIOENCODING="utf-8")
+            subprocess.run([sys.executable, os.path.join(HERE, "logo_correction.py"), "--out", out, "--root", repo.root],
+                           env=env, check=True, capture_output=True)
+            with open(os.path.join(out, "result.json"), encoding="utf-8") as f:
+                result = json.load(f)
+            self.assertEqual(("await", "标题 logo 135275 为美好的世界献上祝福！"), (result["status"], result["issue_title"]))
+            self.assertEqual([], os.listdir(os.path.join(repo.root, "logo-overrides")))
+            self.assertFalse(os.path.exists(os.path.join(out, "pr.md")))
+            self.assertTrue(os.path.exists(os.path.join(out, "reply.md")))
+        repo.dir.cleanup()
+
+
 class LogoColumnTest(unittest.TestCase):
     def test_round_trip(self):
         text = "o=ja ja=/a.png:2.38 zh=- en=/b.png:10"

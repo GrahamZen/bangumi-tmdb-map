@@ -88,6 +88,10 @@ details.cand-list summary { cursor: pointer; color: var(--muted); font-size: 12p
 .warnings { margin: 8px 0 0; padding-left: 18px; color: var(--warn); font-size: 13px; }
 .reason { white-space: pre-wrap; background: var(--code); border-radius: 7px; padding: 6px 10px; margin-top: 8px; font-size: 13px; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.fill { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.fill input { flex: 1 1 280px; min-width: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 7px 10px; }
+.fill input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.preview { max-width: 420px; margin-top: 8px; }
 .status.busy { color: var(--muted); }
 .status.ok { color: var(--ok); }
 .status.bad { color: var(--bad); }
@@ -125,6 +129,8 @@ details.cand-list summary { cursor: pointer; color: var(--muted); font-size: 12p
 "use strict";
 // 待审的修正请求 = 开着的、分支名是 correction/issue-<n> 的 PR (由 correction 工作流生成). 每个 PR 说明末尾的
 // HTML 注释里有给这一页读的数据 (scripts/correction.py 的 review_comment): 现在与改成的样子、标题 logo 的候选.
+// 另有「等补图」: 标题 logo 填了「列表里没有」的 issue (app 里该用的那张不在候选里, 多是 TMDB 接口不列的 SVG logo), 没有 PR;
+// 在这里贴上 TMDB 上那张图的链接 = 改 issue 的「标题 logo」一项, 工作流随即生成正常的修正 PR.
 // 合并 / 不采纳 / 换一张 都直接调 GitHub 接口, 要一个只给本仓库的 token; 之后关 issue、删分支、写进对应表照旧由工作流做.
 // 没有 token 也能看 (未登录的接口每小时 60 次).
 const REPO = "GrahamZen/bangumi-tmdb-map";
@@ -139,7 +145,11 @@ const TOKEN_URL = "https://github.com/settings/personal-access-tokens/new?name=b
   "&target_name=GrahamZen&expires_in=90&contents=write&pull_requests=write&issues=write";
 const TOKENS_URL = "https://github.com/settings/personal-access-tokens";
 // 各操作要的 token 权限 (fine-grained token 缺权限时 GitHub 只回「Resource not accessible by personal access token」)
-const NEEDS = { merge: "Contents", close: "Pull requests", pick: "Issues" };
+const NEEDS = { merge: "Contents", close: "Pull requests", pick: "Issues", fill: "Issues", dismiss: "Issues" };
+// 「列表里没有」的写法 (同 scripts/logo_correction.py 的 NOT_LISTED_WORDS)
+const NOT_LISTED_WORDS = ["列表里没有", "列表裡沒有", "待补", "待补图", "not listed"];
+const LABEL = "修正请求";
+const LOGO_LINK_RE = /\/([A-Za-z0-9_-]+)\.(?:png|svg)(?:[?#]\S*)?$/;
 // 换一张之后等工作流重新生成 PR: 每 5 秒看一次, 最多 3 分钟
 const REGEN_POLL_MS = 5000;
 const REGEN_POLL_MAX = 36;
@@ -149,6 +159,7 @@ let me = null;            // {login, canWrite, writeOk}; 没 token 或 token 不
                           // canWrite 是账号对仓库的权限; writeOk 是 token 本身能不能写 (null = 还没查或查不了)
 let authError = "";
 let prs = [];             // {number, title, url, issue, review, status: {text, cls}, done, busy}
+let awaits = [];          // 等补图的 issue: {issue, name, sid, ref, lang, reason, draft, status, done, busy}
 const selected = new Set();
 
 const $ = (id) => document.getElementById(id);
@@ -279,6 +290,22 @@ function parseReview(body) {
   try { return JSON.parse(m[1]); } catch { return null; }
 }
 
+/** issue 正文 (表单渲染出的) 里「### [heading]」那一项的值; 没填或没有这一项为空串 (同 worker/src/index.js). */
+function section(body, heading) {
+  const lines = String(body || "").replace(/\r\n/g, "\n").split("\n");
+  const start = lines.findIndex((l) => l.trim() === `### ${heading}`);
+  if (start < 0) return "";
+  const end = lines.findIndex((l, i) => i > start && /^###\s/.test(l));
+  const value = lines.slice(start + 1, end < 0 ? undefined : end).join("\n").trim();
+  return value === "_No response_" ? "" : value;
+}
+
+/** 贴进来的 TMDB 图片链接 → 图床上的 PNG 版路径 (/xxx.png; SVG 的 logo 也有同名 PNG 版); 认不出为 null. */
+function logoPathOf(text) {
+  const m = LOGO_LINK_RE.exec(String(text || "").trim());
+  return m ? `/${m[1]}.png` : null;
+}
+
 function placeKey(pr) {
   const r = pr.review;
   if (!r) return `pr:${pr.number}`;
@@ -311,8 +338,39 @@ async function loadPrs() {
     })
     .sort((a, b) => a.number - b.number);
   for (const n of [...selected]) if (!prs.some((p) => p.number === n)) selected.delete(n);
+  await loadAwaits();
   render();
   await checkWrite();
+}
+
+/** 等补图的 issue: 开着的修正请求里「标题 logo」填了「列表里没有」、还没有 PR 的. 取不到不挡 PR 列表. */
+async function loadAwaits() {
+  const issues = [];
+  try {
+    for (let page = 1; page <= 3; page++) {
+      const batch = await gh(`/repos/${REPO}/issues?state=open&labels=${encodeURIComponent(LABEL)}&per_page=100&page=${page}`);
+      issues.push(...batch);
+      if (batch.length < 100) break;
+    }
+  } catch {
+    return;
+  }
+  const old = new Map(awaits.map((a) => [a.issue, a]));
+  const withPr = new Set(prs.map((p) => p.issue));
+  awaits = issues
+    .filter((i) => !i.pull_request && !withPr.has(i.number))
+    .filter((i) => NOT_LISTED_WORDS.includes(section(i.body, "标题 logo").toLowerCase()))
+    .map((i) => {
+      const prev = old.get(i.number);
+      const sid = Number(section(i.body, "Bangumi id")) || 0;
+      return {
+        issue: i.number, sid, ref: section(i.body, "TMDB 条目"), lang: section(i.body, "语言").toLowerCase(),
+        name: String(i.title || "").replace(new RegExp(`^标题 logo ${sid}\\s*`), "") || i.title,
+        reason: section(i.body, "说明"), draft: prev ? prev.draft : "",
+        status: prev && prev.busy ? prev.status : null, busy: !!(prev && prev.busy), done: false,
+      };
+    })
+    .sort((a, b) => a.issue - b.issue);
 }
 
 function visible() {
@@ -324,14 +382,19 @@ function render() {
   const shown = visible();
   const open = prs.filter((p) => !p.done);
   const logos = open.filter((p) => p.review && p.review.kind === "logo").length;
-  $("summary").textContent = open.length ? `${open.length} 个待审 (标题 logo ${logos} · 对应条目 ${open.length - logos})` : "没有待审的修正请求";
+  const waiting = awaits.filter((a) => !a.done);
+  const parts = [`标题 logo ${logos}`, `对应条目 ${open.length - logos}`].concat(waiting.length ? [`等补图 ${waiting.length}`] : []);
+  const total = open.length + waiting.length;
+  $("summary").textContent = total ? `${total} 个待审 (${parts.join(" · ")})` : "没有待审的修正请求";
   const groups = new Map();
   for (const p of open) {
     const key = placeKey(p);
     groups.set(key, [...(groups.get(key) || []), p.number]);
   }
-  $("list").innerHTML = shown.length ? shown.map((p) => card(p, groups.get(placeKey(p)) || [])).join("")
-    : `<div class="empty">${prs.length ? "这一类没有待审的" : "没有待审的修正请求"}</div>`;
+  const shownAwaits = $("kind").value === "entry" ? [] : awaits;
+  const cards = shown.map((p) => card(p, groups.get(placeKey(p)) || [])).concat(shownAwaits.map(awaitCard));
+  $("list").innerHTML = cards.length ? cards.join("")
+    : `<div class="empty">${prs.length || awaits.length ? "这一类没有待审的" : "没有待审的修正请求"}</div>`;
   const selectable = shown.filter((p) => !p.done);
   $("all").checked = selectable.length > 0 && selectable.every((p) => selected.has(p.number));
   const count = [...selected].filter((n) => prs.some((p) => p.number === n && !p.done)).length;
@@ -375,6 +438,38 @@ function card(p, samePlace) {
         <button data-action="close" class="danger" ${canWrite ? "" : "disabled"}>不采纳</button>
         ${status}
       </div>
+    </div>
+  </div>`;
+}
+
+function awaitCard(a) {
+  const canWrite = canAct() && !a.busy && !a.done;
+  const m = /^(tv|movie|collection)\/(\d+)$/.exec(a.ref);
+  const logosUrl = m ? `https://www.themoviedb.org/${m[1]}/${m[2]}/images/logos?image_language=${encodeURIComponent(a.lang)}` : null;
+  const links = [`<a href="https://github.com/${REPO}/issues/${a.issue}" target="_blank" rel="noopener">issue #${a.issue}</a>`];
+  if (a.sid) {
+    links.push(`<a href="https://bgm.tv/subject/${a.sid}" target="_blank" rel="noopener">Bangumi ${a.sid}</a>`,
+      `<a href="./#${a.sid}" target="_blank" rel="noopener">核对页</a>`);
+  }
+  if (m) links.push(`TMDB ${tmdbLink(a.ref)}`);
+  const path = logoPathOf(a.draft);
+  const status = a.status ? `<span class="status ${a.status.cls}">${esc(a.status.text)}</span>` : "";
+  return `<div class="pr${a.done ? " done" : ""}" data-await="${a.issue}">
+    <span></span>
+    <div>
+      <div class="title"><span class="chip warn">标题 logo · ${esc(langName(a.lang))} · 等补图</span><strong>${esc(a.name)}</strong></div>
+      <div class="links">${links.join("")}</div>
+      <div class="sub small muted">app 列出的候选里没有该用的那张。${logosUrl
+        ? `到 <a href="${esc(logosUrl)}" target="_blank" rel="noopener">TMDB 上这部的${esc(langName(a.lang))} logo</a> 里找到它，`
+        : "到 TMDB 上找到它，"}打开图片，把图片链接贴到下面 (SVG 的也行，会换成同名的 PNG 版)。</div>
+      <div class="fill">
+        <input type="text" data-action="draft" value="${esc(a.draft)}" placeholder="粘贴 TMDB 上 logo 图片的链接" ${canWrite ? "" : "disabled"}>
+        <button data-action="fill" ${canWrite && path ? "" : "disabled"}>用这张</button>
+        <button data-action="dismiss" class="danger" ${canWrite ? "" : "disabled"}>不采纳</button>
+        ${status}
+      </div>
+      <div class="preview">${path ? logoStage({ logo: path, none: false }) : ""}</div>
+      ${a.reason ? `<div class="reason">${esc(a.reason)}</div>` : ""}
     </div>
   </div>`;
 }
@@ -511,6 +606,55 @@ async function batch(action) {
   setTimeout(loadPrs, 2000);
 }
 
+async function fill(a) {
+  const path = logoPathOf(a.draft);
+  if (!path) return;
+  if (!confirm(`把 issue #${a.issue} 的标题 logo 填成 ${path}？之后自动生成修正 PR (约半分钟)。`)) return;
+  a.busy = true;
+  setStatus(a, "改 issue…", "busy");
+  try {
+    const issue = await gh(`/repos/${REPO}/issues/${a.issue}`);
+    const body = setLogoSection(issue.body, path);
+    if (body === null) throw new Error("issue 里找不到「标题 logo」这一项");
+    await gh(`/repos/${REPO}/issues/${a.issue}`, { method: "PATCH", body: { body } });
+    setStatus(a, "等工作流生成 PR…", "busy");
+    const owner = REPO.split("/")[0];
+    for (let i = 0; i < REGEN_POLL_MAX; i++) {
+      await sleep(REGEN_POLL_MS);
+      const found = await gh(`/repos/${REPO}/pulls?state=open&head=${encodeURIComponent(`${owner}:correction/issue-${a.issue}`)}`);
+      if (found.length && parseReview(found[0].body)) {
+        a.done = true;
+        setStatus(a, `已生成 PR #${found[0].number}`, "ok");
+        a.busy = false;
+        await loadPrs();
+        return;
+      }
+    }
+    setStatus(a, "issue 已改，还没等到 PR：过会儿点「刷新」；一直没有的话看 issue 里的回复 (多半是图床上没有这张)", "busy");
+  } catch (e) {
+    setStatus(a, failure(e, "fill"), "bad");
+  } finally {
+    a.busy = false;
+    render();
+  }
+}
+
+async function dismiss(a) {
+  if (!confirm(`不采纳 issue #${a.issue} (关掉它)？`)) return;
+  a.busy = true;
+  setStatus(a, "关闭中…", "busy");
+  try {
+    await gh(`/repos/${REPO}/issues/${a.issue}`, { method: "PATCH", body: { state: "closed", state_reason: "not_planned" } });
+    a.done = true;
+    setStatus(a, "已关闭", "ok");
+  } catch (e) {
+    setStatus(a, failure(e, "dismiss"), "bad");
+  } finally {
+    a.busy = false;
+    render();
+  }
+}
+
 function setLogoSection(body, value) {
   const lines = String(body || "").replace(/\r\n/g, "\n").split("\n");
   const start = lines.findIndex((l) => l.trim() === "### 标题 logo");
@@ -562,6 +706,13 @@ async function pick(p, logo) {
 $("list").addEventListener("click", (event) => {
   const target = event.target.closest("[data-action]");
   if (!target) return;
+  const awaitEl = target.closest("[data-await]");
+  if (awaitEl) {
+    const a = awaits.find((x) => x.issue === Number(awaitEl.dataset.await));
+    if (a && target.dataset.action === "fill") fill(a);
+    else if (a && target.dataset.action === "dismiss") dismiss(a);
+    return;
+  }
   const p = prs.find((x) => x.number === Number(target.closest("[data-pr]").dataset.pr));
   if (!p) return;
   const action = target.dataset.action;
@@ -574,6 +725,18 @@ $("list").addEventListener("click", (event) => {
   } else if (action === "pick") {
     pick(p, target.dataset.logo || "");
   }
+});
+// 等补图卡片的链接输入框: 只更新预览与按钮, 不整页重画 (重画会丢掉输入焦点)
+$("list").addEventListener("input", (event) => {
+  const input = event.target.closest("[data-action=draft]");
+  if (!input) return;
+  const el = input.closest("[data-await]");
+  const a = awaits.find((x) => x.issue === Number(el.dataset.await));
+  if (!a) return;
+  a.draft = input.value;
+  const path = logoPathOf(a.draft);
+  el.querySelector("[data-action=fill]").disabled = !(canAct() && !a.busy && path);
+  el.querySelector(".preview").innerHTML = path ? logoStage({ logo: path, none: false }) : "";
 });
 $("all").addEventListener("change", () => {
   for (const p of visible()) {

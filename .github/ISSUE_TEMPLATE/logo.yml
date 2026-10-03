@@ -34,7 +34,7 @@ body:
     id: logo
     attributes:
       label: 标题 logo
-      description: 填图片路径 /xxxx.png，或粘贴 TMDB 图片网址 (网页上原图是 .svg 的也行，会换成同名的 PNG 版)；这种语言没有合适的 logo、该显示文字就填「无」；撤销这种语言的人工修正就填「撤销」。
+      description: 填图片路径 /xxxx.png，或粘贴 TMDB 图片网址 (网页上原图是 .svg 的也行，会换成同名的 PNG 版)；这种语言没有合适的 logo、该显示文字就填「无」；撤销这种语言的人工修正就填「撤销」；知道 TMDB 上有、但找不到图片地址就填「列表里没有」，由维护者补图。
       placeholder: /8sW8IRMpZNvPHtTZIBxbCjyYEfX.png
     validations:
       required: true

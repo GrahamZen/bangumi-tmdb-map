@@ -75,7 +75,8 @@ jobs:
           if [ -n "$pr" ]; then gh pr close "$pr" --delete-branch --comment "修正请求 #$ISSUE_NUMBER 已关闭，这个 PR 一起关掉。"; fi
 
   finish:
-    # 修正 PR 关了: 没合并 = 维护者没采纳, 关掉 issue; 合并了 issue 已由 Closes 关掉. 两种都删分支
+    # 修正 PR 关了: 维护者关的 (没合并) = 没采纳, 关掉 issue; 合并了 issue 已由 Closes 关掉. 两种都删分支.
+    # 工作流自己关的 (issue 改成了没法处理的内容、等补图, 或和已有修正一样) 不动 issue: 那几种由 correction_pr.sh 自己处理
     if: >-
       github.event_name == 'pull_request_target' &&
       github.event.pull_request.head.repo.full_name == github.repository &&
@@ -92,11 +93,13 @@ jobs:
           GH_REPO: ${{ github.repository }}
           BRANCH: ${{ github.event.pull_request.head.ref }}
           MERGED: ${{ github.event.pull_request.merged }}
+          CLOSED_BY: ${{ github.event.sender.login }}
         run: |
           set -euo pipefail
           [[ "$BRANCH" =~ ^correction/issue-([0-9]+)$ ]] || exit 0
           issue=${BASH_REMATCH[1]}
-          if [ "$MERGED" != true ] && [ "$(gh issue view "$issue" --json state --jq .state)" = OPEN ]; then
+          if [ "$MERGED" != true ] && [ "$CLOSED_BY" != "github-actions[bot]" ] &&
+            [ "$(gh issue view "$issue" --json state --jq .state)" = OPEN ]; then
             gh issue close "$issue" --reason "not planned" --comment "维护者没有采纳这个修正 (PR 已关闭)。有疑问可以在这里回复。"
           fi
           gh api -X DELETE "repos/$GH_REPO/git/refs/heads/$BRANCH" > /dev/null 2>&1 || true

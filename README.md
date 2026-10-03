@@ -95,6 +95,8 @@ TMDB 的 logo 只挂在整部剧上、不标属于哪一季，多季的剧自动
 
 修正请求用 `.github/ISSUE_TEMPLATE/logo.yml` 这张表单 (Izuko TV 详情页「反馈」里的「标题 logo 不对」会自动提交它)，`correction` 工作流向 TMDB 核实这张图属于这个条目、取宽高比，生成只改 `logo-overrides/<bgm_id>.<语言>.json` 的 PR，说明里列出现在与改后的 logo、这个条目各种语言的全部 logo 和条目对应 TMDB 的第几季。合并后同样由 `apply-overrides` 应用。
 
+app 里该用的那张不在候选里时 (多是 TMDB 接口不列的 SVG 格式 logo，网页上才有)，报告里「标题 logo」一项是「列表里没有」：不开 PR，issue 留着等维护者补图 —— 在审核页的「等补图」里贴上 TMDB 上那张图的链接 (改的是 issue)，随即照常生成修正 PR。
+
 自动挑的 logo 由 `logos` 工作流每天查一轮 (`scripts/logos.py`，按 TMDB 条目存在 `state/logos.tsv`)：没查过的条目先查，查到过 logo 的 60 天、一种也没有的 14 天后再查。
 
 推送修正后，`apply-overrides` 工作流几分钟内把它并进对应表与页面；客户端经 jsDelivr 取表，它的部分节点不认主动刷新、最长缓存 12 小时，加上客户端每天查一次表，一般一天内用上。**有修正的条目不再自动匹配，自动结果也不会覆盖它**；删掉修正文件（页面上的「撤销人工修正」）就回到自动匹配，下一轮重新查。修正文件格式不对时那一轮会失败并通知，不会提交任何东西。

@@ -6,6 +6,9 @@
 
 一种语言一个文件, 每次请求只改一种语言 (同一条目不同语言的 PR 不互相冲突); 修正针对对应表里这个条目现在的 TMDB 条目
 (背景图条目), 条目改了旧修正就不再生效 (见 merge.py).
+
+「标题 logo」填「列表里没有」(app 里该用的那张不在候选里, 多是 TMDB 接口不列的 SVG 格式 logo) = 等维护者补图: 不改文件、不开 PR,
+只在 issue 里回复 (status await); 维护者在审核页 (docs/review.html) 把这一项改成找到的图片链接后, 照常生成修正.
 """
 import argparse
 import datetime
@@ -18,8 +21,8 @@ import urllib.error
 import urllib.request
 
 from common import LOGO_LANG_RE, format_logo_entry, load_logos, logo_override_content, normalize_logo_override
-from correction import (IMG, NONE_WORDS, PAGE, REASON_MAX, REVERT_WORDS, REVIEW_PAGE, cell, clip, commit_message,
-                        load_entry, make_fetch, parse_bgm_id, parse_ref, ref_md, review_comment, safe)
+from correction import (IMG, NONE_WORDS, PAGE, REASON_MAX, REVERT_WORDS, REVIEW_PAGE, TMDB_SITE, cell, clip,
+                        commit_message, load_entry, make_fetch, parse_bgm_id, parse_ref, ref_md, review_comment, safe)
 from merge import effective
 
 FORM = {"Bangumi id": "bgm_id", "TMDB 条目": "tmdb", "语言": "language", "标题 logo": "logo", "说明": "reason"}
@@ -28,6 +31,8 @@ LOGO_IN_TEXT = re.compile(r"/([A-Za-z0-9_\-]+)\.(?:png|svg)(?:[?#]\S*)?$")
 PNG_RENDITION = "https://image.tmdb.org/t/p/w92"
 LANG_WORDS = {"日文": "ja", "日语": "ja", "中文": "zh", "汉语": "zh", "英文": "en", "英语": "en"}
 LANG_NAMES = {"ja": "日文", "zh": "中文", "en": "英文"}
+# 「标题 logo」填这些 = 该用的不在 app 列出的候选里, 等维护者补图 (同 worker/src/index.js)
+NOT_LISTED_WORDS = {"列表里没有", "列表裡沒有", "待补", "待补图", "not listed"}
 GALLERY_MAX = 12
 REVIEW_CANDIDATES_MAX = 40
 
@@ -70,7 +75,7 @@ class Proposal:
         self.rec = {}
         self.ref = None             # 对应表里这个条目现在的 TMDB 条目 (logo 从它里面挑)
         self.lang = None
-        self.action = None          # set / none / revert
+        self.action = None          # set / none / revert / not_listed (等维护者补图)
         self.entry = None           # 这种语言改成的 logo ({logo, aspect} 或 {none: True}); 撤销时 None
         self.existing = None        # 仓库里这种语言现有的修正 (规整后, 针对的条目就是现在的); 没有或已作废为 None
         self.override = None        # 写进文件的修正; 撤销时 None (删文件)
@@ -178,6 +183,8 @@ def propose(fields, root, issue, today):
         p.action = "revert"
         if p.lang and not (path and os.path.isfile(path)):
             p.errors.append(f"这个条目的{lang_name(p.lang)} logo 没有人工修正，不用撤销")
+    elif text.lower() in NOT_LISTED_WORDS:
+        p.action = "not_listed"
     elif text.lower() in NONE_WORDS:
         p.action = "none"
         p.entry = {"none": True}
@@ -191,7 +198,7 @@ def propose(fields, root, issue, today):
     if p.errors:
         return p
 
-    if p.action != "revert":
+    if p.action in ("set", "none"):
         was = format_logo_entry(p.auto) if p.auto is not None else None
         if was:
             p.entry["auto_was"] = was
@@ -370,6 +377,20 @@ def render_summary(p):
     return "\n".join(lines) + "\n"
 
 
+def logos_page(p):
+    """TMDB 网页上这个条目这种语言的 logo 页 (接口不列的 SVG logo 网页上有)."""
+    kind, tid = p.ref.split("/")
+    return f"{TMDB_SITE}{kind}/{tid}/images/logos?image_language={p.lang}"
+
+
+def render_await(p):
+    lines = [f"收到：{p.sid} 的{lang_name(p.lang)}标题 logo 不在 app 列出的候选里 (多是 TMDB 接口不列的 SVG 格式 logo)。",
+             "", f"维护者会到 [TMDB 上这部的{lang_name(p.lang)} logo]({logos_page(p)}) 里找到对的那张，把「标题 logo」一项改成它的链接，"
+             "之后自动生成修正 PR。知道是哪张的话，也可以直接编辑这个 issue 把链接填进去。"]
+    lines += [f"- 请留意：{cell(w)}" for w in p.warnings]
+    return "\n".join(lines) + "\n"
+
+
 def render_invalid(p):
     lines = ["这个标题 logo 修正请求没法处理：", ""] + [f"- {safe(e)}" for e in p.errors]
     lines += ["", "改好后直接编辑这个 issue，会自动重新检查。"]
@@ -398,6 +419,13 @@ def main():
         print("不是标题 logo 修正请求表单, 跳过")
         return
     p = propose(fields, args.root, issue, args.today)
+    if p.action == "not_listed" and not p.errors:
+        issue_title = clip(f"标题 logo {p.sid} {p.name}".strip(), 120)
+        result = {"status": "await", "bgm_id": p.sid, "action": p.action, "issue_title": issue_title}
+        write("reply.md", render_await(p))
+        write("result.json", json.dumps(result, ensure_ascii=False))
+        print(json.dumps(result, ensure_ascii=False))
+        return
     if not p.errors and not p.noop:
         if token:
             verify(p, make_fetch(token))

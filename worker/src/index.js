@@ -3,6 +3,7 @@
 //
 // POST /logo-report   标题 logo 不对 (表单 .github/ISSUE_TEMPLATE/logo.yml)
 //   {"bgm_id": 135275, "tmdb": "tv/65844", "language": "ja", "logo": "/x.png" 或 null (= 用文字), "app": "1.0.4"}
+//   该用的不在 app 列出的候选里 (TMDB 接口不列的 SVG logo 之类): "not_listed": true, 不带 logo —— 维护者审核时补图
 // POST /entry-report  对应的 TMDB 条目不对 (表单 .github/ISSUE_TEMPLATE/correction.yml)
 //   {"bgm_id": 135275, "tmdb": "tv/65844" 或 null (= TMDB 上没有对应), "backdrop": "/x.jpg" 或 null, "app": "1.0.4"}
 // 请求要带 X-Izuko-Client 头 (app 填版本号), 没有的 403 —— 挡掉随手乱发的, 不算防护 (头谁都能伪造).
@@ -38,6 +39,8 @@ function from(app) {
 
 // 表单值的写法 (同 scripts/correction.py 与 logo_correction.py): 网页上手填的 issue 可能写「无」「日文」或贴网址
 const NONE_WORDS = new Set(["无", "没有", "无对应", "没有对应", "none"]);
+// 标题 logo「列表里没有」(同 scripts/logo_correction.py 的 NOT_LISTED_WORDS); 开 issue 时写第一个
+const NOT_LISTED_WORDS = ["列表里没有", "列表裡沒有", "待补", "待补图", "not listed"];
 const LANG_WORDS = { 日文: "ja", 日语: "ja", 中文: "zh", 汉语: "zh", 英文: "en", 英语: "en" };
 
 /** issue 正文 (表单渲染出的) 里「### [heading]」那一项的值; 没填 (_No response_) 或没有这一项为空串. */
@@ -52,6 +55,10 @@ function section(issue, heading) {
 
 function isNone(value) {
   return NONE_WORDS.has(value.trim().toLowerCase());
+}
+
+function isNotListed(value) {
+  return NOT_LISTED_WORDS.includes(value.trim().toLowerCase());
 }
 
 /** logo 值 → 文件名 (不带扩展名, SVG 与同名 PNG 算同一张); 认不出为 null. */
@@ -79,18 +86,21 @@ const KINDS = {
   "/logo-report": (b) => {
     if (typeof b.tmdb !== "string" || !REF_RE.test(b.tmdb)) return null;
     if (typeof b.language !== "string" || !LANG_RE.test(b.language)) return null;
-    const logo = b.logo ?? null;
+    const notListed = b.not_listed === true;
+    const logo = notListed ? null : b.logo ?? null;
     if (logo !== null && (typeof logo !== "string" || !LOGO_RE.test(logo))) return null;
     const titleRe = new RegExp(`^标题 logo ${b.bgm_id}( |$)`);
     const name = logo && logoName(logo);
+    const value = notListed ? NOT_LISTED_WORDS[0] : logo ?? "无";
     return {
       title: `标题 logo ${b.bgm_id}`,
       body: `### Bangumi id\n\n${b.bgm_id}\n\n### TMDB 条目\n\n${b.tmdb}\n\n### 语言\n\n${b.language}\n\n` +
-        `### 标题 logo\n\n${logo ?? "无"}\n\n### 说明\n\n${from(b.app)}。\n`,
+        `### 标题 logo\n\n${value}\n\n### 说明\n\n${from(b.app)}。\n`,
       samePlace: (i) => titleRe.test(i.title) && langOf(section(i, "语言")) === b.language,
       sameContent: (i) => {
-        const value = section(i, "标题 logo");
-        return name ? logoName(value) === name : isNone(value);
+        const v = section(i, "标题 logo");
+        if (notListed) return isNotListed(v);
+        return name ? logoName(v) === name : isNone(v);
       },
     };
   },

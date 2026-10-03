@@ -36,6 +36,12 @@ case "$(result status)" in
     drop_pr "修正请求改成了没法处理的内容，先关掉这个 PR；issue 改好后会重新生成。"
     gh issue comment "$ISSUE_NUMBER" --body-file "$OUT/reply.md"
     ;;
+  await)
+    # 标题 logo「列表里没有」: 等维护者补图, 不开 PR (之前生成过的关掉); issue 留着
+    drop_pr "修正请求改成了等维护者补图，先关掉这个 PR；补上图后会重新生成。"
+    retitle
+    gh issue comment "$ISSUE_NUMBER" --body-file "$OUT/reply.md"
+    ;;
   noop)
     drop_pr "修正请求现在和已有的人工修正一样，这个 PR 不需要了。"
     retitle
