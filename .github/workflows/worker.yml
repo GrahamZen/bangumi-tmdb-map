@@ -1,4 +1,4 @@
-# 部署 worker/ (Izuko TV 里「标题 logo 不对」的报告中转) 到 Cloudflare, 再把它的地址写进 report-endpoints.json (app 每天拉一次这份清单).
+# 部署 worker/ (Izuko TV 详情页「反馈」的报告中转) 到 Cloudflare, 再把它的地址写进 report-endpoints.json (app 每天拉一次这份清单).
 # 要三个仓库密钥: CLOUDFLARE_API_TOKEN (Cloudflare「Edit Cloudflare Workers」模板建的 API 令牌)、CLOUDFLARE_ACCOUNT_ID、
 # REPORT_GITHUB_TOKEN (只给本仓库 Issues 读写的 fine-grained 令牌, 部署成 Worker 的密钥). 没配齐就跳过, 不算失败.
 name: worker
@@ -68,7 +68,7 @@ jobs:
           if git diff --cached --quiet; then echo "地址没变"; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -q -m "报告中转地址: $(python3 -c 'import json; print(json.load(open("report-endpoints.json"))["logoReport"][-1])')"
+          git commit -q -m "报告中转地址: $(python3 -c 'import json; print(json.load(open("report-endpoints.json"))["endpoints"][-1])')"
           git pull -q --rebase origin main
           git push
           curl -fsS "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@main/report-endpoints.json" > /dev/null || true
