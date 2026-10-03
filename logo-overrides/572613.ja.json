@@ -1,0 +1,9 @@
+{
+  "tmdb": "tv/298103",
+  "logo": "/rgvqexKfcKU4DRdRWABT2P75GwR.png",
+  "aspect": 1.0,
+  "auto_was": "-",
+  "title": "不虐待我的继母与继姐",
+  "note": "TMDB 网页上有日文 logo (SVG 格式), 接口的 logo 列表里漏掉了, 自动挑的日文一格成了「没有」。 (修正请求 #5)",
+  "updated": "2026-10-03"
+}
