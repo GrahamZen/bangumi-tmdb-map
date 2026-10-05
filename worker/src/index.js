@@ -18,6 +18,10 @@
 //
 // 绑定: REPORT_GITHUB_TOKEN (secret, 只给本仓库 Issues 读写的 fine-grained token), REPO (vars),
 //       REPORT_LIMITER (ratelimit), REPORTS (KV).
+//
+// GET /bgm/callback 是另一件事 (手机登录 Bangumi 的回调中转), 见 bgm-callback.js.
+
+import { bgmCallback } from "./bgm-callback.js";
 
 const IP_DAILY_LIMIT = 30;
 const SITE_DAILY_LIMIT = 100;
@@ -175,6 +179,7 @@ async function overLimit(env, key, limit) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === "/bgm/callback") return bgmCallback(request);
     if (!KINDS[url.pathname]) return json({ error: "not_found" }, 404);
     if (request.method !== "POST") return json({ error: "method_not_allowed" }, 405);
     if (!APP_RE.test(request.headers.get(CLIENT_HEADER) || "")) return json({ error: "forbidden" }, 403);
