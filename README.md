@@ -22,6 +22,7 @@ https://raw.githubusercontent.com/GrahamZen/bangumi-tmdb-map/main/map/bgm-tmdb.t
 | `source` | `auto` 自动匹配，`manual` 人工修正 | `auto` |
 | `episodes` | 每一集对应 TMDB 第几季第几集 (见下)；空表示没算出来，照 `stills` 全量索引、自己对集 | `S3E1` |
 | `logos` | 标题 logo，按语言 (见下)；空表示还没查 | `o=ja ja=/a.png:2.383 zh=- en=/b.png:4.159` |
+| `anidb` | AniDB 条目 id，来自 [bangumi-data](https://github.com/bangumi-data/bangumi-data)；空表示 bangumi-data 没登 | `19242` |
 
 `episodes` 是空格分隔的几段，按离线用客户端同一套规则对出来的结果写：
 
@@ -33,6 +34,8 @@ https://raw.githubusercontent.com/GrahamZen/bangumi-tmdb-map/main/map/bgm-tmdb.t
 `logos` 是空格分隔的几段：`o=ja` 是 `backdrop` 那个 TMDB 条目的原语言；`ja=/a.png:2.383` 是这种语言用的 logo (路径拼在 `https://image.tmdb.org/t/p/w500` 之类的尺寸前缀后面) 与它的宽高比 (宽 / 高)，`-` 是这种语言没有合适的 logo、显示文字标题。每个条目都有日、中、英与原语言这几种；某种语言整段没写就是还没查。
 
 TMDB 的 logo 只挂在整部剧上、不标属于哪一季，多季的剧自动挑的 (评分最高的那张) 可能是别的季的；这类错由人工修正纠正 (见下)。
+
+`anidb` 给弹幕用：弹弹 play 的作品编号就是 AniDB 的条目 id，客户端拿它直接取那部作品的分集，不必按名字搜。Bangumi 拆成几段的一季 (如 Re：从零开始的异世界生活 第四季的丧失篇与夺还篇) 在 AniDB 常是一部、接着编集号，bangumi-data 给每一段都登了那一部。这一列只写进表里已有的行 (不为它单独加行)；`logos` 工作流每天从 npm 上 bangumi-data 的最新版本更新一次 (`state/anidb.tsv`)。
 
 人工确认 TMDB 上没有对应的条目也在表里，除 `source` 外各列为空，调用方不必再搜。表里没有的条目，要么自动匹配没找到，要么还没查过，调用方照常自己搜。
 
@@ -111,6 +114,7 @@ app 里该用的那张不在候选里时 (多是 TMDB 接口不列的 SVG 格式
   - 匹配到的：每 4 到 5 个月重验一次（TMDB 的 API 条款要求缓存不超过 6 个月）；
   - 有人工修正的：不查。
 - 有 TMDB 请求失败的条目不改表，旧结果照用，下一轮重跑。
+- **AniDB 条目 id**：取自 [bangumi-data](https://github.com/bangumi-data/bangumi-data) (CC BY 4.0) 每个番组登的 bangumi 与 anidb 编号 (`scripts/anidb.py`)；同一个 Bangumi 条目登了几个不同 AniDB 条目的不写。
 
 ## 目录
 
@@ -122,8 +126,10 @@ logo-overrides/        标题 logo 的人工修正, 每个条目每种语言一�
 docs/                  核对页面 (GitHub Pages) 与它的数据: data/index.tsv 全部条目一览, data/s/*.json 条目详情
 state/state.tsv        每个条目上次检查的日期、结果与输入指纹 (决定下次什么时候查)
 state/logos.tsv        每个 TMDB 条目自动挑的标题 logo 与查的日期
+state/anidb.tsv        Bangumi 条目 → AniDB 条目 (来自 bangumi-data)
 scripts/               ci.sh 每日更新的全部步骤 (工作流与本地共用), prepare.py 挑任务, merge.py 合并结果与人工修正,
-                       correction.py / logo_correction.py / correction_pr.sh 处理修正请求, logos.py 挑标题 logo
+                       correction.py / logo_correction.py / correction_pr.sh 处理修正请求, logos.py 挑标题 logo,
+                       anidb.py 取 AniDB 条目 id
 runner/                匹配器入口; 工作流把它拷进 izuko-tv 的测试源码里运行
 worker/                标题 logo 报告的中转 (Cloudflare Worker), 部署见 worker/README.md
 report-endpoints.json  中转地址清单 (Izuko TV 每天拉一次; 部署时 worker 工作流补上)

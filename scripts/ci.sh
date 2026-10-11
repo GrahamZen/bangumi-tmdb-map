@@ -11,6 +11,7 @@
 #   merge     合并结果与人工修正 (scripts/merge.py); 没有结果时跳过
 #   apply     只应用人工修正 (推送 overrides/ 或 logo-overrides/ 后的那一轮用); 修正文件不合法时失败
 #   logos     按 TMDB 条目查标题 logo (scripts/logos.py), 再按新结果重写对应表; 要 TMDB_API_TOKEN
+#   anidb     从 bangumi-data 取 AniDB 条目编号 (scripts/anidb.py), 写 state/anidb.tsv; 放在 logos / merge / apply 之前
 #   local     本地验证: download plan matcher match merge 依次跑, 不提交
 #
 # 环境变量:
@@ -124,7 +125,7 @@ step_merge() {
   python3 "$ROOT/scripts/merge.py" --work "$WORK" --results "$WORK/results.jsonl" \
     --state "$ROOT/state/state.tsv" --map "$ROOT/map/bgm-tmdb.tsv" --meta "$ROOT/map/meta.json" \
     --site "$ROOT/docs" --overrides "$ROOT/overrides" \
-    --logo-overrides "$ROOT/logo-overrides" --logos "$ROOT/state/logos.tsv" \
+    --logo-overrides "$ROOT/logo-overrides" --logos "$ROOT/state/logos.tsv" --anidb "$ROOT/state/anidb.tsv" \
     --dump-name "$(cat "$WORK/dump.name")" --matcher "$(cat "$WORK/matcher.sha" 2>/dev/null || true)" \
     --summary-out "$WORK/summary.txt"
 }
@@ -132,7 +133,13 @@ step_merge() {
 step_apply() {
   python3 "$ROOT/scripts/merge.py" --apply-only --state "$ROOT/state/state.tsv" --map "$ROOT/map/bgm-tmdb.tsv" \
     --meta "$ROOT/map/meta.json" --site "$ROOT/docs" --overrides "$ROOT/overrides" \
-    --logo-overrides "$ROOT/logo-overrides" --logos "$ROOT/state/logos.tsv" --summary-out "$WORK/summary.txt"
+    --logo-overrides "$ROOT/logo-overrides" --logos "$ROOT/state/logos.tsv" --anidb "$ROOT/state/anidb.tsv" \
+    --summary-out "$WORK/summary.txt"
+}
+
+step_anidb() {
+  # 只更新 state/anidb.tsv; 对应表在随后的 apply / merge 里按它重写
+  python3 "$ROOT/scripts/anidb.py" --out "$ROOT/state/anidb.tsv" --summary-out "$WORK/anidb-summary.txt"
 }
 
 step_logos() {
@@ -147,7 +154,7 @@ step_logos() {
 [ $# -gt 0 ] || { sed -n '2,24p' "$0"; exit 2; }
 for s in "$@"; do
   case "$s" in
-    jdk | download | plan | matcher | match | merge | apply | logos) echo "== $s"; "step_$s" ;;
+    jdk | download | plan | matcher | match | merge | apply | logos | anidb) echo "== $s"; "step_$s" ;;
     local) for t in jdk download plan matcher match merge; do echo "== $t"; "step_$t"; done ;;
     *) echo "未知步骤: $s" >&2; exit 2 ;;
   esac

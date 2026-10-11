@@ -249,9 +249,7 @@ class LogoColumnTest(unittest.TestCase):
         self.assertEqual({135275: ["ja"]}, {k: list(v) for k, v in overrides.items()})
         self.assertEqual(["135275.json"], [name for name, _ in errors])
 
-    def test_merge_writes_the_logo_column(self):
-        repo = Repo({"ja": {"tmdb": "tv/65844", "logo": "/base.png", "aspect": 2.112},
-                     "en": {"tmdb": "tv/65844", "logo": "/en.png", "aspect": 4.1}})
+    def merge_rows(self, repo):
         root = repo.root
         map_path = os.path.join(root, "map", "bgm-tmdb.tsv")
         subprocess.run([sys.executable, os.path.join(HERE, "merge.py"), "--apply-only",
@@ -259,12 +257,26 @@ class LogoColumnTest(unittest.TestCase):
                         "--meta", os.path.join(root, "map", "meta.json"), "--site", os.path.join(root, "docs"),
                         "--overrides", os.path.join(root, "overrides"),
                         "--logo-overrides", os.path.join(root, "logo-overrides"),
-                        "--logos", os.path.join(root, "state", "logos.tsv")],
+                        "--logos", os.path.join(root, "state", "logos.tsv"),
+                        "--anidb", os.path.join(root, "state", "anidb.tsv")],
                        check=True, capture_output=True)
         with open(map_path, encoding="utf-8") as f:
-            rows = [line.rstrip("\n").split("\t") for line in f if not line.startswith("#")]
-        self.assertEqual([["135275", "tv/65844", "/k.jpg", "tv/65844", "auto", "S1E1", "o=ja ja=/base.png:2.112 zh=- en=/en.png:4.1"]],
-                         rows)
+            return [line.rstrip("\n").split("\t") for line in f if not line.startswith("#")]
+
+    def test_merge_writes_the_logo_column(self):
+        repo = Repo({"ja": {"tmdb": "tv/65844", "logo": "/base.png", "aspect": 2.112},
+                     "en": {"tmdb": "tv/65844", "logo": "/en.png", "aspect": 4.1}})
+        self.assertEqual([["135275", "tv/65844", "/k.jpg", "tv/65844", "auto", "S1E1",
+                           "o=ja ja=/base.png:2.112 zh=- en=/en.png:4.1", ""]],
+                         self.merge_rows(repo))
+
+    def test_merge_writes_the_anidb_column(self):
+        repo = Repo({})
+        common.save_anidb(os.path.join(repo.root, "state", "anidb.tsv"), {135275: 18076, 1: 2}, "0.3.230")
+        self.assertEqual(({135275: 18076, 1: 2}, "0.3.230"), common.load_anidb(os.path.join(repo.root, "state", "anidb.tsv")))
+        rows = self.merge_rows(repo)
+        # 只写进表里已有的行
+        self.assertEqual([["135275", "18076"]], [[r[0], r[7]] for r in rows])
 
 
 if __name__ == "__main__":

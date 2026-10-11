@@ -284,3 +284,32 @@ def logo_cell(ref, overrides, auto) -> str:
     if not entries:
         return ""
     return format_logos((auto or {}).get("original"), entries)
+
+
+# state/anidb.tsv (anidb.py 写, merge.py 读): Bangumi 条目 → AniDB 条目, 来自 bangumi-data.
+ANIDB_HEADER = "# bgm_id\tanidb_id (来自 bangumi-data {version}, CC BY 4.0: https://github.com/bangumi-data/bangumi-data)"
+
+
+def save_anidb(path, mapping, version):
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(ANIDB_HEADER.format(version=version) + "\n")
+        for bgm in sorted(mapping):
+            f.write(f"{bgm}\t{mapping[bgm]}\n")
+
+
+def load_anidb(path):
+    """({bgm_id: anidb_id}, bangumi-data 的版本); 文件不在时为空."""
+    mapping, version = {}, ""
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                if line.startswith("#"):
+                    if "bangumi-data " in line:
+                        version = line.split("bangumi-data ", 1)[1].split(",", 1)[0].strip()
+                    continue
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) >= 2 and parts[0].isdigit() and parts[1].isdigit():
+                    mapping[int(parts[0])] = int(parts[1])
+    except FileNotFoundError:
+        pass
+    return mapping, version
