@@ -5,7 +5,10 @@
 
 TMDB 不标 logo 属于哪一季, 多季的剧自动挑的可能是别的季的 —— 这类错由人工修正 (logo-overrides/) 纠正, 本脚本不管.
 
-到期: 没查过的; 查到过 logo 的 60 天后; 一种也没有的 14 天后 (logo 是社区陆续上传的).
+到期 (logo 是社区陆续上传的, 新番开播后几周里常常一种语言一种语言地补上):
+  - 没查过的;
+  - TMDB 上最近两天有改动的 (`/tv/changes`、`/movie/changes`, 与表求交集; 今天查过的不再查) —— 新传的 logo 第二天就进表;
+  - 每种语言都查到了 logo 的 60 天后; 缺某种语言 (含一种也没有) 的 14 天后 —— 兜底变更列表漏掉的 (哪天没跑、合集没有变更列表).
 请求失败的条目不改, 下一轮再查. 按时间预算跑, 剩下的下一轮接着.
 
 用法: python3 scripts/logos.py --map map/bgm-tmdb.tsv --logos state/logos.tsv [--minutes 40] [--summary-out f]
@@ -26,8 +29,12 @@ import urllib.request
 from common import LOGO_LANGS, load_logos, save_logos
 
 API = "https://api.tmdb.org/3"
-RECHECK_HIT_DAYS = 60
-RECHECK_MISS_DAYS = 14
+RECHECK_COMPLETE_DAYS = 60
+RECHECK_MISSING_DAYS = 14
+# 变更列表看最近几天 (含今天): 每天跑一次, 留一天余量
+CHANGES_DAYS = 2
+# 变更列表最多翻几页 (一页 100 条; 两天约剧集 50 页、电影 150 页)
+CHANGES_MAX_PAGES = 500
 # 中文 logo 的地区优先级: 简体在前
 ZH_REGIONS = ("CN", "SG", "TW", "HK", "MO")
 
@@ -104,15 +111,36 @@ def check(ref, fetch):
     return original, {lang: pick(logos, lang) or {"none": True} for lang in langs}
 
 
-def due(entry, today):
+def due(entry, today, changed=False):
+    """[changed]: 这个条目最近在 TMDB 上有改动 (见 changed_refs)."""
     if entry is None:
         return True
     try:
         checked = datetime.date.fromisoformat(entry["checked"])
     except ValueError:
         return True
-    found = any(not e.get("none") for e in entry["logos"].values())
-    return (today - checked).days >= (RECHECK_HIT_DAYS if found else RECHECK_MISS_DAYS)
+    if changed and checked < today:
+        return True
+    complete = all(not e.get("none") for e in entry["logos"].values())
+    return (today - checked).days >= (RECHECK_COMPLETE_DAYS if complete else RECHECK_MISSING_DAYS)
+
+
+def changed_refs(fetch, today):
+    """最近 CHANGES_DAYS 天在 TMDB 上有改动的剧集与电影 (`tv/<id>`、`movie/<id>`). 取不全不要紧 (到期规则兜底), 出错就用取到的部分."""
+    start = (today - datetime.timedelta(days=CHANGES_DAYS - 1)).isoformat()
+    refs = set()
+    for kind in ("tv", "movie"):
+        page, pages = 1, 1
+        while page <= min(pages, CHANGES_MAX_PAGES):
+            try:
+                data = fetch(f"/{kind}/changes", {"start_date": start, "end_date": today.isoformat(), "page": page}) or {}
+            except Exception as e:  # noqa: BLE001
+                print(f"变更列表 {kind} 第 {page} 页取不到: {type(e).__name__}: {e}")
+                break
+            pages = data.get("total_pages") or 0
+            refs.update(f"{kind}/{x['id']}" for x in data.get("results") or [] if x.get("id") is not None)
+            page += 1
+    return refs
 
 
 def map_refs(path):
@@ -149,12 +177,13 @@ def main():
     # 表里没有了的条目不再留
     for ref in [r for r in logos if r not in refs]:
         del logos[ref]
-    # 从没查过的排前面, 其余按上次查的日期
-    todo = sorted((r for r in refs if due(logos.get(r), today)),
-                  key=lambda r: (r in logos, logos[r]["checked"] if r in logos else "", r))
-    print(f"条目 {len(refs)}, 到期 {len(todo)}")
-
     fetch = make_fetch(token, RateLimiter(args.rps))
+    changed = changed_refs(fetch, today) & refs
+    # 从没查过的排前面, 再是最近有改动的, 其余按上次查的日期
+    todo = sorted((r for r in refs if due(logos.get(r), today, r in changed)),
+                  key=lambda r: (r in logos, r not in changed, logos[r]["checked"] if r in logos else "", r))
+    print(f"条目 {len(refs)}, 最近有改动 {len(changed)}, 到期 {len(todo)}")
+
     deadline = time.monotonic() + args.minutes * 60
     stats = {"checked": 0, "found": 0, "none": 0, "err": 0}
     errors = []

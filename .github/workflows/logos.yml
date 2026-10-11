@@ -1,4 +1,4 @@
-# 每天查一轮标题 logo: 对应表里的 TMDB 条目到期的 (没查过 / 有 logo 的 60 天 / 没有的 14 天) 重新挑日、中、英与原语言的 logo,
+# 每天查一轮标题 logo: 对应表里的 TMDB 条目到期的 (没查过 / TMDB 上最近两天有改动 / 各语言齐的 60 天 / 缺语言的 14 天) 重新挑日、中、英与原语言的 logo,
 # 存进 state/logos.tsv, 再按它重写对应表的 logo 列 (logo 修正一并应用). 逻辑在 scripts/logos.py 与 ci.sh 的 logos 步骤.
 name: logos
 
