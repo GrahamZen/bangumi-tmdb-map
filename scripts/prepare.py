@@ -16,7 +16,7 @@ import os
 import sys
 import zipfile
 
-from common import ANIME, PLATFORMS, load_overrides, load_state, parse_infobox, popularity
+from common import ANIME, PLATFORMS, gone_refs, load_logos, load_overrides, load_state, parse_infobox, popularity
 
 EPISODE_CAP = 3000  # 与 app 取分集的上限一致 (EpisodeService.MAX_EPISODES)
 HASH_KEYS = {"别名", "上映年度", "上映日期", "其他上映日期", "其他上映年度", "放送开始"}
@@ -73,6 +73,29 @@ def outdated_records(site):
     return ids
 
 
+def gone_backdrop_subjects(map_path, logos, state) -> set:
+    """背景图条目在 TMDB 上已经没了 (logos.py 查到 404, 见 [gone_refs]) 的条目, 且是上次匹配之后才发现的 —— 要重新匹配.
+
+    重新匹配后 checked 晚于发现的日期, 不再算; 匹配器仍落在同一个条目 (TMDB 搜索还没下架它) 也不会天天重跑, 等 logos.py 14 天后再查.
+    """
+    gone = gone_refs(logos)
+    if not gone or not os.path.isfile(map_path):
+        return set()
+    subjects = set()
+    with open(map_path, encoding="utf-8") as f:
+        for line in f:
+            if line.startswith("#") or not line.strip():
+                continue
+            cols = line.rstrip("\n").split("\t")
+            if len(cols) < 2 or cols[1] not in gone or not cols[0].isdigit():
+                continue
+            sid = int(cols[0])
+            row = state.get(sid)
+            if row is None or row["checked"] <= gone[cols[1]]:
+                subjects.add(sid)
+    return subjects
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dump", required=True, help="Bangumi Archive 的 zip")
@@ -80,6 +103,8 @@ def main():
     ap.add_argument("--work", required=True)
     ap.add_argument("--overrides", default="overrides", help="人工修正目录; 有修正的条目不跑")
     ap.add_argument("--site", default="docs", help="核对页面目录 (读条目记录, 找出旧格式的结果)")
+    ap.add_argument("--map", default="map/bgm-tmdb.tsv", help="对应表 (找背景图条目已经没了的)")
+    ap.add_argument("--logos", default="state/logos.tsv", help="logos.py 的结果 (哪些 TMDB 条目已经没了)")
     ap.add_argument("--today", default=datetime.datetime.now(datetime.timezone.utc).date().isoformat())
     ap.add_argument("--max-jobs", type=int, default=20000)
     ap.add_argument("--ids", help="只跑这些条目 (逗号分隔), 忽略到期规则; 调试用")
@@ -92,6 +117,9 @@ def main():
     state = load_state(args.state)
     manual = set(load_overrides(args.overrides)[0])
     outdated = outdated_records(args.site)
+    gone = gone_backdrop_subjects(args.map, load_logos(args.logos), state)
+    if gone:
+        print(f"背景图条目在 TMDB 上已经没了, 重新匹配: {len(gone)} 条")
     subjects = {}
     with zipfile.ZipFile(args.dump) as zf:
         with open_member(zf, "subject.jsonlines") as f:
@@ -129,7 +157,7 @@ def main():
             bucket = 0
         elif args.force:
             bucket = 0
-        elif sid in outdated:
+        elif sid in outdated or sid in gone:
             bucket = 1
         else:
             bucket = due_bucket(state.get(sid), h, s.get("date") or "", args.today, sid)

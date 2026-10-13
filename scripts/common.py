@@ -146,7 +146,9 @@ def load_overrides(directory):
 LOGO_LANGS = ("ja", "zh", "en")  # 每个条目都挑的语言, 另加条目的原语言
 LOGO_LANG_RE = re.compile(r"^[a-z]{2}$")
 LOGO_PATH_RE = re.compile(r"^/[A-Za-z0-9_\-]+\.png$")
-LOGOS_HEADER = "# ref\tchecked\tlogos (o=<原语言> <语言>=/xxx.png:宽高比 或 -)"
+LOGOS_HEADER = "# ref\tchecked\tlogos (o=<原语言> <语言>=/xxx.png:宽高比 或 -; gone = 这个条目在 TMDB 上已经没了)"
+# state/logos.tsv 里「条目在 TMDB 上已经没了」的记法 (logos.py 查详情 404)
+GONE = "gone"
 
 
 def format_logo_entry(entry) -> str:
@@ -259,6 +261,9 @@ def load_logos(path):
             if not line.strip() or line.startswith("#"):
                 continue
             ref, checked, text = (line.rstrip("\n").split("\t") + [""])[:3]
+            if text == GONE:
+                logos[ref] = {"checked": checked, "original": "", "logos": {}, "gone": True}
+                continue
             original, entries = parse_logos(text)
             logos[ref] = {"checked": checked, "original": original, "logos": entries}
     return logos
@@ -270,13 +275,25 @@ def save_logos(path, logos):
         f.write(LOGOS_HEADER + "\n")
         for ref in sorted(logos):
             r = logos[ref]
-            f.write(f"{ref}\t{r['checked']}\t{format_logos(r.get('original'), r.get('logos') or {})}\n")
+            text = GONE if r.get("gone") else format_logos(r.get("original"), r.get("logos") or {})
+            f.write(f"{ref}\t{r['checked']}\t{text}\n")
+
+
+def gone_refs(logos) -> dict:
+    """[load_logos] 的结果里在 TMDB 上已经没了的条目: {ref: 发现的日期}."""
+    return {ref: r["checked"] for ref, r in logos.items() if r.get("gone")}
 
 
 def logo_cell(ref, overrides, auto) -> str:
-    """对应表 logo 列: 自动挑的 (按 ref) 上面叠各语言的人工修正 ([overrides]: {语言: 修正}, 针对的条目与 ref 一致才算); 都没有 (还没查) 为空."""
+    """对应表 logo 列: 自动挑的 (按 ref) 上面叠各语言的人工修正 ([overrides]: {语言: 修正}, 针对的条目与 ref 一致才算); 都没有 (还没查) 为空.
+
+    条目在 TMDB 上已经没了的 ([GONE]) 写成原语言与各语言都没有 logo (`o=ja ja=- zh=- en=-`): app 读到就显示文字标题, 不再自己去 TMDB 取
+    (取了也是 404); 重新匹配到别的条目后这一格跟着换.
+    """
     if not ref:
         return ""
+    if (auto or {}).get("gone"):
+        auto = {"original": "ja", "logos": {lang: {"none": True} for lang in LOGO_LANGS}}
     entries = dict((auto or {}).get("logos") or {})
     for lang, entry in (overrides or {}).items():
         if entry["tmdb"] == ref:

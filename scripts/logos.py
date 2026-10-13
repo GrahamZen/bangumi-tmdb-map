@@ -12,6 +12,8 @@ TMDB 不标 logo 属于哪一季, 多季的剧自动挑的可能是别的季的 
   - 没查过的;
   - TMDB 上最近两天有改动的 (`/tv/changes`、`/movie/changes`, 与表求交集; 今天查过的不再查) —— 新传的 logo 第二天就进表;
   - 每种语言都查到了 logo 的 60 天后; 缺某种语言 (含一种也没有) 的 14 天后 —— 兜底变更列表漏掉的 (哪天没跑、合集没有变更列表).
+条目在 TMDB 上已经没了 (详情 404, 多是开播前建的重复条目被删或并进了别的条目) 记成 gone: 对应表 logo 列写成各语言都没有 (app 不再去取),
+prepare.py 把背景图是它的条目排进当天的重新匹配; 14 天后还在表里就再查一次.
 请求失败的条目不改, 下一轮再查. 按时间预算跑, 剩下的下一轮接着.
 
 用法: python3 scripts/logos.py --map map/bgm-tmdb.tsv --logos state/logos.tsv [--names state/names.tsv] [--minutes 40] [--summary-out f]
@@ -101,11 +103,11 @@ def pick(logos, lang):
 
 
 def check(ref, fetch):
-    """一个条目的 (原语言, {语言: logo}, {地区: 港台译名}); 条目在 TMDB 上没了返回 ("", {}, {})."""
+    """一个条目的 (原语言, {语言: logo}, {地区: 港台译名}); 条目在 TMDB 上没了返回 None."""
     kind, tid = ref.split("/")
     detail = fetch(f"/{kind}/{tid}", {"append_to_response": "translations"})
     if detail is None:
-        return "", {}, {}
+        return None
     names = names_from_translations((detail.get("translations") or {}).get("translations"))
     # 合集没有原语言字段; 动画条目绝大多数是日文
     original = (detail.get("original_language") or "").lower() or "ja"
@@ -124,6 +126,11 @@ def due(entry, today, changed=False):
     except ValueError:
         return True
     if changed and checked < today:
+        return True
+    if entry.get("gone"):
+        return (today - checked).days >= RECHECK_MISSING_DAYS
+    # 原语言与各语言都空 = 没记 gone 之前把 404 存成了空结果, 重查一次改记成 gone
+    if not entry.get("original") and not entry["logos"]:
         return True
     complete = all(not e.get("none") for e in entry["logos"].values())
     return (today - checked).days >= (RECHECK_COMPLETE_DAYS if complete else RECHECK_MISSING_DAYS)
@@ -193,7 +200,8 @@ def main():
     print(f"条目 {len(refs)}, 最近有改动 {len(changed)}, 到期 {len(todo)}")
 
     deadline = time.monotonic() + args.minutes * 60
-    stats = {"checked": 0, "found": 0, "none": 0, "err": 0, "named": 0}
+    stats = {"checked": 0, "found": 0, "none": 0, "err": 0, "named": 0, "gone": 0}
+    gone = []
     errors = []
     lock = threading.Lock()
 
@@ -201,13 +209,23 @@ def main():
         if time.monotonic() > deadline:
             return
         try:
-            original, entries, ref_names = check(ref, fetch)
+            result = check(ref, fetch)
         except Exception as e:  # noqa: BLE001 — 失败的这一轮不改, 下一轮再查
             with lock:
                 stats["err"] += 1
                 if len(errors) < 20:
                     errors.append(f"{ref}: {type(e).__name__}: {e}")
             return
+        if result is None:
+            with lock:
+                logos[ref] = {"checked": args.today, "original": "", "logos": {}, "gone": True}
+                if names is not None:
+                    names[ref] = {"checked": args.today, "names": {}}
+                stats["checked"] += 1
+                stats["gone"] += 1
+                gone.append(ref)
+            return
+        original, entries, ref_names = result
         with lock:
             logos[ref] = {"checked": args.today, "original": original, "logos": entries}
             if names is not None:
@@ -224,8 +242,10 @@ def main():
         save_names(args.names, names)
     left = len(todo) - stats["checked"] - stats["err"]
     summary = f"{stats['checked']} checked, {stats['found']} with logo, {stats['none']} none, {stats['named']} with tw/hk names, {stats['err']} err" + \
-              (f", {left} left" if left else "")
+              (f", {stats['gone']} gone" if stats["gone"] else "") + (f", {left} left" if left else "")
     print(summary)
+    for ref in sorted(gone):
+        print(f"   TMDB 上已经没了: {ref} (用到它的条目今天重新匹配)")
     for e in errors:
         print("  ", e)
     if args.summary_out:

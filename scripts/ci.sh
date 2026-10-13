@@ -76,7 +76,7 @@ step_plan() {
   # 新的一轮任务, 上一轮的结果作废 (匹配器会把结果文件里已有的条目当成做完跳过)
   rm -f "$WORK/results.jsonl" "$WORK/summary.txt"
   local args=(--dump "$WORK/dump.zip" --state "$ROOT/state/state.tsv" --overrides "$ROOT/overrides" --site "$ROOT/docs"
-    --work "$WORK" --max-jobs "$MAX_JOBS")
+    --map "$ROOT/map/bgm-tmdb.tsv" --logos "$ROOT/state/logos.tsv" --work "$WORK" --max-jobs "$MAX_JOBS")
   if [ -n "$ONLY_IDS" ]; then args+=(--ids "$ONLY_IDS"); fi
   if [ "${FORCE_ALL:-}" = "true" ]; then args+=(--force); fi
   python3 "$ROOT/scripts/prepare.py" "${args[@]}"
