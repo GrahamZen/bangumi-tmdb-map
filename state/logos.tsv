@@ -1,4 +1,4 @@
-# ref	checked	logos (o=<原语言> <语言>=/xxx.png:宽高比 或 -)
+# ref	checked	logos (o=<原语言> <语言>=/xxx.png:宽高比 或 -; gone = 这个条目在 TMDB 上已经没了)
 collection/1062948	2026-10-13	o=en ja=- zh=- en=-
 collection/1091528	2026-10-13	o=en ja=- zh=- en=-
 collection/1098232	2026-10-13	o=en ja=- zh=- en=-
@@ -613,7 +613,7 @@ movie/115223	2026-10-13	o=ja ja=- zh=- en=/2GEHHBI9sfkqTssTCnRPUmiCGpc.png:1.438
 movie/115264	2026-10-13	o=ja ja=- zh=- en=-
 movie/1153222	2026-10-13	o=en ja=/bDhSzSbX1beAC0lorEJpnDdaFh6.png:1.889 zh=/uRMszMAf4OoIvUjQ62MurDlmAMf.png:0.796 en=/1HNKYWFdlMWAJzqrlrV6tG45jGp.png:1.076
 movie/11533	2026-10-13	o=en ja=- zh=- en=/oEbzS9Phm8dAHqQfCBdO8wcGd1b.png:3.03
-movie/1153529	2026-10-13	
+movie/1153529	2026-10-13	gone
 movie/1153778	2026-10-13	o=en ja=- zh=- en=-
 movie/1154304	2026-10-13	o=es ja=- zh=- en=- es=/4FgrzDFOCVE2FD5t2k4lhmeveC4.png:0.903
 movie/11544	2026-10-13	o=en ja=/y3jR0WkfRWbSdO83Iq26necVUbf.png:1.49 zh=/nThpQMASLatqb2SF1Alg14kP9aq.png:2.281 en=/cTtQ1wKgJZUPAo0xymJUtPZQYYO.png:1.637
@@ -790,7 +790,7 @@ movie/119855	2026-10-13	o=ru ja=- zh=- en=- ru=-
 movie/119861	2026-10-13	o=en ja=- zh=- en=-
 movie/1199254	2026-10-13	o=en ja=- zh=- en=-
 movie/1199260	2026-10-13	o=xx ja=- zh=- en=- xx=-
-movie/1199296	2026-10-13	
+movie/1199296	2026-10-13	gone
 movie/1199446	2026-10-13	o=ja ja=- zh=- en=-
 movie/12	2026-10-13	o=en ja=- zh=/ui4x5io0vWGypcCxmWVueBbB9BF.png:2.608 en=/gRweHvOoM7hKg3q8iExsXzAhsBv.png:2.863
 movie/1201314	2026-10-13	o=zh ja=- zh=- en=-
@@ -2147,7 +2147,7 @@ movie/1592265	2026-10-13	o=en ja=- zh=- en=-
 movie/159254	2026-10-13	o=es ja=- zh=- en=- es=-
 movie/159304	2026-10-13	o=en ja=- zh=- en=/59AvoiZVVPic37IS6NrVvHEvVzO.png:3.701
 movie/1593221	2026-10-13	o=zh ja=- zh=/6DfwXPbt7Oe8DKOBpzY7X28Io0K.png:2.099 en=-
-movie/1593861	2026-10-13	
+movie/1593861	2026-10-13	gone
 movie/159387	2026-10-13	o=ko ja=- zh=- en=- ko=-
 movie/1594572	2026-10-13	o=ja ja=/p8Sr50A5TYQFOOH0NlnVE7dB06.png:1.895 zh=- en=-
 movie/1594694	2026-10-13	o=fr ja=- zh=- en=- fr=-
@@ -2264,7 +2264,7 @@ movie/1624324	2026-10-13	o=ru ja=- zh=- en=- ru=-
 movie/162528	2026-10-13	o=fr ja=- zh=- en=- fr=-
 movie/162551	2026-10-13	o=de ja=- zh=- en=- de=-
 movie/162559	2026-10-13	o=en ja=- zh=- en=-
-movie/1625593	2026-10-13	
+movie/1625593	2026-10-13	gone
 movie/162561	2026-10-13	o=en ja=- zh=- en=-
 movie/16257	2026-10-13	o=ja ja=- zh=- en=-
 movie/162577	2026-10-13	o=en ja=- zh=- en=-
@@ -2372,7 +2372,7 @@ movie/1658136	2026-10-13	o=zh ja=- zh=/y2DbfjHisxohIttqtqICPXXHRda.png:2.342 en=
 movie/165853	2026-10-13	o=en ja=- zh=- en=-
 movie/1658666	2026-10-13	o=zh ja=- zh=- en=-
 movie/1658673	2026-10-13	o=ja ja=- zh=- en=-
-movie/1658826	2026-10-13	
+movie/1658826	2026-10-13	gone
 movie/16591	2026-10-13	o=en ja=- zh=- en=-
 movie/1659338	2026-10-13	o=ja ja=/v4j2JEZ0ppd4bJPbRNTwosHNSX3.png:4.897 zh=- en=-
 movie/1659389	2026-10-13	o=ja ja=- zh=- en=/2yk9CNrsQoCObvhWjCARmwUPNU6.png:2.159
@@ -2524,7 +2524,7 @@ movie/1725074	2026-10-13	o=ja ja=- zh=- en=-
 movie/1725565	2026-10-13	o=ja ja=- zh=- en=-
 movie/1725999	2026-10-13	o=en ja=- zh=- en=-
 movie/1727340	2026-10-13	o=ja ja=- zh=- en=-
-movie/1727610	2026-10-13	
+movie/1727610	2026-10-13	gone
 movie/17278	2026-10-13	o=en ja=- zh=- en=/8NWDfMSAMyAFnYyiMiAkr79gRrM.png:1.662
 movie/1729116	2026-10-13	o=ja ja=- zh=- en=-
 movie/1729319	2026-10-13	o=en ja=- zh=- en=-
@@ -2615,7 +2615,7 @@ movie/177078	2026-10-13	o=en ja=- zh=- en=-
 movie/1771045	2026-10-13	o=ja ja=- zh=- en=-
 movie/177271	2026-10-13	o=en ja=- zh=- en=/6c0zK9tTvNQRMm2k7JqxOct0bQN.png:7.634
 movie/177572	2026-10-13	o=en ja=- zh=/vw5A6b67wGbTYDVxjcLAvybcIZA.png:1.036 en=/2LUg1b1C0cyfTa422hUuya7wnqK.png:2.708
-movie/1775733	2026-10-13	
+movie/1775733	2026-10-13	gone
 movie/177578	2026-10-13	o=ja ja=- zh=- en=-
 movie/1777750	2026-10-13	o=ja ja=/exPfB1XqaPq8Y4a6rlOSHYs5K69.png:2.105 zh=- en=-
 movie/17778	2026-10-13	o=en ja=- zh=- en=-
@@ -6475,7 +6475,7 @@ movie/58700	2026-10-13	o=ko ja=- zh=- en=/kQSda8JjoQUqodn2YxAIwFtICa4.png:2.282 
 movie/58704	2026-10-13	o=ja ja=/9DarBxCNWjnGh29ntpAMOCQg2eb.png:5.293 zh=- en=-
 movie/587070	2026-10-13	o=eu ja=- zh=- en=/sicLScM2f4bsJHF70rlj8aLmtTN.png:2.058 eu=-
 movie/587092	2026-10-13	o=es ja=- zh=- en=/2lPJa7eGe5p2JrOVqP2tdCGN7aP.png:1.744 es=-
-movie/587200	2026-10-13	
+movie/587200	2026-10-13	gone
 movie/587243	2026-10-13	o=en ja=- zh=- en=-
 movie/587311	2026-10-13	o=fr ja=- zh=- en=- fr=/vOvzeFAvj2N3wQmgR05ZRaoq2X7.png:3.37
 movie/587317	2026-10-13	o=hi ja=- zh=- en=/aSAHiaHimQJEPctNgWDuebgOKPN.png:3.074 hi=-
@@ -8688,7 +8688,7 @@ movie/952507	2026-10-13	o=zh ja=- zh=- en=-
 movie/952514	2026-10-13	o=zh ja=- zh=- en=-
 movie/952604	2026-10-13	o=ja ja=- zh=- en=-
 movie/953	2026-10-13	o=en ja=/h12cbmCT1Il8WHpriGZdNzW0WCz.png:3.409 zh=/eA2CiCwzVmnGlxQubhwxdaK4rux.png:3.399 en=/4WxLPaAiWA2bCEW76XRwt09hmBJ.png:3.16
-movie/953195	2026-10-13	
+movie/953195	2026-10-13	gone
 movie/95380	2026-10-13	o=en ja=- zh=- en=-
 movie/954056	2026-10-13	o=ko ja=- zh=- en=- ko=-
 movie/95414	2026-10-13	o=en ja=- zh=- en=/90vomYinyB1erFvrVF6jvTUsUnl.png:2.315
@@ -9212,7 +9212,7 @@ tv/105248	2026-10-13	o=ja ja=/bztqAwIqUrNBaRNlc7bSusWzUVP.png:4.069 zh=/vFHeVQro
 tv/105249	2026-10-13	o=ja ja=- zh=- en=/dw93q9JnYxshaGD8DHPMqIhGz1V.png:2.457
 tv/105302	2026-10-13	o=zh ja=- zh=- en=-
 tv/105313	2026-10-13	o=en ja=- zh=- en=/jikBQJP9bXuUajwZQJWccxxhl11.png:1.051
-tv/105339	2026-10-13	
+tv/105339	2026-10-13	gone
 tv/105446	2026-10-13	o=ja ja=/7U7h9XQHbPyUgzLf37ir4FuvW9p.png:2.683 zh=/1e9PAcnQyd2MbK4kZ875N2iaSPp.png:2.67 en=/eVqQ08KD07O0cmFXpJkqxIsS587.png:2.819
 tv/105468	2026-10-13	o=ja ja=/7iIac2mOipjX5mX3oJV7MNEumFd.png:3.574 zh=- en=-
 tv/105472	2026-10-13	o=ja ja=/bL2wd35r5KDSkgpXnXHo3cvIJ0U.png:0.604 zh=- en=-
@@ -9850,7 +9850,7 @@ tv/12011	2026-10-13	o=en ja=- zh=- en=-
 tv/120139	2026-10-13	o=zh ja=- zh=- en=-
 tv/120142	2026-10-13	o=ja ja=/jxyQEc6GYapCPfTiRzZnXAovM1m.png:3.963 zh=- en=/uOrnRsnQGBuSGzdxBypEG2L5TMo.png:5.069
 tv/120155	2026-10-13	o=ja ja=- zh=- en=/3AgibVgHB5J2SgZLAaXd4Vr5aBv.png:5.177
-tv/120165	2026-10-13	
+tv/120165	2026-10-13	gone
 tv/120233	2026-10-13	o=ja ja=- zh=- en=-
 tv/120241	2026-10-13	o=ja ja=- zh=/urIpnl1vS0DHoWDWr4UDQ39HTze.png:1.985 en=/iMntGyaU0dq9SEgeBKXk1lDU8.png:7.43
 tv/120412	2026-10-13	o=ja ja=- zh=- en=-
@@ -12332,7 +12332,7 @@ tv/243345	2026-10-13	o=ja ja=- zh=- en=-
 tv/243452	2026-10-13	o=ja ja=- zh=- en=/9qb3nsesDrmeLjeZMeTrleIRvSh.png:2.325
 tv/243471	2026-10-13	o=ja ja=- zh=/hmmV3YWCQmViyTNIqy3tZrwHXbD.png:2.745 en=-
 tv/243501	2026-10-13	o=ja ja=/r00VFfVrU96ap3JyYOmTHOskYWI.png:2.176 zh=/sacfHGkixBAEG9RPm5T3N3V3Idc.png:2.493 en=/pjKHaDs8iSmLHgGR0Eo3mEFbsMn.png:4.152
-tv/243622	2026-10-13	
+tv/243622	2026-10-13	gone
 tv/243649	2026-10-13	o=zh ja=- zh=- en=-
 tv/243733	2026-10-13	o=zh ja=- zh=/wp8CIuaqIHI4WfI9MBxAREJih1x.png:3.567 en=-
 tv/243743	2026-10-13	o=ja ja=/pqpDbX0ALGL5RZar7pjbSrBVi7p.png:2.551 zh=- en=/1gTRq5PNDVqN4JHnbBPEz8PGHfr.png:4.762
@@ -13572,7 +13572,7 @@ tv/302824	2026-10-13	o=ja ja=/bprngJeazRRKdd83Td3kWJxXfDQ.png:2.211 zh=- en=/5FP
 tv/302911	2026-10-13	o=ja ja=- zh=- en=-
 tv/303060	2026-10-13	o=ja ja=/dmZJAwOkOnL9TcNn7S1SqOSHxgU.png:2.098 zh=- en=/vuetBPAN3TGi4XsRSsgiM6GV2F8.png:4.131
 tv/303130	2026-10-13	o=ja ja=- zh=- en=-
-tv/303190	2026-10-13	
+tv/303190	2026-10-13	gone
 tv/30322	2026-10-13	o=en ja=- zh=- en=-
 tv/303272	2026-10-13	o=ja ja=/jNHAxPfkv1Kiks6UCdAM9Dtm5bo.png:3 zh=- en=/fSLEbO1IZWzUvNn8Z3k4XdPMOb.png:3.911
 tv/30328	2026-10-13	o=ja ja=- zh=- en=-
@@ -13984,7 +13984,7 @@ tv/326710	2026-10-13	o=en ja=- zh=- en=-
 tv/326731	2026-10-13	o=ja ja=- zh=- en=-
 tv/32676	2026-10-13	o=ja ja=- zh=/QhK8ahuS7fQJkqlPP4dnDuYnIp.png:3.176 en=/4k4MVkq76olWr9QpRlotPEYAZQ6.png:2.83
 tv/326767	2026-10-13	o=ja ja=- zh=- en=-
-tv/326788	2026-10-13	
+tv/326788	2026-10-13	gone
 tv/326790	2026-10-13	o=ja ja=/voMehmfqQmgKX4TtlyIwwWPwBww.png:0.503 zh=- en=-
 tv/326844	2026-10-13	o=zh ja=- zh=/xyVxrpDwG1jt4sLx2iCsWDWscpa.png:2.456 en=/1geOUNfxVUkJg4DqT59ubhknOqU.png:1.824
 tv/326893	2026-10-13	o=zh ja=- zh=/clUkcshss0N6JUAtL5GbdQvwBhT.png:2.788 en=-
@@ -14093,7 +14093,7 @@ tv/335778	2026-10-13	o=ja ja=- zh=- en=-
 tv/335779	2026-10-13	o=ja ja=- zh=- en=-
 tv/335788	2026-10-13	o=ja ja=/3QFPNNFs1v5GokLZaIEIX8BrNg9.png:2.591 zh=- en=-
 tv/335790	2026-10-13	o=ja ja=/5ICvOk3mtub9e2OOtMJc157ULA9.png:4.348 zh=- en=/1lW0lhq7v53uqPDXRhY5R0NY1Uc.png:4.147
-tv/335949	2026-10-13	
+tv/335949	2026-10-13	gone
 tv/33606	2026-10-13	o=ja ja=- zh=- en=-
 tv/336065	2026-10-13	o=zh ja=- zh=- en=-
 tv/33623	2026-10-13	o=en ja=- zh=- en=/vlY6Ah51KtNEkwckmwqQXbiQVu5.png:2.046
@@ -14103,7 +14103,7 @@ tv/336620	2026-10-13	o=zh ja=- zh=- en=-
 tv/336654	2026-10-13	o=ja ja=/q5soOIgiAsNuxbkRiBXl00OfRRG.png:4.473 zh=- en=-
 tv/336685	2026-10-13	o=ja ja=- zh=- en=-
 tv/336718	2026-10-13	o=ja ja=/oFlRr5dwCu121LQAEwetBeQJOTM.png:1.552 zh=- en=-
-tv/336762	2026-10-13	
+tv/336762	2026-10-13	gone
 tv/336994	2026-10-13	o=ja ja=- zh=- en=-
 tv/337069	2026-10-13	o=ja ja=/qeTAoLVKP94tyWmUmDBtA060YNA.png:2.251 zh=- en=-
 tv/337128	2026-10-13	o=zh ja=- zh=- en=-
