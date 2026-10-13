@@ -286,6 +286,78 @@ def logo_cell(ref, overrides, auto) -> str:
     return format_logos((auto or {}).get("original"), entries)
 
 
+# ---- 港台译名 ----
+# 对应表 names 列与 state/names.tsv 里的写法: | 分隔的几段 <地区>=<译名>, 地区小写 (tw 台湾, hk 香港); 与台湾相同的香港译名不重复写.
+# 译名取自 TMDB 条目的中文翻译 (logos.py 查详情时顺带取), 给只认繁体名的站点搜索与比对番名用.
+NAME_REGIONS = ("TW", "HK")
+NAMES_HEADER = "# ref\tchecked\tnames (tw=<台湾译名>|hk=<香港译名>, 与台湾相同的香港译名不写)"
+
+
+def clean_name(text) -> str:
+    """译名里不能有分隔符: | 换成全角, 制表符与换行换成空格."""
+    return " ".join((text or "").replace("|", "｜").split())
+
+
+def names_from_translations(translations) -> dict:
+    """TMDB `translations` 里的港台中文名 → {"tw": 名, "hk": 名}; 没有或为空的地区不写. 剧集取 name, 电影 / 合集取 title."""
+    names = {}
+    for t in translations or []:
+        if (t.get("iso_639_1") or "").lower() != "zh":
+            continue
+        region = (t.get("iso_3166_1") or "").upper()
+        data = t.get("data") or {}
+        name = clean_name(data.get("name") or data.get("title"))
+        if region in NAME_REGIONS and name:
+            names[region.lower()] = name
+    return names
+
+
+def format_names(names) -> str:
+    """{地区: 名} → 一格; 与台湾相同的香港译名省掉."""
+    names = names or {}
+    parts = []
+    for region in (r.lower() for r in NAME_REGIONS):
+        name = names.get(region)
+        if not name or (region != "tw" and name == names.get("tw")):
+            continue
+        parts.append(f"{region}={name}")
+    return "|".join(parts)
+
+
+def parse_names(text) -> dict:
+    """format_names 的反向; 省掉的香港译名补回成台湾的."""
+    names = {}
+    for part in (text or "").split("|"):
+        key, _, value = part.partition("=")
+        if key and value:
+            names[key] = value
+    if "tw" in names and "hk" not in names:
+        names["hk"] = names["tw"]
+    return names
+
+
+def load_names(path):
+    """按 TMDB 条目取的港台译名 (logos.py 写): {ref: {checked, names: {地区: 名}}}."""
+    names = {}
+    if not os.path.isfile(path):
+        return names
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            if not line.strip() or line.startswith("#"):
+                continue
+            ref, checked, text = (line.rstrip("\n").split("\t") + ["", ""])[:3]
+            names[ref] = {"checked": checked, "names": parse_names(text)}
+    return names
+
+
+def save_names(path, names):
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(NAMES_HEADER + "\n")
+        for ref in sorted(names):
+            f.write(f"{ref}\t{names[ref]['checked']}\t{format_names(names[ref]['names'])}\n")
+
+
 # state/anidb.tsv (anidb.py 写, merge.py 读): Bangumi 条目 → AniDB 条目, 来自 bangumi-data.
 ANIDB_HEADER = "# bgm_id\tanidb_id (来自 bangumi-data {version}, CC BY 4.0: https://github.com/bangumi-data/bangumi-data)"
 

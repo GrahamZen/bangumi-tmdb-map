@@ -4,7 +4,8 @@
   (连同匹配时收到的 TMDB 信息与备选) 与人工修正. 这是核对页面的数据, 也是其他几张表的来源.
 - 人工修正 (overrides/<bgm_id>.json) 优先于自动结果; 有修正的条目不再自动匹配, 结果也不会被覆盖.
 - 标题 logo (对应表 logos 列): logo 修正 (logo-overrides/<bgm_id>.<语言>.json) 优先, 其次按背景图条目自动挑的 (state/logos.tsv, 由 logos.py 查).
-- AniDB 条目编号 (对应表末列): state/anidb.tsv (由 anidb.py 从 bangumi-data 取); 只写进表里已有的行, 不为它单加行.
+- AniDB 条目编号 (对应表 anidb 列): state/anidb.tsv (由 anidb.py 从 bangumi-data 取); 只写进表里已有的行, 不为它单加行.
+- 港台译名 (对应表末列 names): 按背景图条目取的 TMDB 港台中文名 (state/names.tsv, 由 logos.py 查).
 - 对应表 (map/bgm-tmdb.tsv): 给客户端用, 收有对应的条目与人工确认没有对应的条目, 末列注明来源 (auto / manual).
 - 页面索引 (docs/data/index.tsv): 全部动画条目一行, 列表与搜索用.
 - 状态表 (state/state.tsv): 决定下一轮什么时候再查 (见 prepare.py).
@@ -19,14 +20,16 @@ import json
 import os
 import sys
 
-from common import load_anidb, load_logo_overrides, load_logos, load_overrides, load_state, logo_cell, save_state
+from common import (format_names, load_anidb, load_logo_overrides, load_logos, load_names, load_overrides, load_state, logo_cell,
+                    save_state)
 
 SHARD = 2000
 MAP_HEADER = ("# bangumi-tmdb-map v1. 列: bgm_id, backdrop (TMDB 条目), backdrop_path (图片路径), "
               "stills (分集数据出处: tv/<id> 整部 / tv/<id>/season/0 只取 S0 / movie/<id>), "
               "source (auto 自动 / manual 人工), episodes (每一集对应 TMDB 第几季第几集), "
               "logos (标题 logo: o=原语言 与 语言=/xxx.png:宽高比, - = 这种语言没有 logo; 空 = 还没查), "
-              "anidb (AniDB 条目编号, 来自 bangumi-data (CC BY 4.0); 空 = 没有). 说明见 README.")
+              "anidb (AniDB 条目编号, 来自 bangumi-data (CC BY 4.0); 空 = 没有), "
+              "names (港台译名: tw=台湾译名|hk=香港译名, 与台湾相同的香港译名不写; 空 = 没有或还没查). 说明见 README.")
 INDEX_COLUMNS = ["id", "name", "cn", "date", "platform", "pop", "status", "source", "ref", "title", "checked"]
 
 
@@ -108,6 +111,7 @@ def main():
     ap.add_argument("--logo-overrides", default="logo-overrides")
     ap.add_argument("--logos", default="state/logos.tsv", help="logos.py 按 TMDB 条目自动挑的标题 logo")
     ap.add_argument("--anidb", default="state/anidb.tsv", help="anidb.py 从 bangumi-data 取的 AniDB 条目编号")
+    ap.add_argument("--names", default="state/names.tsv", help="logos.py 按 TMDB 条目取的港台译名")
     ap.add_argument("--apply-only", action="store_true")
     ap.add_argument("--dump-name", default="")
     ap.add_argument("--matcher", default="", help="izuko-tv 的提交, 记进 meta")
@@ -125,6 +129,7 @@ def main():
                         for name, message in logo_errors]
     auto_logos = load_logos(args.logos)
     anidb, anidb_version = load_anidb(args.anidb)
+    names = load_names(args.names)
     stats = {"processed": 0, "hit": 0, "miss": 0, "err": 0, "tmdb_requests": 0}
     errors = []
 
@@ -221,6 +226,7 @@ def main():
     os.makedirs(os.path.dirname(args.map) or ".", exist_ok=True)
     map_rows = 0
     anidb_rows = 0
+    named_rows = 0
     stale_logos = []  # logo 修正针对的条目与现在的背景图条目对不上 (条目被改过): 不生效, 报出来
     with open(args.map, "w", encoding="utf-8", newline="\n") as f:
         f.write(MAP_HEADER + "\n")
@@ -234,10 +240,12 @@ def main():
                 if override["tmdb"] != backdrop:
                     stale_logos.append((f"{sid}.{lang}", override["tmdb"], backdrop))
             aid = anidb.get(sid)
+            name_cell = format_names((names.get(backdrop) or {}).get("names")) if backdrop else ""
             f.write("\t".join([str(sid), backdrop or "", path or "", stills or "", source, episodes or "", logo,
-                               str(aid) if aid else ""]) + "\n")
+                               str(aid) if aid else "", name_cell]) + "\n")
             map_rows += 1
             anidb_rows += 1 if aid else 0
+            named_rows += 1 if name_cell else 0
 
     # 页面索引: 全部动画条目
     if anime is not None:
@@ -281,6 +289,7 @@ def main():
         "manual": len(overrides),
         "logo_manual": sum(len(v) for v in logo_overrides.values()),
         "anidb": anidb_rows,
+        "names": named_rows,
         "bangumi_data": anidb_version,
         "hit": counts["hit"], "miss": counts["miss"], "err": counts["err"],
         "last_run": old_meta.get("last_run", stats) if args.apply_only else stats,

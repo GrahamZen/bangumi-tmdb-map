@@ -23,6 +23,7 @@ https://raw.githubusercontent.com/GrahamZen/bangumi-tmdb-map/main/map/bgm-tmdb.t
 | `episodes` | 每一集对应 TMDB 第几季第几集 (见下)；空表示没算出来，照 `stills` 全量索引、自己对集 | `S3E1` |
 | `logos` | 标题 logo，按语言 (见下)；空表示还没查 | `o=ja ja=/a.png:2.383 zh=- en=/b.png:4.159` |
 | `anidb` | AniDB 条目 id，来自 [bangumi-data](https://github.com/bangumi-data/bangumi-data)；空表示 bangumi-data 没登 | `19242` |
+| `names` | 港台译名 (见下)；空表示 TMDB 上没有，或还没查 | `tw=SPY×FAMILY 間諜家家酒` |
 
 `episodes` 是空格分隔的几段，按离线用客户端同一套规则对出来的结果写：
 
@@ -36,6 +37,8 @@ https://raw.githubusercontent.com/GrahamZen/bangumi-tmdb-map/main/map/bgm-tmdb.t
 TMDB 的 logo 只挂在整部剧上、不标属于哪一季，多季的剧自动挑的 (评分最高的那张) 可能是别的季的；这类错由人工修正纠正 (见下)。
 
 `anidb` 给弹幕用：弹弹 play 的作品编号就是 AniDB 的条目 id，客户端拿它直接取那部作品的分集，不必按名字搜。Bangumi 拆成几段的一季 (如 Re：从零开始的异世界生活 第四季的丧失篇与夺还篇) 在 AniDB 常是一部、接着编集号，bangumi-data 给每一段都登了那一部。这一列只写进表里已有的行 (不为它单独加行)；`logos` 工作流每天从 npm 上 bangumi-data 的最新版本更新一次 (`state/anidb.tsv`)。
+
+`names` 是 `|` 分隔的几段 `<地区>=<译名>`：`tw` 台湾、`hk` 香港，取自 `backdrop` 那个 TMDB 条目的中文翻译 (zh-TW / zh-HK)；香港译名与台湾相同时不写 `hk`。给只认繁体名的站点用：两岸译名常常不只是简繁之别 (间谍过家家 / SPY×FAMILY 間諜家家酒、药屋少女的呢喃 / 藥師少女的獨語)，拿 Bangumi 的中文名逐字转繁体搜不到。`logos` 工作流查 logo 时顺带取 (同一个详情请求)，存在 `state/names.tsv`。
 
 人工确认 TMDB 上没有对应的条目也在表里，除 `source` 外各列为空，调用方不必再搜。表里没有的条目，要么自动匹配没找到，要么还没查过，调用方照常自己搜。
 
@@ -127,8 +130,9 @@ docs/                  核对页面 (GitHub Pages) 与它的数据: data/index.t
 state/state.tsv        每个条目上次检查的日期、结果与输入指纹 (决定下次什么时候查)
 state/logos.tsv        每个 TMDB 条目自动挑的标题 logo 与查的日期
 state/anidb.tsv        Bangumi 条目 → AniDB 条目 (来自 bangumi-data)
+state/names.tsv        每个 TMDB 条目的港台译名与查的日期
 scripts/               ci.sh 每日更新的全部步骤 (工作流与本地共用), prepare.py 挑任务, merge.py 合并结果与人工修正,
-                       correction.py / logo_correction.py / correction_pr.sh 处理修正请求, logos.py 挑标题 logo,
+                       correction.py / logo_correction.py / correction_pr.sh 处理修正请求, logos.py 挑标题 logo 并取港台译名,
                        anidb.py 取 AniDB 条目 id
 runner/                匹配器入口; 工作流把它拷进 izuko-tv 的测试源码里运行
 worker/                标题 logo 报告的中转 (Cloudflare Worker), 部署见 worker/README.md

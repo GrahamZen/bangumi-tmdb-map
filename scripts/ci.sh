@@ -126,6 +126,7 @@ step_merge() {
     --state "$ROOT/state/state.tsv" --map "$ROOT/map/bgm-tmdb.tsv" --meta "$ROOT/map/meta.json" \
     --site "$ROOT/docs" --overrides "$ROOT/overrides" \
     --logo-overrides "$ROOT/logo-overrides" --logos "$ROOT/state/logos.tsv" --anidb "$ROOT/state/anidb.tsv" \
+    --names "$ROOT/state/names.tsv" \
     --dump-name "$(cat "$WORK/dump.name")" --matcher "$(cat "$WORK/matcher.sha" 2>/dev/null || true)" \
     --summary-out "$WORK/summary.txt"
 }
@@ -134,7 +135,7 @@ step_apply() {
   python3 "$ROOT/scripts/merge.py" --apply-only --state "$ROOT/state/state.tsv" --map "$ROOT/map/bgm-tmdb.tsv" \
     --meta "$ROOT/map/meta.json" --site "$ROOT/docs" --overrides "$ROOT/overrides" \
     --logo-overrides "$ROOT/logo-overrides" --logos "$ROOT/state/logos.tsv" --anidb "$ROOT/state/anidb.tsv" \
-    --summary-out "$WORK/summary.txt"
+    --names "$ROOT/state/names.tsv" --summary-out "$WORK/summary.txt"
 }
 
 step_anidb() {
@@ -145,8 +146,8 @@ step_anidb() {
 step_logos() {
   : "${TMDB_API_TOKEN:?缺少 TMDB_API_TOKEN}"
   python3 "$ROOT/scripts/logos.py" --map "$ROOT/map/bgm-tmdb.tsv" --logos "$ROOT/state/logos.tsv" \
-    --minutes "${LOGO_MINUTES:-40}" --summary-out "$WORK/logos-summary.txt"
-  # 按新查到的重写对应表的 logo 列 (修正一并应用, 与 apply 同一套)
+    --names "$ROOT/state/names.tsv" --minutes "${LOGO_MINUTES:-40}" --summary-out "$WORK/logos-summary.txt"
+  # 按新查到的重写对应表的 logo 列与 names 列 (修正一并应用, 与 apply 同一套)
   step_apply
   cp "$WORK/logos-summary.txt" "$WORK/summary.txt"
 }
