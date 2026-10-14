@@ -47,7 +47,7 @@
 313	movie/12429	/1QmEcK0w2Ub4Hm094fHbZT8vA7o.jpg	movie/12429	auto		o=ja ja=/ilFS3jLjEj8lxH9ZOzX8bEooXw2.png:2.673 zh=/2tAvFDcphnVsqlVH32J3Xpyy2Ky.png:4.004 en=/kh4b2CejW3HECRh8bBlMwg2ymaD.png:3.908	5107	tw=崖上的波妞|hk=崖上的波兒
 314	movie/15371	/fCf8WfsRJEDFf1N6gA6o4ICRYp.jpg	movie/15371	auto		o=ja ja=- zh=/qTyTpXHLSiPKY5StQIvGHvncNOo.png:2.368 en=/Jtq7Me73ynI7Ji35ezOF7dEpqu.png:2.302	320	tw=魯邦三世：卡里奧斯特羅之城|hk=雷朋三世：卡里奧斯特羅之城
 315	tv/37863	/p1z1B4bMf6tgUA4VLpI4smLxbCf.jpg	tv/37863	auto	S1E1	o=ja ja=/uAKJlXa195i2muqGxuKu49uSDtd.png:2.386 zh=- en=/xQqPM4z9JL6NEXV8hPkz1htAaub.png:2.317	979	tw=鋼之鍊金術師
-317	tv/36587	/ojEA4oOaGm659au0gIoTrlZk7fj.jpg		manual		o=ja ja=- zh=- en=-	5557	tw=我家有個狐仙大人
+317	tv/36587	/ojEA4oOaGm659au0gIoTrlZk7fj.jpg		manual		o=ja ja=/vFcMt8tR1bjYy1pWLSCSdSKk7vh.png:2.839 zh=- en=-	5557	tw=我家有個狐仙大人
 320	movie/18874	/xl7yVV8WH71aOBfcTgnkoGOx2qz.jpg	movie/18874	auto		o=ja ja=- zh=- en=/lC1TI0trItDmxW0LZ9ypb3GjRby.png:4.098	4414	tw=攻殼機動隊 SAC - Solid State Society
 321	movie/14572	/AkyvSlL1XASeZolYjJRvzWjaTOF.jpg	movie/14572	auto		o=ja ja=- zh=- en=/bLtRZlCXruzJqP5YeiF3p3ck55b.png:4.854	395	tw=機動警察劇場版Ⅱ - 和平保衛戰|hk=機動警察 劇場版 和平保衞戰
 323	tv/26318	/9M97xCfMuYAxRt4Yy3UTF3e7JGP.jpg	tv/26318	auto	S5E1	o=ja ja=/bNmRpS4eIoGsvBjdwYJ6KAz2LFr.png:4.815 zh=- en=/iTMzUqkm3eR9CMHrTJxHV9FBTfk.png:2.879	6179	tw=秀逗魔導士|hk=魔劍美神
@@ -104,7 +104,7 @@
 489	tv/28061	/hUiStKQC4dDSgvENR1YUMY2HUtg.jpg	tv/28061	auto	S0E2	o=ja ja=/8oVfraIpyQ9x2WKNXYcrNr44ZWC.png:6.807 zh=- en=/A1cZW9FbljXt3UPXBWHcXDPs6JJ.png:5.774	5536	tw=School Days|hk=日在校園
 490	tv/22634	/5bOYtdiBKBnrbfPTwZaAEJOfDmW.jpg	tv/22634	auto	S1E1	o=ja ja=/4vXrMwH9kQQjlHjYX07eF0At4DX.png:3.707 zh=- en=/JxSw2FqofsN4rWbTYNsIum3Kxk.png:2.558	3408	tw=灼眼的夏娜
 491	tv/22634	/5bOYtdiBKBnrbfPTwZaAEJOfDmW.jpg	tv/22634	auto	S2E1	o=ja ja=/4vXrMwH9kQQjlHjYX07eF0At4DX.png:3.707 zh=- en=/JxSw2FqofsN4rWbTYNsIum3Kxk.png:2.558	5145	tw=灼眼的夏娜
-492	tv/34697	/AaqGsucjufRBH6W7ZgP9OF77rCy.jpg	tv/34697	auto	S1E1	o=ja ja=- zh=- en=/8RjfthbL80oZyzQbMVKMxriGtam.png:2.302	5679	tw=無限住人|hk=無限之住人
+492	tv/34697	/AaqGsucjufRBH6W7ZgP9OF77rCy.jpg	tv/34697	auto	S1E1	o=ja ja=/anBNTxxZQs5xHIIF0t878mOAYqw.png:2.74 zh=- en=/8RjfthbL80oZyzQbMVKMxriGtam.png:2.302	5679	tw=無限住人|hk=無限之住人
 493	tv/61752	/PZEdudP5M4FBz5cPoQ4rHCejLj.jpg	tv/61752	auto	S1E1	o=ja ja=- zh=- en=/1UJ29YpdsEFbtA7LUi9wIeUDMiE.png:2.557	3296	tw=厄夜怪客 OVA
 494	tv/35989	/i6c82fvZPA8Kawh8je9h4yDMc76.jpg	tv/35989	auto	S1E1	o=ja ja=- zh=- en=/4vpgmJ2soh8MXjzLdx5bjY3SDIO.png:1	5535	tw=紅Kure-nai|hk=紅
 496	tv/313038	/yGZB773PqHUnuMVK5vrtpi20hJL.jpg	tv/313038	auto	S1E1	o=en ja=- zh=- en=-		
@@ -124,7 +124,7 @@
 531	tv/53787	/9ZfSM7eZVLbjYdZB31tlUi2egR8.jpg	tv/53787	auto	S1E1	o=ja ja=/oZM43BqZjXCFKODCY1FacfxnVt8.png:3.263 zh=- en=-	2659	tw=水星領航員 ARIA
 532	tv/3251	/vtMhfULEdxFJd1wWcJYfw0Ud0c6.jpg	tv/3251	auto	S1E1 SP0:S0E1	o=ja ja=/43Ix1dbqsed4wmRIixxgFgWM1f1.png:1.17 zh=- en=-	30	tw=X戰記|hk=X 戰記
 533	movie/2062	/qxGmHvmjlBlH5WZOhdHEHAjHaMB.jpg	movie/2062	auto		o=en ja=- zh=/a06um2dW4UcirINI2ccrcwoesJJ.png:2.105 en=/5rOOsVxvoBgeFqneF65rGTog90H.png:7.917		tw=料理鼠王|hk=五星級大鼠
-534	movie/18143	/m7gw5jZrzyA6n81iOPxilPOYjNg.jpg	movie/18143	auto		o=ja ja=- zh=- en=-		tw=她與她的貓
+534	movie/18143	/m7gw5jZrzyA6n81iOPxilPOYjNg.jpg	movie/18143	auto		o=ja ja=/cF4DD0m3PAuaBxos24rGdPHMpUz.png:7.451 zh=- en=-		tw=她與她的貓
 536	tv/42671	/1g7fMpp0c5tOlHoLMABx6LI7gMu.jpg	tv/42671	auto	S1E1 SP14:S0E1	o=ja ja=/a5Jrqk9HAfqwQpNxjsMdqHwzJWl.png:1.914 zh=- en=/9YQmQ2PQ4KkSlwnhBfZ9b9wFFhj.png:1.077	1544	tw=妖精的旋律
 593	tv/67199	/wJYkWiVcrBIAsZjyyLt46wDyngU.jpg	tv/67199	auto		o=ja ja=/dS2KVEsZaAHhgd2PlN6MdkfMrpX.png:2.343 zh=- en=/5fXeDGNc42D4Sxq0zjxJyBlfOFP.png:2.824	343	tw=聖鬥士星矢 冥王篇|hk=聖鬥士星矢 冥王哈帝斯
 594	tv/79041	/ols3ohwhalPPMe2KKEDRPJ7stuI.jpg	tv/79041	auto	S1E1	o=ja ja=- zh=- en=-	5147	hk=海商遊泳社
@@ -209,7 +209,7 @@
 927	movie/38142	/agmazAxqxkHHN0rIxyDRHAc7nXY.jpg	movie/38142	auto		o=ja ja=/nGtWbIMPjUUnBuFKeH3F6H9MVYz.png:7.127 zh=/pcFdmhUHYYiJTarJnQqY3pYEUwA.png:4.92 en=/iNX9I1Gn5WRg4eNce4FNUcbLeVw.png:24.453	4568	tw=秒速5公分|hk=秒速5厘米
 928	tv/34708	/h9IQsx7dMMJPDPRIKS44utEQOfP.jpg	tv/34708	auto	S1E1	o=ja ja=/vABOy69qm9TGfnXkbW7x8Zf1dej.png:2.516 zh=- en=/eLQTjB7Px5L0HnLzH4K490DfS36.png:3.29	1783	tw=現視研
 965	tv/34121	/1KQYzDvPhe6XDycqmL4jb7QO51d.jpg	tv/34121	auto	S1E1	o=ja ja=/zUO4OioeBSsGy1osieqbQj8JXk3.png:4.115 zh=- en=/ixPGseHK8epKuYn6KQSgBuQrj0s.png:4.02	4897	tw=BACCANO！大騷動！
-968	tv/34755	/vk22mRjiEXWSEFrQEKRviKlSi0J.jpg	tv/34755	auto	1:S1E1 2:S1E1 3-26:S1E3 SP1-4:S1E19	o=ja ja=- zh=- en=-	6049	hk=天體戰士
+968	tv/34755	/vk22mRjiEXWSEFrQEKRviKlSi0J.jpg	tv/34755	auto	1:S1E1 2:S1E1 3-26:S1E3 SP1-4:S1E19	o=ja ja=/yfuFgRhmvztFUMrjZhfNjVhEXFX.png:1.825 zh=- en=-	6049	hk=天體戰士
 970	tv/36248	/rDDn1U7m9WcSGUCgod9nllRGFMH.jpg	tv/36248	auto	1-24:S1E1	o=ja ja=- zh=- en=-	5629	tw=武裝機甲
 973	tv/27813	/ih8Q0sggUzkIBgcZCqBtu8ae7jb.jpg	tv/27813	auto	1-25:S1E1 26:S0E1	o=ja ja=/wgeopAoCg4hlQ7iI9aeHVNySDqK.png:1.72 zh=- en=/bP3N8QUAjIvkalr4lBAzUhkVPdH.png:6.633	2478	tw=月詠 -MOON PHASE-|hk=月詠～MOON PHASE～
 974	tv/37113	/7ZyT2vp77kTavZgZ47QHWkqE1Od.jpg	tv/37113	auto	S1E1	o=ja ja=- zh=- en=-	6040	tw=時空幻境 深淵傳奇|hk=深淵傳奇
@@ -280,7 +280,7 @@
 1373	tv/13961	/n4zsW7qTHJH20Rclfu9uA4F4TXu.jpg	tv/13961	auto	SP2.5:S0E1 SP13.5:S0E2	o=ja ja=- zh=- en=/bufYmEKm932iirwH0018uZ1uUHx.png:5.459	5917	tw=監獄兔
 1375	tv/22131	/a3x2l33RgD9nkHVvFTYwRiTYXvY.jpg	tv/22131	auto	S1E1	o=ja ja=- zh=- en=-	5068	tw=PRISM ARK 邁向騎士之路
 1377	tv/25499	/tvoe0JHWnaBJbWKvGruprc0RrF2.jpg	tv/25499	auto	S1E1	o=ja ja=/vwGmlHiqjS5CekzjDoEPRLJoPlv.png:3.193 zh=- en=/9kR3TnDAYMoF77PfOrCru0f3xhP.png:3.214	6051	tw=海貓鳴泣時
-1396	tv/87852	/w8shBSTWFRdT182nPszKoEj7bVL.jpg	tv/87852	auto	2-5:S1E1	o=ja ja=- zh=- en=-	6045	hk=絕對衝激 ~PLATONIC HEART~
+1396	tv/87852	/w8shBSTWFRdT182nPszKoEj7bVL.jpg	tv/87852	auto	2-5:S1E1	o=ja ja=/zTk2nVz4l4uXFk7Okyq9PpGGw6K.png:3.174 zh=- en=-	6045	hk=絕對衝激 ~PLATONIC HEART~
 1415	tv/42873	/7etJxtpWqYs1qXuzCyaFrz1IP7e.jpg	tv/42873	auto	1:S1E1 2-3:S1E1 4-5:S1E2 6-7:S1E3 8-9:S1E4 10-11:S1E5 12-13:S1E6 14-15:S1E7 16-17:S1E8 18-19:S1E9 20-21:S1E10 22-23:S1E11 24:S1E12	o=ja ja=/b9tF0FtxVzTLNW59dtRaJ69TfwP.png:2.754 zh=- en=/by8idzrkvc6v5Nd7jibMJZTUTwM.png:2.735	3067	tw=草莓100%|hk=草莓 100%
 1418	tv/11284	/fzBAaqNEdMI9FaZc19a6MqakRH9.jpg	tv/11284	auto	S1E1	o=ja ja=/qVSvcHPvvtQE2lZghIKwJidDeGl.png:3.855 zh=- en=-	1654	hk=瑪德萊克絲
 1419	tv/34678	/7G0tUp2UiAzNauYS1KGH3nviCA9.jpg	tv/34678	auto	S1E1	o=ja ja=/lO1uEWM1a2EDAMgqQTka0uJfhQF.png:1.605 zh=- en=-	6255	tw=BASQUASH！|hk=機械籃球
@@ -361,7 +361,7 @@
 1761	tv/81334	/7Hl1uhucxV4Yl87ITOZXy58KAQ.jpg	tv/81334	auto	S1E1	o=ja ja=/oHic2MlQKCH1K6uBOnmwbgWtx2d.png:2.148 zh=- en=-	6335	tw=元素高手
 1763	tv/8872	/ooZ594lyG7jtLyj2aXkzgPb4wim.jpg	tv/8872	auto	S1E1	o=ja ja=- zh=- en=-	2830	tw=創聖的亞庫艾里翁|hk=創聖的大天使
 1764	tv/38141	/pjLj73KARmaToMSq4KW7yjDGD6m.jpg	tv/38141	auto	S1E1 SP9.5:S0E3 SP11.5:S0E5	o=ja ja=/eSkAAVd6OD8CTogYkv2r00bB0V4.png:3.33 zh=- en=-	6398	tw=浪漫追星社
-1772	tv/34683	/z7pZi83io2834TqPg8xfonNTGM7.jpg	tv/34683	auto	S1E1	o=ja ja=- zh=- en=-	5580	hk=狂亂家族日記
+1772	tv/34683	/z7pZi83io2834TqPg8xfonNTGM7.jpg	tv/34683	auto	S1E1	o=ja ja=/kJ295e67JNuyn6pP8JTrtfIsy4V.png:5.803 zh=- en=-	5580	hk=狂亂家族日記
 1773	tv/13916	/z8IPicmEKXUO4I2UDdMEqw7RqOE.jpg	tv/13916	auto	S1E1	o=ja ja=/nqOFS6OWI0eoPCfbegMtQQlr4Zs.png:4.55 zh=/9obREcLX82gfS7glZbyMWit4raa.png:3.167 en=/1NWy6mi2O5gZanKigYBWGIEQqSh.png:3.537	4563	tw=死亡筆記本|hk=死亡筆記
 1774	movie/13391	/i7oKytMBPC0uJwPFDpfr3DsDxkL.jpg	movie/13391	auto		o=ja ja=- zh=- en=/i6wZFYJ90lVzfRzqdCSl8lJNJyj.png:4.578		hk=2077 日本鎖國
 1779	tv/34806	/eC2gt1PZlO7CU8ZDCHVYeNegd2q.jpg	tv/34806	auto	1-21:S1E1 22:S0E1 23-24:S1E23 SP1:S0E1 SP2:S0E1 SP3:S0E1 SP4:S0E1 SP5:S0E1 SP6:S0E1 SP7:S0E1 SP8:S0E1 SP9:S0E1 SP10:S0E1 SP11:S0E1 SP12:S0E1	o=ja ja=- zh=- en=/eQgs7S1n4cQ4ov0SjaYXB3hmT5l.png:1.503	6467	tw=超能力大戰
@@ -375,7 +375,7 @@
 1836	movie/15877	/obDHA3z3M6IbacldHvdsrcQjn4o.jpg	movie/15877	auto		o=ja ja=/7pzZ9eRM1xRY9OLqbojMdNKayQW.png:4.083 zh=- en=/jLzjB3yXZBxpBECo97wlBDE28pF.png:3.421	5310	tw=空中殺手|hk=青空の行者
 1838	tv/22827	/pteY5Pr4hrO8rJ4EDCpOKexEUb1.jpg	tv/22827	auto	S1E1	o=ja ja=/gU9sFG3Dv570BoD4h2YpKw1VXvn.png:1.618 zh=- en=-	3572	tw=死神的歌謠
 1839	tv/34746	/7WsUs20KCsrDhUOKrDjc6LWfb4Y.jpg	tv/34746	auto	S1E1	o=ja ja=- zh=- en=-	3573	tw=仰望半月的夜空
-1841	tv/79034	/rqsNQX4tR33NaQsK8A1OZjjjCgh.jpg	tv/79034	auto	S1E1	o=ja ja=- zh=- en=-	5658	tw=最高機密
+1841	tv/79034	/rqsNQX4tR33NaQsK8A1OZjjjCgh.jpg	tv/79034	auto	S1E1	o=ja ja=/1CvU5K34ey9ZNZWqlmK3PEclI7L.png:1.506 zh=- en=-	5658	tw=最高機密
 1842	tv/110308	/k0odLbq2HUfxh1Pl9DYnNzqTRdo.jpg	tv/110308	auto		o=zh ja=- zh=- en=-		hk=我叫 MT
 1848	tv/96326	/a0J4nKB4E8b3ttWdbw0RuTtHox4.jpg	tv/96326	auto	S1E1	o=ja ja=- zh=- en=/tfLlnabYpSoLULlzUMvFPUb30kx.png:3.05	105	tw=超能 R.O.D OVA|hk=超能 R.O. D OVA
 1849	tv/63164	/hiYSi32T8y67KicU6JpMAx4IHu9.jpg	tv/63164	auto	1-51:S1E1 52-75:S2E52 76:S2E75 81:S2E76 82:S2E76 83:S2E76 88:S2E77 89:S2E77 90:S2E77 95:S2E78 96:S2E78 97:S2E78 102:S2E79 103:S2E79 104:S2E79 109:S2E80 110:S2E80 111:S2E80 116:S2E81 117:S2E81 118:S2E81 123:S2E82 124:S2E82 125:S2E82 130:S2E83 131:S2E83 132:S2E83 137:S2E84 138:S2E84 139:S2E84 144:S2E85 145:S2E85 146:S2E85 151:S2E86 152:S2E86 153:S2E86 158:S2E87 159:S2E87 160:S2E87 165:S2E88 166:S2E88 167:S2E88 172:S2E89 173:S2E89 174:S2E89 179:S2E90 180:S2E90 181:S2E90 193:S2E91 194:S2E91 195:S2E91 200:S2E92 201:S2E92 202:S2E92 207:S2E93 208:S2E93 209:S2E93 214:S2E94 215:S2E94 216:S2E94 221:S2E95 222:S2E95 223:S2E95 228:S2E96 229:S2E96 230:S2E96 235:S2E97 236:S2E97 237:S2E97 242:S2E98 243:S2E98 244:S2E98 247:S0E1 248:S0E1 249:S2E99 250:S2E99 251:S2E99 256:S2E100 257:S2E100 258:S2E100 263:S2E101 264:S2E101 265:S2E101 270:S2E102 271:S2E102 272:S2E102 277:S2E103 278:S2E103 279:S2E103 284:S3E104 285:S3E104 286:S3E104 291:S3E105 292:S3E105 293:S3E105 298:S3E106 299:S3E106 300:S3E106 305:S3E107 306:S3E107 307:S3E107 312:S3E108 313:S3E108 314:S3E108 319:S3E109 320:S3E109 321:S3E109 326:S3E110 327:S3E110 328:S3E110 333:S3E111 334:S3E111 335:S3E111 340:S3E112 341:S3E112 342:S3E112 347:S3E113 348:S3E113 349:S3E113 354:S3E114 355:S3E114 356:S3E114	o=ja ja=/ktY7yAhMwaArFAp8PmvR354PPjk.png:4.353 zh=- en=/rN1PJnAzhvXC2rhJ5xCmddCVGYQ.png:3.046	1552	tw=Keroro 軍曹
@@ -447,7 +447,7 @@
 1965	tv/29310	/b2L2tMt01dD2jFM80kpbZpXjiD5.jpg	tv/29310	auto	S2E1	o=ja ja=- zh=- en=/HolK2ZCI8e9UvaYjy7k4a12IOE.png:2.241	4729	tw=英國戀物語 艾瑪
 1966	tv/45527	/v6K9BEzL5cjq8yYABSYR4aP61dK.jpg	tv/45527	auto	S2E1	o=ja ja=/wWYZR4H8KCzGePZUIwGa2A0i9W8.png:2.239 zh=- en=/fbI3Q7h0H8eK52FPsnCCOdseS41.png:2.597	5941	tw=交響情人夢
 1967	tv/29358	/4lYsKnifTWYsm2ghSe2IMrMSIb4.jpg	tv/29358	auto	S1E1	o=ja ja=- zh=- en=-	5025	tw=英雄時代
-1968	tv/111112	/wEE4lpvhhqnj2ESwpt4fbLpwnaS.jpg	tv/111112	auto	S1E1	o=ja ja=- zh=- en=-	6172	hk=美肌一族
+1968	tv/111112	/wEE4lpvhhqnj2ESwpt4fbLpwnaS.jpg	tv/111112	auto	S1E1	o=ja ja=/4VKDs2HEZo3g5t6B8oejc1yaI5m.png:2.72 zh=- en=-	6172	hk=美肌一族
 1969	tv/30237	/xuFBKZm4IZiCdIcC05gGbX7b82j.jpg	tv/30237	auto	S1E1	o=ja ja=- zh=- en=/vvK3xxIERhbdY7vux7AlHUOiDEg.png:3.483	5039	tw=奔向地球
 1970	tv/17149	/ty7HU48KEZzvoLuUVraUQSTsnbF.jpg	tv/17149	auto	S1E1	o=ja ja=- zh=- en=/bNehmfSQgy6iToFYWcSg9PMzw9G.png:3.594	5586	tw=吸血鬼騎士
 1971	tv/17149	/ty7HU48KEZzvoLuUVraUQSTsnbF.jpg	tv/17149	auto	S2E1	o=ja ja=- zh=- en=/bNehmfSQgy6iToFYWcSg9PMzw9G.png:3.594	6017	tw=吸血鬼騎士
@@ -497,7 +497,7 @@
 2084	movie/919	/17s9ojb8j8QnBGCfqDUJraXLlFi.jpg	movie/919	auto		o=ja ja=/47Mvv0JeuSqp8xQTXSr10kxs9v4.png:2.341 zh=- en=/s5Cg3g6cI92HnoGDsovOvgjE0sR.png:2.341	43	tw=血戰：最後的吸血鬼
 2087	tv/42979	/bWQCdVzIX1bmezNPuw5JKEhYxNJ.jpg	tv/42979	auto	S1E1	o=ja ja=- zh=- en=-	5920	hk=毀滅世界的六人
 2088	tv/34828	/4hZf6NGZYQsplszPxJC3js6WROu.jpg	tv/34828	auto	S1E1	o=ja ja=- zh=- en=-	6408	hk=蒼天航路
-2089	tv/36005	/fEAtW23tUVUep2JMAWEOlJm0k06.jpg	tv/36005	auto	S1E1	o=ja ja=- zh=- en=/jPhGTjHdsFgCuJd0R5OsIObb6lM.png:2.924	5678	tw=惡作劇之吻
+2089	tv/36005	/fEAtW23tUVUep2JMAWEOlJm0k06.jpg	tv/36005	auto	S1E1	o=ja ja=/lIxgEGVkKHRWuAWGKRw9fvb9r4y.png:3.198 zh=- en=/jPhGTjHdsFgCuJd0R5OsIObb6lM.png:2.924	5678	tw=惡作劇之吻
 2090	tv/31741	/1FiPbrqSAOMHZus9zE9HPQyG5Ve.jpg	tv/31741	auto	S1E1	o=ja ja=- zh=- en=/5pzyNGuXqy2UGV6d6Cp47D8zMB1.png:2.417	4416	tw=黑血兄弟
 2091	tv/206719	/s9QI626RJCYLydoxB3kXQgrxspI.jpg	tv/206719	auto	5-6:S1E5	o=ja ja=- zh=- en=-	4902	hk=四聖獸〜光陰敘事詩天使譚〜
 2092	tv/45544	/vu2ZJJT41NCwjiqzHBQPfHJFetU.jpg	tv/45544	auto	1-3:S1E1 4-5:S1E5 6-7:S1E6 8:S1E9 9-12:S1E9 13:S1E14 14-24:S1E14	o=ja ja=- zh=- en=-	640	tw=廢棄公主
@@ -578,7 +578,7 @@
 2464	tv/35423	/qOozkHguFVvG0BryiGdrTCXiTTg.jpg	tv/35423	auto	S1E1	o=ja ja=/kbDutpWYbAb5fXR5sFzrCm1fTtg.png:2.914 zh=- en=/cKud5eNdEZFs3hHK4uImPqkPMTp.png:3.232	7238	tw=荒川爆笑團
 2469	tv/31670	/6rPG2XDlIIgtePWqJHhyx0avo4z.jpg	tv/31670	auto	S1E1	o=ja ja=- zh=- en=-	4196	tw=飛輪少年
 2470	tv/73842	/g1mwDFCo9WElVDYcwY8cpiHBI4Y.jpg	tv/73842	auto	1-6:S1E1 7-11:S1E8 12:S1E3 SP6.5:S1E7	o=ja ja=/mzr1H9pqIPnTouaNJ0Dg8nibHv5.png:3.385 zh=- en=-	4125	hk=校園烏托邦 學美向前冲！
-2471	tv/36360	/vmpMO3TPBZwFtFtXIA6AZlqjLRc.jpg	tv/36360	auto	S1E1	o=ja ja=- zh=- en=-	5277	tw=假面男僕
+2471	tv/36360	/vmpMO3TPBZwFtFtXIA6AZlqjLRc.jpg	tv/36360	auto	S1E1	o=ja ja=/yRaC7bqaqUdyh5eU03ME5t3Geds.png:2.769 zh=- en=-	5277	tw=假面男僕
 2472	tv/29577	/1jIbmAt7FrMZyQtJHdtI3yH6I02.jpg	tv/29577	auto	S1E1	o=ja ja=- zh=- en=/ilTqP3BNPmBMKQxwKGn51T8pj3B.png:1.487	5656	hk=魔法學園 MA
 2474	tv/36983	/t7CqJNLEsBs8OlV4RyweaLg6B1Y.jpg	tv/36983	auto	S1E1	o=ja ja=- zh=- en=/ypynKSmhj8EE8k06ufFkCWG0FR1.png:2.929	5273	tw=十字架與吸血姬|hk=十字架與吸血鬼
 2475	tv/36983	/t7CqJNLEsBs8OlV4RyweaLg6B1Y.jpg	tv/36983	auto	S2E1	o=ja ja=- zh=- en=/ypynKSmhj8EE8k06ufFkCWG0FR1.png:2.929	5873	tw=十字架與吸血姬|hk=十字架與吸血鬼
@@ -588,7 +588,7 @@
 2480	tv/45276	/7LLVssjXaDiZFgOGhESnJJVDd23.jpg	tv/45276	auto	S1E1	o=ja ja=- zh=- en=-	6794	hk=奇跡列車
 2481	tv/9155	/5Ak0J09cZ3RXel0SeASEgusNfTy.jpg	tv/9155	auto	1-4:S0E1	o=ja ja=/4kxq5QiWUKT1zvJIGykgfKNbcHn.png:3.067 zh=- en=-	1033	tw=宇宙騎士BLADE|hk=宇宙騎士 BLADE
 2482	tv/46179	/tNBfnl9sIdSHmR5AMnWKIAzheNP.jpg	tv/46179	auto	S1E1	o=ja ja=/yXNbpBmgDHhZeHZyCJbiEg3qQiS.png:5.469 zh=- en=/zDapwVlZNsFzkvryW78kNuZsiV1.png:12.885	5029	tw=萌少女的戀愛時光
-2487	tv/95709	/thUkFxjVaxVn2s6Un9uFtwFC9lh.jpg	tv/95709	auto	1-2:S1E1	o=ja ja=- zh=- en=-	5800	tw=企鵝娘
+2487	tv/95709	/thUkFxjVaxVn2s6Un9uFtwFC9lh.jpg	tv/95709	auto	1-2:S1E1	o=ja ja=/vPE1PItMUSIoWGci1ixEBRGZVlg.png:2.147 zh=- en=-	5800	tw=企鵝娘
 2496	tv/16660	/1K0xW8RtPzACZ2Tu42H9R3OlGEw.jpg	tv/16660	auto	S1E1	o=ja ja=- zh=- en=/shz6MQxRM2G22iihTM2wxmXDOVf.png:3.826	5113	tw=物怪
 2504	movie/48625	/o7l2DVpFDFDmnQBfJSYo5eHSPyz.jpg	movie/48625	auto		o=ja ja=/y27Ge5azJxdQWPUVVxzcNckqPrE.png:2.869 zh=/juxaKBmCJ4tvO7qcVcj5Yt5cSDp.png:2.517 en=/dI4AfSSoiYnIC5WV50xCiC32hbB.png:3.689	6655	tw=劇場版 Macross F 虛空歌姬|hk=劇場版 超時空要塞 F ～虛空歌姬～
 2531	tv/42954	/6kI6qQZkO7ler4zjLKVlBYwtSSj.jpg	tv/42954	auto	S1E1	o=ja ja=/fVKAFWPJyMDFVSr909suA1B2xSA.png:4.612 zh=- en=-	6677	hk=空中秋千
@@ -604,7 +604,7 @@
 2608	tv/36067	/4CkNDI52T3YCmdrA7cJE9JKkW7Z.jpg	tv/36067	auto	S2E1	o=ja ja=- zh=- en=-	6721	tw=乃木坂春香的秘密
 2609	tv/46261	/lT8CUfNOkBQW9oPda2T5UPzVquM.jpg	tv/46261	auto	1-48:S1E1 49-96:S2E1 97-150:S3E1 151-175:S4E1	o=ja ja=/22Lc6GR7WBbgwggCTd9MpekKrLT.png:2.799 zh=/tuu17xEJCQ2e8i3CA0RQiBzC3Pb.png:2.008 en=/90pMH74Gm4o7IAXSpQtWp5J7jjq.png:2.827	6662	tw=FAIRY TAIL 魔導少年|hk=魔導少年
 2610	tv/42425	/pGCKkACejNJ5rN710X09EOfRTxJ.jpg	tv/42425	auto	S2E1	o=ja ja=/5vCD1FsPbHn81WRnVmLHvxmo0c1.png:1.589 zh=- en=-	6769	tw=機巧魔神
-2611	tv/34755	/vk22mRjiEXWSEFrQEKRviKlSi0J.jpg	tv/34755	auto	S2E1	o=ja ja=- zh=- en=-	6777	hk=天體戰士
+2611	tv/34755	/vk22mRjiEXWSEFrQEKRviKlSi0J.jpg	tv/34755	auto	S2E1	o=ja ja=/yfuFgRhmvztFUMrjZhfNjVhEXFX.png:1.825 zh=- en=-	6777	hk=天體戰士
 2617	tv/37437	/3dVdhMPbbH5TkQYjjzTM12hzccp.jpg	tv/37437	auto	1-13:S1E1 14:S0E1	o=ja ja=/kaU16Ss5zXJSlP7jwkjlvhKAicw.png:2.558 zh=- en=/tVY6iBeY5JHZfw0WxVFyoQaKfFO.png:4.297	6658	tw=天降之物
 2642	tv/34826	/iRkCFPbJBqrqOEigrZmi0McfKPx.jpg	tv/34826	auto	S1E1	o=ja ja=- zh=- en=/t9VhDe2W8r79xhbR0F1sY8Dxhwz.png:4.14	2162	tw=雙戀
 2643	tv/34787	/yFrAuojlFsyrziBP22mBunjpX7W.jpg	tv/34787	auto	1-2:S1E1 3:S1E5 4-5:S1E3 6-13:S1E6 SP1-3:S1E1	o=ja ja=- zh=- en=-	2984	tw=雙戀 Alternative
@@ -837,7 +837,7 @@
 3484	movie/46304	/8JKc1ZJTMcSprhYtUD2IegsX77L.jpg	movie/46304	auto		o=ja ja=- zh=- en=/3XqiIGrybdzCVa5xvxPOPAX6xde.png:5.503	6784	tw=Fate/stay night 無限劍製
 3485	movie/50716	/44Yvr2TrEVPSZVzCpyKA5IlHacH.jpg	movie/50716	auto		o=ja ja=- zh=- en=-	6075	tw=魔法少女奈葉 The MOVIE 1st
 3489	tv/31682	/2bGHf3soBQUQebHv6tJpEGor8mF.jpg	tv/31682	auto	S1E1	o=ja ja=- zh=- en=-	4966	tw=魔女獵人
-3495	tv/73108	/lmiXcAdHTKdKyeUjAO5guwZsH8I.jpg	movie/447402	auto				
+3495	tv/73108	/lmiXcAdHTKdKyeUjAO5guwZsH8I.jpg	movie/447402	auto		o=ja ja=/iAcuCjUYnLK3ywDCIxDH4vkOqth.png:2.277 zh=- en=/fRiEG7pzN1A61IvMpZK844ecyTI.png:2.042		tw=秋日天空～在夢中～
 3496	tv/37521	/t9WhpyGsoQXlf7XEol4PtN6ZbwK.jpg	tv/37521	auto	S1E1	o=ja ja=- zh=- en=-	4240	hk=公主請小心
 3498	tv/36287	/qEvOxj5WO0uxhf9XV2D7RjyGNPN.jpg	tv/36287	auto	S1E1	o=ja ja=- zh=- en=-	1645	hk=間奏曲
 3499	movie/16402	/z7nc41k7XyfGa2zhOOlfyXeMX4s.jpg	movie/16402	auto		o=ja ja=- zh=- en=-	537	tw=機動警察劇場版Ⅲ - 13號廢棄物|hk=機動警察劇場版Ⅲ - 13 號廢棄物
@@ -854,7 +854,7 @@
 3620	tv/34709	/93bKVCDs3BZRX4TPpddJQWYVVpd.jpg	tv/34709	auto	S1E1	o=ja ja=- zh=- en=-	1001	tw=京極夏彥 巷說百物語|hk=巷説百物語
 3621	tv/35993	/njzwGw2JwoMnwNbntW6CK3EqQql.jpg	tv/35993	auto	S1E1	o=ja ja=- zh=/51LoeKIZ0R4EfkqF9NZEJvUaos7.png:2.291 en=/5cit7dq0WzvWdUITMKpKE2lHdFQ.png:1.302	460	tw=鎧傳|hk=鎧甲聖鬥士
 3622	tv/45893	/POCKoyMDc7YH50vlTyjicqJgqW.jpg	tv/45893	auto	S3E1	o=ja ja=- zh=- en=-	7128	tw=向陽素描
-3626	movie/612027	/anHTaXA63XvW13jsCK748rrexTl.jpg	movie/612027	auto		o=zh ja=- zh=- en=-		hk=李獻計歷險記
+3626	movie/612027	/anHTaXA63XvW13jsCK748rrexTl.jpg	movie/612027	auto		o=zh ja=- zh=/m9AfI1RIAWlZ2JtKl1RvRuTuYV1.png:4.151 en=-		hk=李獻計歷險記
 3627	movie/42994	/hNf6J498veQVdq5FhHmL08ardwf.jpg	movie/42994	auto		o=ja ja=- zh=/wgixzDrclas2wshyW3B6nWJaVxi.png:3.528 en=/d3Lzt8HJNq1vzicWh0d4Miraile.png:3.09	262	tw=回憶三部曲
 3628	movie/97375	/njX1bnN5Xq7Uagz6QvzKv0Js3FP.jpg	movie/97375	auto		o=ja ja=/aFb5V2quGBoCo3if6TJEUtc0rmW.png:1.981 zh=/94RsKZ8zFPwNiVizPQph9rmXFcT.png:1.746 en=/TOy3tF9nQaF7qSbiAFqy4J7XRb.png:1.392	7250	tw=名偵探柯南：天空的劫難船|hk=名偵探柯南：天空的遇難船
 3630	movie/133481	/geIQSn0lYo9OwZCzvjlRSKE5Vsy.jpg	movie/133481	auto		o=ja ja=/8psygBgN4RoFPy113ARUFa3VX2F.png:2.691 zh=- en=-	6763	hk=東之伊甸 總集篇
@@ -932,8 +932,8 @@
 3909	tv/37584	/xIXMFc3Kp1Y9C7AbjWzuHYG1OE.jpg	tv/37584	auto	S1E1	o=ja ja=/gfBXlMcx1so0B17HAJXqLYsimBi.png:3.127 zh=- en=/lE2jK4qittOMJFkT8ob5pUxB7Pv.png:3.127	618	tw=一騎當千
 3916	tv/9410	/4rqrdFjoNcR1xaR7AoqibHFrRQF.jpg	tv/9410	auto	S1E1	o=ja ja=/aRMENddeIABzrrNTjsy62Gr3TZO.png:2.457 zh=- en=/9IOIp3P2ZWN5IrlndnQtEknC5Tz.png:1.817	2436	tw=甲賀忍法帖
 3926	tv/24856	/zOp5VrB445xaS75Ee1hIpqYwVXi.jpg	tv/24856	auto	S1E1	o=ja ja=- zh=- en=-	2742	hk=人機續篇
-3944	tv/133065	/k4X6esnJygAUloF7043rJqsbUoU.jpg	tv/133065	auto	1:S1E1	o=ja ja=- zh=- en=-	4567	tw=舞-乙HiME Zwei|hk=舞 - 乙 HiME Zwei
-3948	tv/123686	/557zh4UVyPRh7BuLZBqe5aMMyBu.jpg	tv/123686	auto	S1E1	o=ja ja=- zh=- en=-	5431	
+3944	tv/133065	/k4X6esnJygAUloF7043rJqsbUoU.jpg	tv/133065	auto	1:S1E1	o=ja ja=/paW2prk8YqNK0luwHjjv4qYu2zh.png:1.799 zh=- en=-	4567	tw=舞-乙HiME Zwei|hk=舞 - 乙 HiME Zwei
+3948	tv/123686	/557zh4UVyPRh7BuLZBqe5aMMyBu.jpg	tv/123686	auto	S1E1	o=ja ja=/bEkldnq1AU7Yd0H7dZVW6n1MJCT.png:1.908 zh=- en=-	5431	
 3955	tv/329731	/xzGqLxIuQGmqxX4RwG5jxRlWy8Y.jpg	tv/329731	auto	S1E1	o=ja ja=- zh=- en=-		
 3960	tv/31718	/aigj0UYSAdi5HxE1SA4YuTtQeIl.jpg	tv/31718	auto	S0E2	o=ja ja=/upSbSSXFykGSwH89gQj1EAiVo6D.png:2.435 zh=- en=/gGMSgN3VG8L0yk6wucvr4w0u6MP.png:2.449		tw=黑之契約者
 3974	tv/26674	/5NVIijd8tReEDTXyO1rSrz4XTtS.jpg	tv/26674	auto	S1E1 SP25:S0E1	o=ja ja=/dcQn4yl96mmmbNemS8CePZcifaC.png:2.03 zh=- en=-	2858	tw=曙光少女
@@ -1235,7 +1235,7 @@
 6997	tv/34660	/ypxQFuwYXa0yDBvl3zjwh8dY7Ie.jpg	tv/34660	auto	S3E1	o=ja ja=/8BbI0taRwz8LmcJruqfTPsTG1xj.png:1.355 zh=- en=/gXTGz9VOXa1ZF7kVOU3uvlqGPrR.png:5.563	1594	tw=幻想魔傳 最遊記|hk=最遊記
 6998	tv/66854	/AVAJZ5LOvSjb7mKyRNGVNxFFPh.jpg	tv/66854	auto	1:S1E1 2-3:S1E3 SP1:S1E2	o=ja ja=- zh=- en=-	7728	tw=最遊記外傳
 7014	tv/36729	/dQwimndsrbprJfKnsDXxhZL321.jpg	tv/36729	auto	S1E1	o=ja ja=/kd7Y4HGYf5g1hJQInzwW26MkQqb.png:2.194 zh=- en=-	7598	hk=和殿下一起 1 分鍾劇場
-7026	tv/85022	/9qYDv9fcuOGs8edoCQn3ERuO8FI.jpg	tv/85022	auto	S1E1	o=ja ja=- zh=- en=-		hk=漂亮爸爸。
+7026	tv/85022	/9qYDv9fcuOGs8edoCQn3ERuO8FI.jpg	tv/85022	auto	S1E1	o=ja ja=/rwdkmiZEGAgxyINc1ic1qR7XyPH.png:3.556 zh=- en=-		hk=漂亮爸爸。
 7029	tv/70643	/fNOXo7aYTXkFp2erAo9XgBgORux.jpg	tv/70643	auto	S1E1	o=ja ja=- zh=- en=-		hk=異國色戀浪漫譚
 7062	tv/44310	/q5rJomk2giO7hElCRLxoNyI1cen.jpg	tv/44310/season/0	auto	S0E1	o=ja ja=/qqcPDx5CpRnZiiDxjkmms5RHJen.png:1.444 zh=- en=/yDKHmIKhOweTc838sj5LmZOLvu1.png:1.386		tw=11eyes -罪與罰與贖的少女-|hk=11eyes -罪與罰與贖的少女
 7075	tv/19855	/iewxJpcc0ecumxqwNGSYQ49EL1X.jpg	tv/19855	auto	S1E1	o=ja ja=- zh=- en=/y9Ars7e4UI5JFbs9NLzHctXf1DZ.png:1.548	416	hk=蟲孽
@@ -1291,7 +1291,7 @@
 7707	movie/357786	/tDM4UAaHxMrvODGIUj9ZixmyVmw.jpg	movie/357786	auto		o=ja ja=- zh=- en=/kW3ch9qaGMxbzrKJHBo4vxLORNt.png:2.842	8357	tw=傷物語〈Ⅰ鐵血篇〉
 7747	movie/22809	/5XsDFwU9ANjOQoIrNDyoJK4sICg.jpg	movie/22809	auto		o=cn ja=- zh=/xTEVjViHy2g2eLyJsXDeOpEca2C.png:1.876 en=/z4bnrqLVdqtHutm6Bd0JYXzl7nw.png:3.297 cn=-		tw=風雲決
 7777	tv/387	/pv8zQ2MKIZA67VmOfTNktJLmHa5.jpg	tv/387	auto	1:S1E1 2:S1E4 3:S1E6 4:S1E8 5:S1E10 6:S1E12 7:S1E14 8:S1E16 9:S1E18 10:S1E20 11:S1E22 12:S1E24 13:S1E26 14:S1E28 15:S1E30 16:S1E32 17:S1E34 18:S1E36 19:S1E38	o=en ja=/3r8Dh8E2QLRfNyj25LfjBu2W3b4.png:1.626 zh=/wqY2HTv5dOPf8maqO09MkBRnN6E.png:1.598 en=/imM7dqtVl070IIKyOqzOHmHFXqq.png:1.887		tw=海綿寶寶
-7783	tv/73108	/lmiXcAdHTKdKyeUjAO5guwZsH8I.jpg	tv/73108	auto	S1E1			
+7783	tv/73108	/lmiXcAdHTKdKyeUjAO5guwZsH8I.jpg	tv/73108	auto	S1E1	o=ja ja=/iAcuCjUYnLK3ywDCIxDH4vkOqth.png:2.277 zh=- en=/fRiEG7pzN1A61IvMpZK844ecyTI.png:2.042		tw=秋日天空～在夢中～
 7806	tv/95919	/uGhx0YG58m60QDkTiecjqUujDOC.jpg	tv/95919	auto	S1E1	o=ja ja=/juJ9NS8M5gh0LieQ4rw2nYWNzDH.png:2.831 zh=- en=-	2443	hk=心動的日子
 7835	tv/77504	/xpb9aZPiyCTI1O3XVtHSytErC1G.jpg	tv/77504	auto	2-3:S1E1	o=ja ja=- zh=- en=-		tw=機械女僕
 7842	tv/35447	/JPuk8H588WIUragF1EQNPVQRcG.jpg	tv/35447	auto	S1E1 SP1:S0E1 SP2:S0E1	o=ja ja=/bM8rEfbjHHbVzHvQCFRo7bHsVdn.png:1.3 zh=- en=/fij8j7jJDtZ7jcZ6kTO1Y8eQ4lA.png:1.48	7486	tw=侵略！花枝娘
@@ -1592,7 +1592,7 @@
 10403	tv/113907	/dULA8iJWcWpzGG9x5YgdjRV7Z1p.jpg	tv/113907	auto	S1E1	o=ja ja=- zh=- en=-	482	hk=學園戰記無量
 10404	tv/25117	/tFwx94xIVKI5heRXdcmYLoI0GhU.jpg	tv/25117	auto	S1E1	o=ja ja=/qE9CjvQNUJyQ6pexUmFlld07LeB.png:3.845 zh=- en=/iRrnxsatHRAjyntZUFRtgcIEgXh.png:1.515	1457	tw=小拳王|hk=鐵拳浪子
 10405	tv/45485	/kMma8CaSmQ3anSM8eS5sTECSO4U.jpg	tv/45485	auto	S1E1	o=ja ja=- zh=- en=-	955	tw=蓋特機器人
-10406	tv/21918	/6c8clf2EOP0S6EjQS5iOrr6zH0j.jpg	tv/21918	auto	S1E1	o=ja ja=- zh=- en=/uRtk0CaMhhKudgaUVkYHqDVcbbc.png:2.962	21	tw=尋找滿月|hk=星河滿月
+10406	tv/21918	/6c8clf2EOP0S6EjQS5iOrr6zH0j.jpg	tv/21918	auto	S1E1	o=ja ja=/6Ii7wJUKlMZLKbOpHVJa5X7KLZx.png:2.72 zh=- en=/uRtk0CaMhhKudgaUVkYHqDVcbbc.png:2.962	21	tw=尋找滿月|hk=星河滿月
 10407	tv/34131	/oxnZM90D4dXek63sBWOdcGs6wof.jpg	tv/34131	auto	S1E1	o=ja ja=- zh=- en=-	264	tw=妙手小廚師|hk=夥頭智多星
 10408	tv/26110	/az6f0tTojBSFLUpKwVkN5BOZMAV.jpg	tv/26110	auto	S1E1	o=ja ja=- zh=- en=-	1364	tw=NG騎士檸檬汽水&40|hk=NG 騎士檸檬汽水&40
 10409	tv/34179	/poZ4Ebbv9lU8yAhfbehsQkwI7QM.jpg	tv/34179	auto	1-30:S1E1 31-60:S1E1 61-74:S1E1	o=ja ja=- zh=- en=-	854	tw=小紅帽恰恰|hk=紅頭巾 CHA CHA
@@ -1637,7 +1637,7 @@
 10555	tv/81655	/wANmIU5YHB6FZNRtSVcJNkDtdsj.jpg	tv/81655	auto	S1E1	o=ja ja=/6fnepG1p3vgU3XShjije7UyrNvh.png:2.245 zh=- en=-		
 10557	tv/108323	/2ssQTNiNAywZV0reQDfuu4v89yf.jpg	tv/108323	auto	S1E1	o=ja ja=/dfE0ROM5z8SW7xGgL5ftm0afpLI.png:3.883 zh=- en=-		hk=緝毒特搜班
 10558	movie/378989	/fOyOxSAgAsFYJHMN0ESvMRpFCsW.jpg		auto		o=ja ja=- zh=- en=-	5582	hk=高嶺的腳踏車
-10559	tv/44477	/evze9zrCTvQdG3ZhuhqtbZ8uNGN.jpg	tv/44477	auto	S1E1	o=ja ja=- zh=- en=-	5986	hk=地下巧克力
+10559	tv/44477	/evze9zrCTvQdG3ZhuhqtbZ8uNGN.jpg	tv/44477	auto	S1E1	o=ja ja=/1hf2IESDTIv6O0DZ7XXPOpzxekS.png:1.573 zh=- en=-	5986	hk=地下巧克力
 10560	tv/35529	/qpLv85p2HEzDkOD6JQLJgD3t10a.jpg	tv/35529	auto	S1E1	o=ja ja=- zh=- en=/9hj51o2Zlq2OzamvSrjnBc0w1vi.png:3.55	521	hk=我係小忌廉
 10561	tv/44263	/tlLpz7wJk8dM0ySwI7Np4EWsahA.jpg	tv/225952	auto		o=ja ja=- zh=- en=-	3337	hk=小小詞應言
 10565	tv/38112	/mJFWew7KYwA9q3xQAj5gf7gnukA.jpg	tv/38112	auto	S2E1 ED1:S2E1 OP1:S2E1 SP1-4:S0E19	o=ja ja=/2TiHI8Bmbpz27LZLbdD0iiQxmaR.png:2.848 zh=- en=/dzHQQkMZutaxBEouRKdQkQvlfim.png:2.397	8154	tw=聖痕鍊金士
@@ -1750,7 +1750,7 @@
 11836	tv/24912	/th6Xt6MBufVuRpqkZML4Q57JSf2.jpg	tv/24912	auto	1-18:S1E1 19-21:S1E20 26-45:S1E26	o=ja ja=/iZpJbXuuJQke9X2iyvYw9AEBzop.png:2.036 zh=- en=/7TjlXdaVO0YqlM7vSpo4JI3iGQe.png:2.027	642	tw=偵探學園Q|hk=偵探學園 Q
 11875	tv/36023	/vP7vVYowOgPlrJboQBOSpxaA6Sf.jpg	tv/36023	auto	S1E1	o=ja ja=- zh=- en=-	222	hk=駭客時空：境界性
 11876	tv/34775	/o0IPvXGFVBGldyT4vxfZ53TootN.jpg	tv/34775	auto	S1E1	o=ja ja=- zh=- en=-	4808	hk=新勇者萊丁
-11877	tv/211419	/yXNEVcH343fSOagR1KF5jrUbXP7.jpg	tv/211419	auto	1:S1E1	o=ja ja=- zh=- en=-	6023	hk=稻草人
+11877	tv/211419	/yXNEVcH343fSOagR1KF5jrUbXP7.jpg	tv/211419	auto	1:S1E1	o=ja ja=/iS5rsS9w7tcqEe6MfNaIahLlruC.png:5.649 zh=- en=-	6023	hk=稻草人
 11895	tv/78689	/fSWUxV0RTlOMQuaWuezgYcBa3tK.jpg	tv/78689	auto	1:S1E1 2:S1E3 3-4:S1E3 5:S1E6 6:S1E6 7:S1E8 8:S1E8	o=zh ja=- zh=- en=-	1163	
 11909	movie/20352	/2XSeKDmIa2KxaiJy4J9e8FrIZhk.jpg	movie/20352	auto		o=en ja=/bfr34dqYtzzMHBjmEmjiLX3wW81.png:4.293 zh=/qjhdcPh4ET7iBCvOkobiCWAVwAk.png:0.715 en=/hrAeReyKsy89ue9bMWKuTJ57GGz.png:7.289		tw=神偷奶爸|hk=壞蛋獎門人
 11911			tv/208356	auto				
@@ -1765,7 +1765,7 @@
 12083	tv/2098	/4QnFxk03yAn7U2ZTL5oMCCqxlPc.jpg	tv/2098	auto	1-60:S1E1 61-70:S2E1 71-80:S3E1 81-85:S4E1	o=en ja=/3fQptiQrbx1f3qG9VxQRTSd56EN.png:3.455 zh=/qZTF2cW0QTHJFfBIdvo7AQShWkI.png:1.944 en=/vKXgCje2NVqnxixqoU9JQXREvLr.png:2.64		tw=蝙蝠俠
 12189	movie/74842	/7aWPhsfiiEFIIojF1UndzfGYni5.jpg	movie/74842	auto		o=ja ja=- zh=- en=-	7621	tw=鬼神傳|hk=鬼神伝
 12192	tv/37471	/dIc8YQrs3fRbB7b9pGzgTqDMnpJ.jpg	tv/37471	auto	1-12:S2E1 12.5:S0E4 13-24:S2E13 24.5:S0E5	o=ja ja=/cnp0bdRpRzB2vABDtXQ9zUFKcmR.png:4.015 zh=- en=-	8177	tw=妖怪少爺|hk=百鬼小當家
-12193	tv/79764	/G3bYynD3SCMIFTFluMMwUGiVQ9.jpg	tv/79764	auto	S1E1	o=ja ja=- zh=- en=-	5275	tw=四娘物語
+12193	tv/79764	/G3bYynD3SCMIFTFluMMwUGiVQ9.jpg	tv/79764	auto	S1E1	o=ja ja=/rZjaA4JTGrFFycCZngsooqJRLIG.png:2.35 zh=- en=-	5275	tw=四娘物語
 12282	movie/59297	/w5TOLHmwAxMmkyfo71qYVr4AhdQ.jpg	movie/59297	auto		o=ja ja=/z0MkHZOQmAjlJCmjIIAGuMgsbim.png:5.59 zh=- en=-	1190	tw=阿莱蒂公主|hk=阿萊蒂公主
 12283	movie/41201	/sYFrtzMXBo3zd1Iv3h0zB9Oj0fc.jpg	movie/41201	auto		o=fr ja=- zh=- en=/6ezzKeBERL3o4BK8mRTaBUaDufy.png:2.043 fr=-		tw=魔術師
 12309	tv/88023	/e354Jr2NVJ5oDjzEdbfaOskOM4k.jpg	tv/88023	auto	S1E1	o=ja ja=- zh=- en=/sFMk5YcyEtMrQxP5GZXd5kkhmSc.png:3.704	3564	hk=拳皇：擇日再戰
@@ -2154,7 +2154,7 @@
 20271	tv/321570	/iPMyYOkR1RCsFtyYuJtDsiOJNfl.jpg	tv/321570	auto	S1E1	o=zh ja=- zh=- en=-		
 20359	movie/20982	/fJRbm6m2DDbSSyD8jTeB8evZ3Hq.jpg	movie/20982	auto		o=ja ja=/6nEw4Cno5F43CelhKOHNL6w3nYt.png:1.744 zh=- en=/1Y26ivJdSPjiBb0nzQacBiwyHQN.png:2.238	5178	tw=火影忍者疾風傳劇場版：鳴人將死
 20407	tv/93988	/jrKkSeO6RHHnSoVgouwvUSy4k6p.jpg	tv/93988	auto	S1E1 ED1:S1E1 OP1-2:S1E1	o=ja ja=/eKmPU5S0scbWeVfKZig7oQnBoFB.png:1.685 zh=- en=-	8629	hk=戰鬥之魂 霸王
-20431	tv/35466	/eAQKaLrdlfGk6yiILuCWIGUTaL0.jpg	tv/35466	auto	1-18:S1E1 19:S0E3	o=ja ja=- zh=- en=/6GY26QuXIJsM7NejcpI9UTbyooi.png:2.597	481	tw=學校怪談
+20431	tv/35466	/eAQKaLrdlfGk6yiILuCWIGUTaL0.jpg	tv/35466	auto	1-18:S1E1 19:S0E3	o=ja ja=/jQ3cBhIhvVFsFSWeE65ZPaTKXAP.png:2.964 zh=- en=/6GY26QuXIJsM7NejcpI9UTbyooi.png:2.597	481	tw=學校怪談
 20523	movie/79082	/dpwfPVCD2eQgEWY7GtCYAyRaVAP.jpg	movie/79082	auto		o=ja ja=- zh=/lpo124hcUKN45kiNjTt7i3PRe9v.png:2.59 en=-	8010	tw=航海王3D：追逐草帽大冒險|hk=ONE PIECE 3D：追逐草帽大冒險
 20528	tv/211521	/p1zoMbievObRfuD5fGBB0NKEftd.jpg	tv/211521	auto		o=ja ja=- zh=- en=-		hk=可愛大宣言！
 20529	tv/8805	/97WD9x8jx3r0yEO2M7I70OYCzAx.jpg	tv/8805	auto	S1E1	o=ja ja=- zh=- en=-	4049	hk=怪醫美女 RAY
@@ -2410,7 +2410,7 @@
 25665	movie/87636	/zNikJb6W0J3OA17mXtFoijmNFlz.jpg	collection/134063	auto		o=ja ja=- zh=- en=/yPDJeBz2mJQXAdRcZCouuMQafOh.png:3.108	773	hk=動畫製作進行黑美 OVA1
 25709	tv/231515	/6edko3cSImNDRDFwt3EoR8bY2r2.jpg	tv/231515	auto		o=en ja=- zh=- en=-		hk=熊貓京京
 25710	tv/97817	/eJoeMUM5lucbp0KamWtXviHs6R8.jpg	tv/97817	auto		o=zh ja=- zh=- en=-		
-25711	tv/58821	/ozxZrNWNZH3a7SlNdxNEYAoz8l5.jpg	tv/58821	auto		o=en ja=- zh=- en=-		
+25711	tv/58821	/ozxZrNWNZH3a7SlNdxNEYAoz8l5.jpg	tv/58821	auto		o=en ja=- zh=/oJPNFgpDzCIcrrrDRhukwhsHPVp.png:1.289 en=-		
 25713	tv/8392	/2YeQEGqzE0FDto39IiWRlDg9lN6.jpg	tv/8392	auto	S1E1	o=en ja=- zh=- en=/wk7b0rOu2XJAiNdqztUgj56mqv5.png:2.605		tw=大力水手
 25714	tv/118804	/AehUwIm4gbTop7C86Dd0Y3JkEnD.jpg	tv/118804	auto	1-30:S1E1 31-39:S1E1	o=zh ja=- zh=- en=-		
 25715	tv/115496	/pXbi5r6tewiYT4F0RvsH3boxIl.jpg	tv/115496	auto	1:S1E1	o=zh ja=- zh=- en=-		
@@ -3007,7 +3007,7 @@
 37281	tv/94236	/xxMYy1yIEw2AgQ57HmwL4VgDW6z.jpg	tv/94236	auto	S1E1	o=ja ja=- zh=- en=-	3151	hk=宇宙魔神大劍王
 37285	tv/8879	/opRVB4ryyXNJXKRTYvBpngbb3tB.jpg	tv/8879	auto	S1E1	o=ja ja=- zh=- en=/3z85zbBnKcGMQ0JjNx1jnWvknBF.png:2.066	3124	hk=宇宙大帝西格瑪神
 37286	tv/20213	/h01A95FstbNynIk0mIzj9P3eFTy.jpg	tv/20213	auto	1-33:S1E1 34-46:S1E35 48-50:S1E48	o=ja ja=- zh=- en=-	2349	hk=無敵機械人託萊達 G7
-37287	tv/205231	/p9wKKk3cWuxUKsAs4StZSDhQXgi.jpg	tv/205231	auto	S1E1	o=ja ja=- zh=- en=-	2350	
+37287	tv/205231	/p9wKKk3cWuxUKsAs4StZSDhQXgi.jpg	tv/205231	auto	S1E1	o=ja ja=/bliDLj8RPq6IEPa1X6kWNMIEu42.png:2.252 zh=- en=-	2350	
 37288	tv/96061	/a9keLyhn2ioSMYD6ZggmSiOAUTZ.jpg	tv/96061	auto	1-52:S1E1	o=ja ja=- zh=- en=-	1480	hk=亞空大作戰斯蘭格爾
 37289	tv/45065	/4JQgeoA1ICfYptLY3tkVvTx8nEO.jpg	tv/45065	auto	S1E1	o=ja ja=- zh=- en=-		hk=獸神萊卡
 37290	tv/90414	/gqQssmDeb538kjEEpHsJMeqDJx7.jpg	tv/90414	auto	S1E1	o=ja ja=/yzlQiNcaEXwe6LcudNuqLgkgYiI.png:1.751 zh=- en=-	1459	hk=機甲界加里安
@@ -3329,7 +3329,7 @@
 41574	movie/162975	/qkpI6qzv4NgTDbxXjZ1qYTSkOuD.jpg	movie/162975	auto		o=ja ja=- zh=- en=-	9259	hk=新世界 未來篇
 41612	tv/62742	/zKnoPdFQZXuFvb6qzeAk5q6G6Ge.jpg	tv/62742/season/0	auto	S0E1	o=ja ja=/4Nz1Qb3QI0d8KNVsJU22eYsBydL.png:2.706 zh=- en=/4ymZgtD2MzmnoXv29iely8dO3wa.png:2.507	8969	tw=殭屍哪有那麼萌？
 41658	tv/53918	/eH872k9IyD3I1FBuffEqwLDzUti.jpg	tv/53918	auto	S1E1 SP13:S0E1	o=ja ja=/rYlFaxHG8qxwVvFDVmjdCNfvZPF.png:4.452 zh=- en=/jtN29KlzK7MgQ2jomQc2JxU6g51.png:3.842	9257	tw=前進吧！登山少女|hk=LET'S GO！登山少女
-41705	tv/43322	/dMJW4tFSEWFEpLFPPXqHScsXWLC.jpg	tv/43322	auto	S1E1	o=ja ja=- zh=- en=-	5023	hk=電波少女
+41705	tv/43322	/dMJW4tFSEWFEpLFPPXqHScsXWLC.jpg	tv/43322	auto	S1E1	o=ja ja=- zh=- en=/tMotemTgwzaLdacDg7OEkPsTNiJ.png:4.057	5023	hk=電波少女
 41731	tv/32377	/1YTo2OpO7GP6k5cq9A0pR6hAWZP.jpg	movie/1634139	auto		o=ja ja=/iRPIzJaaVLOLlEnhvphJOKBWLg7.png:1.896 zh=- en=/wt5pkwFrUeqy75ezsOF43iD1HAt.png:2.375	5125	tw=裝甲騎兵波德姆茲|hk=裝甲騎兵
 41732	tv/32377	/1YTo2OpO7GP6k5cq9A0pR6hAWZP.jpg	tv/32377	auto	S0E6	o=ja ja=/iRPIzJaaVLOLlEnhvphJOKBWLg7.png:1.896 zh=- en=/wt5pkwFrUeqy75ezsOF43iD1HAt.png:2.375	5126	tw=裝甲騎兵波德姆茲|hk=裝甲騎兵
 41733	tv/313840	/zTkRpfQiIuHZt1HyLur4GAWsylU.jpg	tv/313840	auto	S1E1	o=ja ja=/r17LkjH8f3eFd6OJaTvTCRfiXb2.png:1.368 zh=- en=-	3998	
@@ -3887,7 +3887,7 @@
 54433	tv/65676	/5VL7HC4aeLhepAaGxaQBUBWgIGo.jpg	tv/65676	auto	S1E1 SP13:S1E13	o=ja ja=/j4NP4FXjS4BcsSF4lyHXfKEo08e.png:2.485 zh=/m9YqfDDytnyzxeHEOaVckOV6HuH.png:1.088 en=/w2fUbCyKjxYQweKRyIo9usNxA7Z.png:1.021	9310	tw=果然我的青春戀愛喜劇搞錯了。
 54435	tv/42140	/r2VtnZR0HdZsLiYTgzFjqbe6qsU.jpg	tv/42140	auto	0:S0E3 1:S0E3 2:S0E3 3:S0E3 4:S0E3 5:S0E3 6:S0E3 7:S0E3 8:S0E3 10:S0E3 11:S0E3 12:S0E3	o=ja ja=- zh=- en=-	9473	
 54438	tv/48623	/oEXcPY2UpL6sicWct4xP9wYxfQT.jpg	tv/48623	auto	S1E1	o=ja ja=/yGwekmoXM1AtbROLrs9Rcw2BEOE.png:1.636 zh=- en=/fvKGgX8mlCbTp7MoaTHXkAVqNRK.png:3.719	9292	tw=八犬傳－東方八犬異聞－|hk=八犬傳 ―東方八犬異聞―
-54529	tv/44477	/evze9zrCTvQdG3ZhuhqtbZ8uNGN.jpg	tv/44477	auto	S1E1	o=ja ja=- zh=- en=-	11387	hk=地下巧克力
+54529	tv/44477	/evze9zrCTvQdG3ZhuhqtbZ8uNGN.jpg	tv/44477	auto	S1E1	o=ja ja=/1hf2IESDTIv6O0DZ7XXPOpzxekS.png:1.573 zh=- en=-	11387	hk=地下巧克力
 54539	movie/1709907	/daS8nCqshe5IBCnOi2huWFDzohe.jpg	movie/1709907	auto		o=ja ja=- zh=- en=-		
 54550	movie/378108	/bh5jnK2SeUw7iTbg9QHIi24S01Q.jpg	movie/378108	auto		o=ja ja=/hOznHhoYwx3Cvez9Sb0YPwIzRB8.png:1.075 zh=/ugzPCsupBcamnp7pYIx2TUM1FzB.png:2.104 en=/ts3EKmOgiUzcNzs5g4AJt2PEpFW.png:1.851	9376	tw=謝謝你，在世界的角落找到我|hk=謝謝你，在世界角落中找到我
 54551	tv/61414	/soxQOZ6cmQ6HhFA5gojvJsT5yru.jpg	tv/61414	auto	S1E1	o=ja ja=/NlNr979RC6JD9nHX3njxv7GJPn.png:3.409 zh=- en=-	10531	tw=鋼彈 Reconguista in G|hk=高達 Reconguista in G
@@ -4009,7 +4009,7 @@
 56934	tv/85116	/447Qq7GbWT6Q9mmM5k77HbFh78J.jpg	tv/85116	auto	S1E1	o=ja ja=- zh=- en=-		
 56951	tv/52896	/3WhPkBTM51BRClmHQjhqUqXHo0y.jpg	tv/52896	auto	S1E1	o=ja ja=/chCsy6qZOeln0BQcYIqy1VYIRIS.png:3.788 zh=- en=/j5ho5puAeUmPqsZCGHcVGDY26uZ.png:1.703	9568	tw=革命機Valvrave|hk=革命機 Valvrave
 56993	tv/103757	/m20fPc0f2yoK8pl8OL8cqHIlzp4.jpg	tv/103757	auto	S1E1	o=ja ja=- zh=- en=-	3077	hk=踢向明天
-56995	tv/64049	/gdGudhFpDN9btbP5ONi8uotm2g8.jpg	tv/64049	auto	S1E1	o=ja ja=- zh=- en=-	1848	
+56995	tv/64049	/gdGudhFpDN9btbP5ONi8uotm2g8.jpg	tv/64049	auto	S1E1	o=ja ja=/pUcLGRRLdENsqn2j2W81FWGdwMt.png:2.092 zh=- en=-	1848	
 56999	tv/103159	/ppNvRZeTk1tr0unvfDxg2T1P1am.jpg	tv/103159	auto	S1E1	o=ja ja=/gn6PqDQ3e2kMVv2CdnkJTRN7P7b.png:3.058 zh=- en=/vYF41epRUGci8eWQeENqES97LWN.png:5.24	2416	
 57001	tv/78511	/nFxUSo3igCafq18QZzx6oxnyGCN.jpg	tv/78511	auto	1-18:S1E1 21-52:S1E19	o=ja ja=- zh=- en=-		hk=赤血十一人
 57010	movie/405309	/7NfqHti1RytTfvkB0KWchDmUQa3.jpg	movie/405309	auto		o=ja ja=- zh=- en=-		hk=橙路 少年 JUMP 特別動畫
@@ -5976,7 +5976,7 @@
 92982	movie/152795	/c1nCz7PEip3YeqT7R4I8Toc3FOw.jpg		auto		o=en ja=- zh=- en=/y4e4hcnxqR24SGz4F1bMLYJbhaf.png:9.568		tw=虛擬天后|hk=動漫影后
 93007	movie/540700	/gVrJvLkqjq7OEDCAV2CBApnovxk.jpg	movie/540700	auto		o=ja ja=- zh=- en=-		hk=彈貓老人歐魯歐拉內
 93044	movie/109445	/rj58WQ9ImI0mYDptXdM7euX1Wjt.jpg	movie/109445	auto		o=en ja=/bQwoK4H6UOPIUI1sd1PwcG4qc8x.png:3.514 zh=/tCWZ6smf0sRDe6X3eXfIZoeVpsT.png:3.187 en=/r05nI8WQvBbdvuwVXtXuvOi0cJ9.png:4.277		tw=冰雪奇緣|hk=魔雪奇緣
-93046	tv/64049	/gdGudhFpDN9btbP5ONi8uotm2g8.jpg		auto		o=ja ja=- zh=- en=-		
+93046	tv/64049	/gdGudhFpDN9btbP5ONi8uotm2g8.jpg		auto		o=ja ja=/pUcLGRRLdENsqn2j2W81FWGdwMt.png:2.092 zh=- en=-		
 93047	movie/445129	/e8DPCQGpTNo4mHRTs9zeXDKr0Zi.jpg	movie/445129	auto		o=ja ja=- zh=- en=-	4013	
 93049	tv/35871	/vxhdFxWKU74igmgVg4XjbW6yHa0.jpg	tv/35871	auto	S0E3	o=ja ja=/wDOtTNvfxe6w2DVJ4GVLwXC6CuM.png:2.755 zh=- en=-	4014	tw=甜甜仙子
 93052	tv/57706	/dI2O0d5Dkk8tpuTvCkUKQw3LNMv.jpg	tv/57706	auto	S0E7	o=ja ja=/GUPJY9bSY3ewg9tM7jylT9ODQv.png:2.287 zh=- en=/jIPw1T05kVYiRnNZtxNB7jdLxrs.png:2.87		tw=亂馬½
@@ -6057,7 +6057,7 @@
 95798	movie/218836	/4DryRw1Jyh2c7r8glVayvyhNngP.jpg	movie/218836	auto		o=en ja=- zh=- en=/aw3LIXUvAG76GcoBrIHUfTpelGC.png:2.526		tw=飛機總動員：打火英雄|hk=飛機總動員 2：救火大行動
 95800	movie/265712	/1aABIiqBY7yoQESE8qWvR0w9bJZ.jpg	movie/265712	auto		o=ja ja=- zh=/rpJ6CRrYBY0jQCHlbuTvWDyKpoH.png:3.312 en=/fecSkePkQvoNK64P67bsp3Vmhst.png:3.301	10253	tw=STAND BY ME 哆啦A夢|hk=STAND BY ME: 多啦 A 夢
 95801	tv/152540	/erWPxqeFv2GVMUYBwtjN8zV9cFE.jpg	tv/152540	auto		o=zh ja=- zh=/fv1DdsKnahiUtS4mLLBlbYHaGE0.png:2.404 en=-		
-95802	movie/170687	/q2vz5DeLbegD2teJU29Gtb4t2sO.jpg	movie/170687	auto		o=en ja=- zh=/yTm3f4vao0UGiChjeHW7ElbNy11.png:3.423 en=/z3Un2TAkvTtXKMTsUDukiZdeoxP.png:3.346		tw=怪怪箱|hk=怪誕小箱俠
+95802	movie/170687	/q2vz5DeLbegD2teJU29Gtb4t2sO.jpg	movie/170687	auto		o=en ja=- zh=/yTm3f4vao0UGiChjeHW7ElbNy11.png:3.423 en=/kf3dUZaohYujLoLLemiOBYLYvY3.png:3.376		tw=怪怪箱|hk=怪誕小箱俠
 95810	movie/257932	/6i29AyCu1aKAbzbmQITTmOF2cVb.jpg	movie/257932	auto		o=zh ja=- zh=- en=/j6SJWMufhg7G8GzR62mOmbQAL7b.png:5.547		tw=龍之谷：破曉奇兵
 95824	tv/56559	/gtwdI7qHNrrLe5R7nWnoDgrbEbV.jpg	tv/56559	auto	S2E1	o=ja ja=/ylc6IFyEII7VailY0dsOGMmK6zH.png:2.919 zh=- en=/tui9hjWT9ug68HrYjUSU8YlynjO.png:4.319	10717	tw=闇芝居
 95825	tv/60814	/umRuntFGGmaDr9R0opfNnWK1zOi.jpg	tv/60814	auto	S1E1	o=ja ja=- zh=- en=/7VELaBsajjUgp6X26jBLJwY1WwG.png:2.162	10432	tw=劍靈 Blade & Soul
@@ -6979,7 +6979,7 @@
 113089	movie/14919	/cMUuAgVsMWOCawXonZ4D1dSMd6h.jpg	movie/14919	auto		o=en ja=/mM7r6MaXmVN6Vn9ovu3Fpn7JRik.png:3.746 zh=- en=/1MjJhC7UvO9C9FfFcufuKbnKeLb.png:2.679		tw=蝙蝠俠：鬼影之戰
 113090	movie/15242	/mSGie9GCD6nRv8Wmc8LT7maNVCh.jpg	movie/15242	auto		o=en ja=- zh=- en=/mWAo16cEPkJT2pw7fUJX7E4KklF.png:1.846		
 113091	movie/4978	/WRgAzhlujb9BRnSj97TZVMIvpz.jpg	movie/4978	auto		o=en ja=- zh=/otNdFKE0i8ob2iIxYL6gTguOP4.png:2.788 en=/lWCgr7T3VeXXkbnxiXXREMm5qHM.png:3.736		tw=美國鼠譚|hk=老鼠也移民
-113092	movie/15374	/zV6S39vCyV7VuUaRWC3dsDQT9An.jpg	movie/15374	auto				
+113092	movie/15374	/zV6S39vCyV7VuUaRWC3dsDQT9An.jpg	movie/15374	auto		o=en ja=- zh=- en=/qX4xObn3sf3lCN1mndZvsLgKT28.png:2.081		
 113093	movie/17278	/h1bSMU4fLgLvgMKV19xmealLdx2.jpg		auto		o=en ja=- zh=- en=/8NWDfMSAMyAFnYyiMiAkr79gRrM.png:1.662		hk=怪獸大聚會
 113094	movie/9444	/h6VshReCGaGQoaGZwT2wqiqrcZW.jpg	movie/9444	auto		o=en ja=- zh=- en=/gUodgTmgSLS7N8ZpOivnvEoWXxF.png:3.358		tw=真假公主－安娜塔西亞|hk=真假公主：安娜塔西亞
 113095	movie/30060	/FwV9a72BGBtaRpAEwvPaYfCMon.jpg	movie/30060	auto		o=en ja=- zh=- en=/kouukFamKa13ErctvOq5p9Qxe5F.png:2.921		hk=疫病犬
@@ -7223,7 +7223,7 @@
 116289	movie/959430	/4O5FRqtM0Lx5z2Y0vSYFyDAhOaQ.jpg		auto		o=ja ja=- zh=- en=-	6631	hk=阿大是我哥
 116349	tv/85170	/wJHroZj28HD39khbG8gWzVDSo82.jpg	tv/85170	auto	S1E1	o=ja ja=- zh=- en=-		tw=歐派學院合奏部
 116370	tv/103927	/jQKbFVZJwsVTW6Kz7j23xpa11Ft.jpg	tv/103927	auto	1-12:S1E1 13-14:S2E1 16:S2E3 17-20:S2E5 21-24:S2E10 25-30:S3E1 31:S1E2 32-35:S3E8 OP1-8:S1E1	o=ja ja=- zh=- en=-	10896	hk=日本動畫（人）展覽會
-116443	tv/37468	/r35f8yxPde8jJh7rqcx9TIF2fy9.jpg	tv/37468	auto	S1E1	o=ja ja=- zh=- en=-		hk=短跑勝平
+116443	tv/37468	/r35f8yxPde8jJh7rqcx9TIF2fy9.jpg	tv/37468	auto	S1E1	o=ja ja=/iyg1Y7NgydvQcliYuYSOcVW0ZjS.png:2.914 zh=- en=-		hk=短跑勝平
 116461	tv/62273	/bx5aQGsWOYfvNhVGmuLD0ztGqX3.jpg	tv/62273	auto	S1E1 SP14.5:S0E1	o=ja ja=/juu9f3JMtqkNLcpYhjuyyRNNQ50.png:1.048 zh=/nZmhqD62pMZ4AqmeocxlFvwqvmf.png:2.195 en=/rO11TGG5ZG1LlmSJX0Q1j1AWGZJ.png:1.414	10901	tw=食戟之靈
 116503	tv/138067	/jX1yDkzPms0XexhgOCDXIXnj41n.jpg	tv/138067	auto	S1E1	o=ja ja=- zh=- en=-		
 116650	movie/166791	/4xgstFsVjsYhGzg5tW7QPNjVEdQ.jpg	movie/166791	auto		o=ja ja=- zh=- en=-		hk=宇宙刑警傑斯迪
@@ -10424,7 +10424,7 @@
 205737	tv/66077	/fbUsgV5ofg68iIijsqEhF3kiX4P.jpg	tv/66077/season/0	auto	1-4:S0E1 5:S0E6 6:S0E5 7-35:S0E7	o=ja ja=/tMhrqqgCkz8QZKztEcno0HFQG0K.png:0.777 zh=- en=/gV1Yyx3WRSLs6uRIEOs9TrEXxOt.png:1.416		tw=田中君總是如此慵懶
 205845	tv/77239	/sJvUgCK6ysvAqEYp0SnfiM1k9lZ.jpg	tv/77239	auto	S1E1	o=ja ja=- zh=- en=-	13071	hk=World Fool News
 206011	tv/71068	/tEwpSvQHmSIfnePcHmF5uAUb4SQ.jpg	tv/71068	auto	S1E1	o=ja ja=- zh=- en=-	12410	
-206037	tv/36360	/vmpMO3TPBZwFtFtXIA6AZlqjLRc.jpg	tv/36360/season/0	auto	S0E1	o=ja ja=- zh=- en=-		tw=假面男僕
+206037	tv/36360	/vmpMO3TPBZwFtFtXIA6AZlqjLRc.jpg	tv/36360/season/0	auto	S0E1	o=ja ja=/yRaC7bqaqUdyh5eU03ME5t3Geds.png:2.769 zh=- en=-		tw=假面男僕
 206052	tv/104926	/dwukL4QQasOod2ELKeToPw6DkvW.jpg	tv/104926	auto	4-21:S2E1	o=zh ja=- zh=/swCQFOjki8g1If0n3yAYTUx6Zpq.png:1.842 en=-		tw=墓王之王
 206114	movie/356294	/mxT3Gn0KSaXFelxUdB8ASpZMiRE.jpg	movie/356294	auto		o=en ja=- zh=- en=-		
 206129	movie/623098	/ujNk7aRaoN4HLc8hRNYMaObOw8B.jpg	movie/623098	auto		o=en ja=- zh=- en=-		
@@ -10667,7 +10667,7 @@
 211027	tv/64196	/q5WJxYTXNNJdEHxFCqd3S8pO4VA.jpg	tv/64196	auto	1-4:S0E14 5:S0E19 6:S2E6 7-13:S0E20	o=ja ja=/3BUVYOLlWxyONEJCop7cUAGPi0X.png:3.65 zh=- en=/2tHAFkKMvwbR22CCMsR5eAFYzP.png:5.171	12952	tw=OVERLORD|hk=不死者之王
 211035	tv/61529	/mU9oVlqvyQtKIQIcdZ9CjGwuQLJ.jpg	tv/61529	auto	S2E1	o=ja ja=/keRDTuHQ2u5mvEz8m57lOfNVqmH.png:1.115 zh=/osHGZFfamvoL3gvkW03T5abv4SQ.png:1.221 en=/iNgxsQQo5C1oywFNfJ5wMvSW94Z.png:0.981	12954	tw=鬼燈的冷徹
 211052	movie/943485	/6Q4rTntuGE1UPl29NfTJuOHdZBH.jpg		auto		o=ja ja=- zh=- en=-		
-211053	tv/21918	/6c8clf2EOP0S6EjQS5iOrr6zH0j.jpg	tv/21918	auto	S1E1	o=ja ja=- zh=- en=/uRtk0CaMhhKudgaUVkYHqDVcbbc.png:2.962		tw=尋找滿月|hk=星河滿月
+211053	tv/21918	/6c8clf2EOP0S6EjQS5iOrr6zH0j.jpg	tv/21918	auto	S1E1	o=ja ja=/6Ii7wJUKlMZLKbOpHVJa5X7KLZx.png:2.72 zh=- en=/uRtk0CaMhhKudgaUVkYHqDVcbbc.png:2.962		tw=尋找滿月|hk=星河滿月
 211059	tv/74095	/ctSc5ZR2C4SuzVjc9p0J8w0UFc1.jpg	tv/74095	auto	S1E1	o=ja ja=/6T8STn1UknKAYlOmi6Z8wCbxISQ.png:2.838 zh=- en=/dkbjiYql9jdWY15zvuG6XzWR36i.png:2.797	12956	tw=十二大戰
 211062	movie/763387	/iP4puoxwQtXAG6cLar772bx1LAc.jpg		auto		o=ja ja=- zh=- en=-		
 211063	tv/44875	/16gGTHw0HhLsrpuyVv9uUHCXzEf.jpg	tv/44875	auto	S1E1	o=ja ja=- zh=- en=-		hk=少年忍者風之藤丸
@@ -11114,7 +11114,7 @@
 220054	movie/1394048	/kFO2Sh8PuDcHxKyKfas0yQpxuek.jpg	movie/1394048	auto		o=ja ja=- zh=- en=-	4115	
 220056	movie/598107	/6bO1LJjaK8snZNAtjsXXchhewhT.jpg		auto		o=ja ja=- zh=- en=-	2715	
 220058	tv/16109	/vYRjn2F7He6SKvMSqOZ5rzmkOyK.jpg	tv/16109	auto	S1E1	o=ja ja=- zh=- en=-		
-220059	tv/64049	/gdGudhFpDN9btbP5ONi8uotm2g8.jpg		auto		o=ja ja=- zh=- en=-		
+220059	tv/64049	/gdGudhFpDN9btbP5ONi8uotm2g8.jpg		auto		o=ja ja=/pUcLGRRLdENsqn2j2W81FWGdwMt.png:2.092 zh=- en=-		
 220061	movie/1011582	/f3gVqIPlnusAWcUiphONyXSE68Z.jpg	movie/1011582	auto		o=ja ja=- zh=- en=-		hk=奧特 B：來自黑洞的獨裁者 B・B
 220062	movie/56391	/stVjJg6rtqwVqZP1eEi6Bq04IVA.jpg	movie/56391	auto		o=ru ja=- zh=- en=- ru=-		
 220063	movie/1448796	/uTJtzQ6HKgZMyjUIvJhZ6FdZWZD.jpg		auto		o=ja ja=- zh=- en=-	6385	
@@ -13346,7 +13346,7 @@
 288915	tv/29200	/f7otxzK1w3sBxT8PeHJCFTb8ebf.jpg	tv/29200	auto	1-3:S0E2 4-6:S0E2 7-9:S0E2 10-12:S0E2 13-15:S0E2 16-18:S0E2 19-20:S0E2	o=en ja=- zh=- en=/rWujnQfvHukSNrZTUn2wrZwtt3f.png:6.25		
 288937	tv/115935	/o4UFLZ9PkXGRVWfNvQjFWFC5xRR.jpg	tv/115935	auto	1-4:S1E1	o=ja ja=- zh=- en=-	15282	
 288940	tv/324225	/8G7UAJWAJT1y68wt2pR1wuR30cP.jpg	tv/324225	auto		o=ja ja=- zh=- en=-	15044	tw=XL 上司。
-288983	tv/21918	/6c8clf2EOP0S6EjQS5iOrr6zH0j.jpg	tv/206465	auto	S1E1	o=ja ja=- zh=- en=/uRtk0CaMhhKudgaUVkYHqDVcbbc.png:2.962		tw=尋找滿月|hk=星河滿月
+288983	tv/21918	/6c8clf2EOP0S6EjQS5iOrr6zH0j.jpg	tv/206465	auto	S1E1	o=ja ja=/6Ii7wJUKlMZLKbOpHVJa5X7KLZx.png:2.72 zh=- en=/uRtk0CaMhhKudgaUVkYHqDVcbbc.png:2.962		tw=尋找滿月|hk=星河滿月
 289028	tv/204172	/1nOa6uKpUYZ5oOe5set1rWiKoEs.jpg	tv/204172	auto	S1E1	o=ja ja=- zh=- en=-		
 289031	tv/90660	/wJtrctuWTKgIi45zLw9tTjWQFY3.jpg	tv/90660	auto	S1E13	o=ja ja=/8UkPQbkthwtPuxhM9qKC1lS7Z8j.png:3.665 zh=/vyTzFRm368fE8GVfustLEYGaj03.png:1.607 en=/oGmOPN4T8WD76Xd7nk01xQ7KDJU.png:2.042	15110	tw=拳願阿修羅
 289033	tv/1153	/k57FhSy0kkmRmigMG76gFoy4ZtY.jpg	tv/1153	auto	S2E1	o=en ja=- zh=/fgZyRMhRxrur6NlWD7oqLcCmt8X.png:3 en=/zGf48LSElGmAV58VZ77dOq7VFd5.png:1.997		hk=黑衣警探
@@ -13598,7 +13598,7 @@
 295778	movie/652837	/521koHpCyK6ZeNpEAvPAuC75cJ5.jpg	movie/652837	auto		o=ja ja=/5Lf7ngnrbr4QVufHIkKwpHV9rwH.png:3.306 zh=/6sw8KieSFud1AwfQwebJ22gr6CT.png:3.211 en=/v0shZPByCvy32331NMWzEamygAV.png:4.164	15287	tw=喬瑟與虎與魚群動畫版|hk=猶瑟與虎魚們
 295807	tv/85935	/gYwERM20es5TQ2bRGbOkQJ5bQb2.jpg	tv/85935/season/0	auto	S0E3	o=ja ja=- zh=- en=/ncLWAvgSXjirGevLtkxlgxAMZyF.png:2.376		tw=深夜的超自然公務員
 295811	tv/101879	/uyG8nF7Uh2rBCmfCdNevbmZWXqZ.jpg	tv/101879	auto		o=zh ja=- zh=- en=-		tw=地靈曲
-295862	tv/96139	/8fh4Psj2TsLDEKE1lu24NiEkNLE.jpg	tv/96139	auto	S1E1	o=ja ja=/cPZ3FGkbbBVMtVfszcBlQyIQFsS.png:1.149 zh=- en=/iYyK7MmGPBcJVXLydtNCQZ0xsaC.png:1.39	15289	tw=催眠麥克風
+295862	tv/96139	/8fh4Psj2TsLDEKE1lu24NiEkNLE.jpg	tv/96139	auto	S1E1	o=ja ja=/cPZ3FGkbbBVMtVfszcBlQyIQFsS.png:1.149 zh=/d4ul2rBoXTdY7wigUdZhn3vejSq.png:1.087 en=/iYyK7MmGPBcJVXLydtNCQZ0xsaC.png:1.39	15289	tw=催眠麥克風
 295870	tv/99956	/kFvasJ9dIrLPReGkvqQDLJQiQLA.jpg	tv/99956	auto	S1E1	o=ja ja=- zh=- en=-		
 295884	tv/91768	/2ta3O7D1Nh42nTZof9qxJCVAvwk.jpg	tv/91768	auto	S1E15	o=ja ja=/bFG6cS9iCr1YoKSISU93Bn0xoAP.png:2.951 zh=/59HPP9NnXEpUwUP8u0Do5dT5Q7i.png:1.97 en=/gDAZ3q01S5eyKpkRS3U2zO6TXuR.png:3.373	15293	tw=小書痴的下剋上：為了成為圖書管理員不擇手段！
 295918	movie/653858	/pqlyXoZCmswsFfpPdkmJ7B7rCBq.jpg	movie/653858	auto		o=ja ja=/gFgZ06beHvWDyMEAu1nAvZakfxv.png:1.795 zh=- en=-	15294	tw=劇場版 妄想學生會 2
@@ -14093,7 +14093,7 @@
 310613	tv/920	/izVhLjF3hQI1Bg4fMc83jAdPRI7.jpg	tv/920	auto		o=en ja=- zh=- en=/76yq17sDnx4IA69wqsERrOZKLyw.png:1.172		
 310656	movie/714194	/xMPpi0sw1g027ZbzZpHTKweyZw6.jpg	movie/714194	auto		o=ja ja=/LMDhA64ddil5VQsIqd0g1PtDMh.png:2.656 zh=- en=/un1AAwyOEzFZ7DYOF65hsjhYGBX.png:4.9	15582	tw=進擊的巨人 劇場版 CHRONICLE|hk=進擊的巨人劇場版 CHRONICLE
 310687	tv/90815	/akkEhOJgQBA9usIoCuaxU9upxzB.jpg	tv/90815	auto	S2E1	o=zh ja=- zh=- en=-	15614	tw=女武神的餐桌
-310760	tv/64049	/gdGudhFpDN9btbP5ONi8uotm2g8.jpg	tv/64049	auto	S1E1	o=ja ja=- zh=- en=-		
+310760	tv/64049	/gdGudhFpDN9btbP5ONi8uotm2g8.jpg	tv/64049	auto	S1E1	o=ja ja=/pUcLGRRLdENsqn2j2W81FWGdwMt.png:2.092 zh=- en=-		
 310761	tv/121372	/xdzWymkBiOuAWCuRYaRbl97d4sC.jpg		auto		o=ja ja=/dQbgvQphFw349KJETneIb4zk8Pu.png:2.758 zh=- en=-		hk=阿松
 310818	tv/103180	/c2sJTqtYrJbQuXe7QNP4ohVExjl.jpg	tv/103180	auto	S1E1	o=ja ja=/53nEpOgvZt68QdPNop5wT7B5DLL.png:3.777 zh=- en=-		
 310870	tv/20006	/xh3eOKLJD0B5PXsctKpLJvgD80h.jpg	tv/20006	auto	S1E1	o=es ja=- zh=- en=- es=-		tw=武士傳奇
@@ -14342,7 +14342,7 @@
 316097	movie/457774	/2kgxzuO3XO0j23zS5hddXySsDvf.jpg		auto		o=ja ja=- zh=- en=-		
 316099	movie/459922	/78AvGgiahljaekFTwNRbjSjAtwl.jpg	movie/459922	auto		o=ja ja=- zh=- en=-		hk=咯咯咯的鬼太郎 鬼太郎的幽靈電車
 316100	movie/967030	/hROr0bZyFt6BkXtGxm4By5sDvCz.jpg	movie/967030	auto		o=ja ja=- zh=- en=-	4752	
-316101	movie/1038325	/dPBAOUfFISxhUz9DIQvErLKOEfB.jpg	movie/1038325	auto				
+316101	movie/1038325	/dPBAOUfFISxhUz9DIQvErLKOEfB.jpg	movie/1038325	auto		o=ja ja=- zh=- en=-		
 316102	movie/608423	/85nRXPrMT1ph5sehP2knsymaMUb.jpg		auto		o=ja ja=- zh=- en=-		
 316103	tv/114590	/9lEPOmv8eHpxdyH5exBSrk4KN3X.jpg	tv/114590	auto	S1E1	o=ja ja=- zh=- en=-	15759	tw=秘密結社 鷹之爪 -Golden Spell-
 316104	tv/110792	/8pcgtI2wuyyNFxt4Qq5jxOe2HAJ.jpg	tv/110792	auto	S1E1	o=ja ja=/uWQ7P4ISM4Q0TmTFpVKsxoJvTcu.png:3.951 zh=- en=-	15746	hk=IDOLLS
@@ -14733,7 +14733,7 @@
 325329	tv/79514	/zqrfc55A5YVaH6jQufaJYIXWjvG.jpg	tv/79514	auto	S3E1 SP1-13:S0E54	o=zh ja=- zh=- en=-		tw=我家大師兄腦子有坑
 325374	movie/55708	/zLydO0cEeoc33fuglicDFitupWs.jpg	movie/55708	auto		o=ja ja=- zh=- en=-	1036	hk=戰國奇譚妖刀傳 總集篇
 325385	tv/115170	/243i7S3eK7RjhJslIc1ZJFrhuCr.jpg	tv/115170	auto	S0E1	o=ja ja=- zh=- en=-		hk=銀河漂流
-325388	tv/43322	/dMJW4tFSEWFEpLFPPXqHScsXWLC.jpg	tv/43322	auto		o=ja ja=- zh=- en=-		hk=電波少女
+325388	tv/43322	/dMJW4tFSEWFEpLFPPXqHScsXWLC.jpg	tv/43322	auto		o=ja ja=- zh=- en=/tMotemTgwzaLdacDg7OEkPsTNiJ.png:4.057		hk=電波少女
 325402	tv/74728	/rpouileCT7DFfMbJoWQfOST1O8U.jpg	tv/74728	auto	S4E1	o=en ja=- zh=/ci0mM3EpMWTCb79KZAcSWMEn44X.png:5.297 en=/xFzkZYrWs1cndNJuyjvilQrUhNX.png:3.214		tw=新神偷卡門
 325482	tv/109930	/Eto7g02aDIbK0P5a1TTyKqbVSm.jpg	tv/109930	auto	S1E1	o=en ja=/3FebGg5f7RbnbyRqgimxXbChRGF.png:2.458 zh=/4QOIwx57PgY7UNKRJhgzEuxKaTd.png:1.219 en=/puk4qTb7AGPuDy2JqmWpF7sKg7q.png:2.935		tw=米奇妙妙世界
 325483	tv/72838	/cl02js42cItpcdZ2KhErG4eefEd.jpg	tv/72838	auto	S1E1	o=ja ja=- zh=- en=-		tw=紅殼的潘朵拉
@@ -15073,7 +15073,7 @@
 335725	tv/95599	/uaCBOSZnFSJtOLWSvxA2NVreGv1.jpg	tv/95599	auto	S1E1	o=en ja=- zh=- en=/4gxei6qx5ATSnkz7VqGGZbzqdNr.png:1.003		tw=奇玻與幻獸的狂想紀元|hk=奇珍異獸大冒險
 335726	tv/95599	/uaCBOSZnFSJtOLWSvxA2NVreGv1.jpg	tv/95599	auto	S2E1	o=en ja=- zh=- en=/4gxei6qx5ATSnkz7VqGGZbzqdNr.png:1.003		tw=奇玻與幻獸的狂想紀元|hk=奇珍異獸大冒險
 335728	tv/95599	/uaCBOSZnFSJtOLWSvxA2NVreGv1.jpg	tv/95599	auto	S3E1	o=en ja=- zh=- en=/4gxei6qx5ATSnkz7VqGGZbzqdNr.png:1.003		tw=奇玻與幻獸的狂想紀元|hk=奇珍異獸大冒險
-335729	tv/289892	/20OP4f0xDbPttORm9OyIbNu3cNN.jpg	tv/289892	auto	SP0:S0E1 1-7:S1E1 8:S2E5 PV1:S0E1	o=en ja=- zh=- en=/sZfDefLhvNo64EqbAvhnVUE6TTW.png:1.03		hk=極惡老大
+335729	tv/289892	/20OP4f0xDbPttORm9OyIbNu3cNN.jpg	tv/289892	auto	SP0:S0E1 1-7:S1E1 8:S2E5 PV1:S0E1	o=en ja=- zh=/kGIzBPxJ4aPW0JkjJrpKyRoAV7O.png:1.049 en=/sZfDefLhvNo64EqbAvhnVUE6TTW.png:1.03		hk=極惡老大
 335827	movie/1046769	/tWn7XJVsuMmQBnRqPG8C5pkEEko.jpg		auto		o=ja ja=- zh=- en=-		
 336022	tv/200930	/icrK9L87ljBRYvR6EgkbZUJHZWh.jpg	tv/200930	auto		o=zh ja=- zh=- en=-		
 336025	tv/107116	/tPXHTm4Z48AMwLN43E7DYNxeQpT.jpg	tv/107116	auto	65-107:S1E1 108-128:S1E108	o=zh ja=- zh=- en=-		tw=無上神帝
@@ -15981,7 +15981,7 @@
 371892	tv/194481	/qqekWYZCrQXpo274QVtCJdgaFGP.jpg	tv/194481	auto	S1E1	o=ja ja=- zh=- en=-	16495	hk=昆蟲樂園
 372010	tv/229676	/qWWw2qvS8kmQsY1JB3meqUvFN4V.jpg	tv/229676	auto	S1E1	o=ja ja=- zh=- en=/1VcvUwtdn4e0VFRbeJWvn3OfouN.png:2.353	17221	tw=狼與辛香料 MERCHANT MEETS THE WISE WOLF|hk=狼與辛香料
 372218	tv/199966	/oT3WRNCnJ8dC2j0UmVU80lXRPik.jpg	tv/199966	auto	S1E1	o=ja ja=/NFeNeb7tTUdQMXr1eFiPl4xpc1.png:0.403 zh=- en=/lAu3ej77oqNcIPY4t5EveIIKJoD.png:5.97		tw=釋雪二藍
-372287	movie/1777079	/jdDEk6zJF3OfVQJqUhoSjIm7nVu.jpg		auto				
+372287	movie/1777079	/jdDEk6zJF3OfVQJqUhoSjIm7nVu.jpg		auto		o=en ja=- zh=- en=-		
 372306	movie/811276	/xwEdrFB7EiozJ0XQ0co24mJd6sK.jpg		auto		o=ja ja=- zh=- en=-		
 372317	tv/209664	/qnwsI2OpAhP1bIeZiTW8Jv5E4T6.jpg	tv/209664	auto	S1E1	o=ja ja=- zh=- en=-		hk=鬼作令和版
 372472	movie/944703	/wYiu3jWNZUzrbMVQSdLUbZobsUS.jpg	movie/944703	auto		o=ja ja=- zh=- en=-		hk=劇場版 IDOL 舞 SHOW
@@ -16456,7 +16456,7 @@
 392973	tv/207564	/iA6yYtTPPyyxH883WTYYrB3z0fv.jpg	tv/207564	auto	S1E1	o=ja ja=/a6AW0ONeJ3rrH6TtcOMs6XHK5lT.png:1.834 zh=- en=/4GdzRT0ds3QPs5fSUDVEg9z5C96.png:1.495	17557	tw=轉生成自動販賣機的我今天也在迷宮徘徊
 393010	tv/117061	/aqETSDXdeYqcD1PPd2WBfeWtoct.jpg	tv/117061	auto	S2E1	o=ja ja=/dMDCnhh0RNEchb69EjaMwtwFmMA.png:3.425 zh=- en=/xW9w2SwltKRfMHEfbor60RUQabj.png:1.289		tw=偵探已經，死了。
 393037	tv/206629	/4VobhteGHVBfW5tDF1ZL4gymssz.jpg	tv/206629	auto	S1E1	o=ja ja=/1mdXeqjwEjMm99JBHENupX38QNe.png:3.503 zh=- en=/noGvikxvhsBJyvyJaGG3ff0EcKT.png:4.478	17529	tw=義妹生活
-393038	tv/206630	/xljpEwFQF6Rl1rU1w7SEs1pk3YE.jpg	tv/206630	auto	S1E1	o=ja ja=/lL5hHpdlqemKRxQATQJYhO1bzWV.png:2.192 zh=/wkNaifEHkmUmGP3axoRmknNPReh.png:2.487 en=/wtdVpvYlnwARmdJesDEk88IQh8M.png:5.556	17530	tw=佐佐木與文鳥小嗶
+393038	tv/206630	/xljpEwFQF6Rl1rU1w7SEs1pk3YE.jpg	tv/206630	auto	S1E1	o=ja ja=/lL5hHpdlqemKRxQATQJYhO1bzWV.png:2.192 zh=/cvXGlbji5iKgJvueHo6bygDsZg3.png:2.074 en=/wtdVpvYlnwARmdJesDEk88IQh8M.png:5.556	17530	tw=佐佐木與文鳥小嗶
 393217	tv/206748	/6rVO9Vkxw1IVudmrcqxfsBLwkAE.jpg	tv/206748	auto	S1E1	o=ja ja=/aZboBBJirql3K9zVI1qRE5QnYZg.png:2.813 zh=- en=/uzLXFJRPym1OjrvM8y51ZrwLBbg.png:2.817	17523	tw=為了養老，我要在異世界存8萬枚金幣|hk=為了養老，我要在異世界存 8 萬枚金幣
 393238	tv/213402	/47cdJm6WGJqCsdE6QvPh6fLKwuo.jpg	tv/213402	auto	S1E1	o=ja ja=/hU0NxXB988JYbKWVoHNL22FSri5.png:3.214 zh=/rksISXn93x8hr4pemRMzuqSsgQQ.png:3.976 en=/tT9mSFA0hmjzmCM3vMWgrlaJxH5.png:2.739	17689	tw=擁有超常技能的異世界流浪美食家
 393446	tv/105472	/5H5hxFtQ088YdqwonoznmopHnO9.jpg	tv/105472/season/0	auto		o=ja ja=/bL2wd35r5KDSkgpXnXHo3cvIJ0U.png:0.604 zh=- en=-		hk=22/7 計算中
@@ -16599,7 +16599,7 @@
 400215	tv/209649	/aRwtnWVrwaJq1xYzA1fhH8IOkCj.jpg	tv/209649	manual		o=ja ja=/8mGsmVJ2AUyraDMu9SUNflRjYlB.png:2.564 zh=- en=/66BKLN9Be9H1lwIQ5M4QwRUKpFc.png:2.306	17611	tw=其實，我是最強的？
 400216	movie/1021679	/gTGlgtHAwQjJA3G9g2fLWuqg8zG.jpg	movie/1021679	auto		o=ja ja=/7EqU43KM1PXyhIyfhvq3gJ1Wmgn.png:4 zh=/ncQy2eLw3KhYhQk0ZevtTmNgZVC.png:3.108 en=/94ZrOApPgEVz1KSVD7F2afRjydK.png:7.303	17609	tw=凡爾賽玫瑰|hk=女強人奧斯卡
 400322	tv/61753	/t12TuJxUYOjUhYxujR3ZWe2vQ7p.jpg	tv/61753	auto	S1E1	o=en ja=- zh=- en=-		tw=索爾與洛基：血親
-400410	tv/210143	/3a0Cw0jiVMqI3gmBZ354UbXSawo.jpg	tv/210143	auto	S1E1	o=zh ja=- zh=- en=-		hk=獨行月球
+400410	tv/210143	/3a0Cw0jiVMqI3gmBZ354UbXSawo.jpg	tv/210143	auto	S1E1	o=zh ja=- zh=/pLaA2k76qX3tA8AqTZsPIAZybWW.png:2.717 en=-		hk=獨行月球
 400428	tv/229073	/fvloKrOweCTie1GR3BL67fwX8ei.jpg	tv/229073	auto	ED0:S1E1 OP0:S1E2 1-12:S1E1 13:S1E16 14-16:S1E14	o=zh ja=- zh=/vR4MXD1zElEie9hlwpm4qj8AV5.png:3.853 en=-		tw=戍天伏魔錄
 400436	tv/63837	/37D9OAJFC0i35jX7kO9Xwi5ylM9.jpg	tv/63837	auto		o=hu ja=- zh=- en=- hu=-		
 400551	tv/209829	/wlWLmOmJSrkAn5qUDplr1Bpu0Ek.jpg	tv/209829	auto	S1E1	o=ja ja=/qqwuhaUOmugrOJJmmRx9IfQEomY.png:2.008 zh=- en=/rYiaiH1xrr4cVWoiD2YEAHjLocQ.png:3.114	17614	tw=凹凸魔女的親子日常
@@ -17375,7 +17375,7 @@
 425994	movie/1104401	/8uDPiBlrDpwjuLVqzsoGMfSh2dj.jpg	movie/1104401	auto		o=ja ja=- zh=- en=-	17940	hk=攻殼機動隊 SAC_2045 最後的人類
 425998	tv/65942	/7ZruEnSnHD6Jx5mF0hBt1E306Vt.jpg	tv/65942	auto	S1E51	o=ja ja=/z3oEovak6STgWv3Yy4cSeUcBwWI.png:2.481 zh=/fgt4FzFFAsJSzOK9JlTOgJ3E95R.png:2.929 en=/5cfRiR2U7m3DuCTRRwB7LeJYte8.png:2.878	17947	tw=Re：從零開始的異世界生活
 426044	tv/46392	/1xlpfYGGFXOlYqQSUlFKEv4hqbt.jpg	tv/46392	auto	1-40:S20E1	o=ja ja=- zh=- en=-	17921	hk=決鬥大師
-426049	tv/96139	/8fh4Psj2TsLDEKE1lu24NiEkNLE.jpg	tv/96139	auto	S2E1	o=ja ja=/cPZ3FGkbbBVMtVfszcBlQyIQFsS.png:1.149 zh=- en=/iYyK7MmGPBcJVXLydtNCQZ0xsaC.png:1.39	17950	tw=催眠麥克風
+426049	tv/96139	/8fh4Psj2TsLDEKE1lu24NiEkNLE.jpg	tv/96139	auto	S2E1	o=ja ja=/cPZ3FGkbbBVMtVfszcBlQyIQFsS.png:1.149 zh=/d4ul2rBoXTdY7wigUdZhn3vejSq.png:1.087 en=/iYyK7MmGPBcJVXLydtNCQZ0xsaC.png:1.39	17950	tw=催眠麥克風
 426095	movie/116977	/t7zb6CnRQwhzQSq0apR4ESFYiWN.jpg	movie/116977	auto		o=en ja=- zh=- en=/32Chs0Lb7QfihZqSkZy7RbDD4Gf.png:2.407		hk=食物大戰
 426100	tv/204266	/6dErjmx17e8kZn5zHAqLrbcTesV.jpg	tv/204266	auto	S2E1	o=ja ja=/jwDIYDAyhGkcXBqItRMiCrK1LYN.png:2.157 zh=/nOIIATOAbknUw6U5sNvxaDbZJsW.png:2.153 en=/jMVTmaIQnGSetMuoOwbF8ToORjA.png:2.299	17953	tw=TRIGUN STAMPEDE|hk=槍神 史坦畢特
 426108	tv/39479	/eMMyoF8M1jrq847exL6YZOpYPGW.jpg	tv/39479	auto	S1E1	o=en ja=- zh=- en=/vMLoQsopnR9ZfbMbBs0vNQmzyhm.png:1.065		hk=停播
@@ -17415,7 +17415,7 @@
 427943	tv/128055	/o8indrE2OtMNOVszJqoChOJA4fV.jpg	tv/128055	auto	S1E5	o=ja ja=- zh=- en=-		hk=花样河童
 428130	tv/218642	/3Icy4H4NAJ5obx4c3AxJin1nvLY.jpg	tv/218642	auto	S1E14	o=zh ja=- zh=/wTl4i3JZNcw0bfdTQNKwxZLbnsf.png:1.533 en=-		tw=師兄啊師兄
 428134	movie/940551	/gklkxY0veMajdCiGe6ggsh07VG2.jpg	movie/940551	auto		o=en ja=/jlDWnX8CBhJbnGWnhtQBsuEjdBU.png:2.343 zh=/n5jPcI5PupOZ9uB3ajX7dcpVolC.png:4.757 en=/zs0BkqSQ9XWd0z0euvpu5SyJCfo.png:3.856		tw=飛鴨向前衝|hk=鴨仔也移民
-428239	tv/274928	/8r1DPZ1gocjJ8tyTI6IcTHleWHx.jpg	tv/274928	auto				
+428239	tv/274928	/8r1DPZ1gocjJ8tyTI6IcTHleWHx.jpg	tv/274928	auto		o=nl ja=- zh=- en=- nl=-		
 428248	movie/1139047	/5MO5flnoMJ4u3KWf86tWUsqekmk.jpg	movie/1139047	auto		o=th ja=- zh=- en=- th=-		tw=我的妈妈
 428403	tv/224472	/xKiVJdghxtsm23OB1hNH2VhodCF.jpg	tv/224472	auto	S1E1	o=ja ja=- zh=- en=-		
 428418	tv/194986	/7hdvBiy99fcgMr48eTKonL3ISWS.jpg	tv/194986	auto	S1E13	o=ja ja=/21cfI7CO9T65IkqmM5wyLjZAiPC.png:3.497 zh=- en=/w3LEOZFITRJfSeHywLTY0tS8HWe.png:2.929	17979	tw=間諜教室
@@ -17458,7 +17458,7 @@
 430150	tv/118546	/5nHqm8A3HRr9iSgbxSesdLvRoCF.jpg	tv/118546	auto	S1E1	o=en ja=- zh=- en=/h9RwNRlbEEhQmxYkyRxhILbNVQz.png:2.31		hk=克隆高校
 430233	movie/387124	/o8OCRg8C3peUJxRzB7y2dXHKys8.jpg	movie/387124	auto		o=ja ja=- zh=- en=-		
 430238	movie/387147	/7970wN533kVKMtYuNz9hz0H2NDX.jpg	movie/387147	auto		o=ja ja=- zh=- en=-		
-430298	tv/289892	/20OP4f0xDbPttORm9OyIbNu3cNN.jpg	tv/289892	auto	1-4:S2E1 5-12:S2E6	o=en ja=- zh=- en=/sZfDefLhvNo64EqbAvhnVUE6TTW.png:1.03		hk=極惡老大
+430298	tv/289892	/20OP4f0xDbPttORm9OyIbNu3cNN.jpg	tv/289892	auto	1-4:S2E1 5-12:S2E6	o=en ja=- zh=/kGIzBPxJ4aPW0JkjJrpKyRoAV7O.png:1.049 en=/sZfDefLhvNo64EqbAvhnVUE6TTW.png:1.03		hk=極惡老大
 430303	movie/658135	/pYU0lB6hNf7ORiEBB8ONh4NDLpi.jpg		auto		o=en ja=- zh=- en=-		
 430304	tv/230925	/ugA32m8qcMjock57JangoxBh4qy.jpg		auto		o=en ja=- zh=- en=-		
 430416	tv/225533	/oTLNKZ7yDvEKloArc82tBZE6UTG.jpg	tv/225533	auto	S1E1	o=ja ja=- zh=- en=-		
@@ -18874,10 +18874,10 @@
 481295	tv/138502	/jIyEmnBrZtl6SEWyBoMO2hZnzMa.jpg	tv/138502	auto	S2E1	o=en ja=- zh=/rqWoaYNKxGDxp1Njm7OdQBX3c4n.png:1.932 en=/i4O2d2EYfBCVFVIQaES16gchiMj.png:1.897		tw=X戰警'97|hk=變種特攻'97
 481308	tv/299625	/iUYOq8Effy5mOPSCjpXJPWIS0Nm.jpg	tv/299625	auto	S1E1	o=ja ja=- zh=- en=-		
 481332	movie/1252990	/31a5l2IGa8hog5iJ0Ir7OWrNeY1.jpg	movie/1252990	auto		o=en ja=- zh=- en=-		
-481353	tv/3097	/dLlymUGv7SonWkvPJAr3peh4uCj.jpg	tv/3097	auto	S1E1			
-481354	tv/3097	/dLlymUGv7SonWkvPJAr3peh4uCj.jpg	tv/3097	auto	S2E1			
-481355	tv/6332	/2BvGyFBjDMNIZ5ojlhHpQLwWFxU.jpg	tv/6332	auto	S1E1			
-481356	tv/6332	/2BvGyFBjDMNIZ5ojlhHpQLwWFxU.jpg	tv/6332	auto	S2E1			
+481353	tv/3097	/dLlymUGv7SonWkvPJAr3peh4uCj.jpg	tv/3097	auto	S1E1	o=en ja=- zh=- en=/wm2v1DfySXv7J2ZM23C38P9f1zk.png:1.332		hk=鐵甲奇俠
+481354	tv/3097	/dLlymUGv7SonWkvPJAr3peh4uCj.jpg	tv/3097	auto	S2E1	o=en ja=- zh=- en=/wm2v1DfySXv7J2ZM23C38P9f1zk.png:1.332		hk=鐵甲奇俠
+481355	tv/6332	/2BvGyFBjDMNIZ5ojlhHpQLwWFxU.jpg	tv/6332	auto	S1E1	o=en ja=- zh=- en=/rXpdRBlsT6BvAomEEemclmsiAK4.png:1.824		hk=變形俠醫
+481356	tv/6332	/2BvGyFBjDMNIZ5ojlhHpQLwWFxU.jpg	tv/6332	auto	S2E1	o=en ja=- zh=- en=/rXpdRBlsT6BvAomEEemclmsiAK4.png:1.824		hk=變形俠醫
 481357	tv/1130	/jTupUx9wdoIKe8BFoP5Z1xzEtno.jpg	tv/1130	auto	S1E1	o=en ja=- zh=- en=/dSt9Cfo4M4ueGibNmuuQNUBBKwX.png:1.489		hk=銀影俠
 481359	tv/1300	/44TJgVKPto88kOF2R036dgkjJms.jpg	tv/1300	auto	S1E1	o=en ja=- zh=- en=/cpd1bPCFXxr37AOZoSRydZHsWm3.png:1.915		hk=復仇者：團結則立
 481410	tv/258579	/nOcLDLq0JaHmBGZFqHBthrUqMD7.jpg	tv/258579	auto	S1E1	o=ja ja=/k9N2rmxg4WUJ6UKxTXpyRfuo1HB.png:4.935 zh=/4ruAMf80fXTBYpFx8VbM0RcX47k.png:4 en=/ojEXE6Es0qxCDcilkdbq4kem3y2.png:3.053	18498	tw=嘆氣的亡靈想隱退
@@ -19040,7 +19040,7 @@
 485782	tv/220286	/4QJjj63L1pfhiF9rSRAVbwB4lLp.jpg	tv/220286	auto	S2E1	o=ja ja=/3ehZWNvhzrmj7ocZkzPvnS0fXpT.png:0.367 zh=/hqb4GzVF5tyHdPJ3lGgaMBIRFk1.png:3.186 en=/zpQTGOgswk0HkhcHOVD6C2BlLY7.png:6.539	18542	tw=異修羅
 485843	movie/779164	/8ih82jUBz5aAASFj40sZVAIhGnn.jpg	movie/779164	auto		o=vi ja=- zh=- en=- vi=-		
 485868	movie/1262549	/tBEWseHXJxMCytk00QNLYAVfyG8.jpg	movie/1262549	auto		o=ja ja=/9gttqdbJAuISdfVWykSGdX7yTdv.png:3.615 zh=- en=-	18544	tw=擊浪青春
-485902	collection/1775733	/gDvirpzG6puqtENSZ35KdqQlEB.jpg	tv/124003/season/0	auto	S0E1			
+485902	collection/1775733	/gDvirpzG6puqtENSZ35KdqQlEB.jpg	tv/124003/season/0	auto	S0E1	o=zh ja=- zh=- en=-		
 485936	tv/249854	/xDd7eha6XFOO6IQnJ2N4pwt5sYK.jpg	tv/249854	auto	S1E1	o=ja ja=/2SSukZoi4saxJm0WCSPDpGH4ymr.png:2.631 zh=- en=/qIG80MLZs6Gcw71zjaqwSyCBP5o.png:2.837	18546	tw=mono女孩|hk=mono 女孩
 485990	tv/90937	/oU6akWOEEvdoaaK9Sdpzowmi2gR.jpg	tv/90937	auto	S3E13	o=ja ja=- zh=/fsP706ZFRqkMSpRFDE7NTU2kH3d.png:2.632 en=/1Xxvgsn6hraLNZPD4GviUkz34Pg.png:5.067	19449	tw=動物狂想曲|hk=BEASTARS
 486039	tv/249882	/Apy6SEE54GxMbUIYo7Hpo3Dr718.jpg	tv/249882	auto	S1E1	o=ja ja=/cSuoJ8ZPxQbWAZulxhxyVZW0jgG.png:0.478 zh=/zuTMrCyZhdGa5BSYMSsaosQFpUK.png:2.03 en=/lXhARh7KoLmHIvjkJ4fr44ReLoL.png:7.5	18547	tw=全修。
@@ -19071,7 +19071,7 @@
 486422	tv/63266	/rBByXEXA1VQ8BIj7MQka1tf3hdJ.jpg	tv/63266	auto	1-3:S1E1	o=en ja=- zh=- en=-		
 486423	movie/1441575	/c05cAOc571slELwc5zVksPTimZu.jpg		auto		o=ja ja=- zh=- en=-		
 486451	movie/1207417	/spIOuHlH99mHuktnQHWaAAu9b5J.jpg	movie/1207417	auto		o=en ja=- zh=/gdLd1rcP1TLUkV5ZIrNZeZawhlS.png:2.959 en=/cK9cupC07irSL1alFj6xf5JboGl.png:4.261		hk=小黃人番外篇：月球之上
-486456	tv/206630	/xljpEwFQF6Rl1rU1w7SEs1pk3YE.jpg	tv/206630	auto	1:S2E1	o=ja ja=/lL5hHpdlqemKRxQATQJYhO1bzWV.png:2.192 zh=/wkNaifEHkmUmGP3axoRmknNPReh.png:2.487 en=/wtdVpvYlnwARmdJesDEk88IQh8M.png:5.556	18563	tw=佐佐木與文鳥小嗶
+486456	tv/206630	/xljpEwFQF6Rl1rU1w7SEs1pk3YE.jpg	tv/206630	auto	1:S2E1	o=ja ja=/lL5hHpdlqemKRxQATQJYhO1bzWV.png:2.192 zh=/cvXGlbji5iKgJvueHo6bygDsZg3.png:2.074 en=/wtdVpvYlnwARmdJesDEk88IQh8M.png:5.556	18563	tw=佐佐木與文鳥小嗶
 486477	tv/108906	/enkRDzgrYROAqlI4CbdT0VMZJdq.jpg	tv/108906	auto		o=ja ja=/ikb9Qm3MjgEsqCfpQBbeENK0eNb.png:1.485 zh=- en=-	18553	tw=星光少女 極光之夢
 486571	movie/1266536	/7zXtVdUtCXE8dO9tEJXRxL1ut06.jpg	movie/1266536	auto		o=ja ja=/pE0PVUo7XbqI2tRsgueXBtDdYdb.png:3.346 zh=- en=-	18564	hk=劇場版草莓王子 起始的物語～Strawberry School Festival! ! ! ～
 486676	tv/236385	/8JT2teOpP9Q8BD9R1sQKnZWG8Kb.jpg	tv/236385	auto	S2E1	o=ja ja=/mEDOi7SPwoOOlBvQ07yCn2FnNZM.png:2.95 zh=/4TVjxMS78wOVo8jo8zNGEN4a6Y6.png:3.644 en=/cdDKvMPTWXpZ42jIoaU979oKHau.png:4.19	18227	tw=T·P 時光特警|hk=時光巡邏隊
@@ -19565,7 +19565,7 @@
 505401	tv/95557	/9qrroces8C6R9aKr08hACNPVXdZ.jpg	tv/95557	auto	S4E1	o=en ja=/1cIo70GHcngkwEtMUD3VDAVzaVk.png:3.358 zh=/nLZE9b3KJfGhWKYVmHei0dkY5FI.png:1.818 en=/zwJwLPuwx6s0vaVzWEE7EpL1mFd.png:3.131		tw=無敵少俠
 505488	movie/1322218	/wDwfR4rDWRA2fLfLF14SdMOdHOZ.jpg	movie/1322218	auto		o=ja ja=/5U4HilgjEPpkvS2gU5tbhGOTzMg.png:2.46 zh=/pmDqYu74tNAz8o23QT8yWcPf9My.png:1.941 en=/qT6maDfiLdMv9fHC5sVkvNiBRd0.png:2.087		tw=劇場版物怪第2章：火鼠|hk=劇場版物怪：第 2 章：火鼠
 505503	tv/261459	/8cPv2maOR5xOEkVZSvqXFMWIAMC.jpg	tv/261459	auto		o=zh ja=- zh=- en=-		tw=我的微信通龍宮
-505550	tv/306565	/fvzlpOEJS2eIPtcIwQi4oYcBwdh.jpg	tv/306565	auto	1:S1E1	o=ja ja=- zh=- en=-	18777	
+505550	tv/306565	/fvzlpOEJS2eIPtcIwQi4oYcBwdh.jpg	tv/306565	auto	1:S1E1	o=ja ja=- zh=- en=-	18777	tw=闇機DARK MACHINE
 505562	movie/1322562	/5bMDrznr5P9GcClJF0OeE4NxZn9.jpg	movie/1322562	auto		o=ja ja=/z5r9GGwhF8batGGtwC5rBl9PwVu.png:2.275 zh=/pG42lF19HlMm64ufkaQkF6zOCFw.png:1.947 en=/6ps1iEJ89Ggzxn5MyWHNLrHUDj4.png:2.042		tw=劇場版物怪第3章：蛇神|hk=劇場版物怪：第 3 章：蛇神
 505768	tv/72488	/xvPIOswnMxSzxxO1lGNmImeTmi9.jpg	tv/72488	auto		o=ja ja=- zh=- en=-		hk=水手服喪屍
 505771	movie/974763	/gyuiIAfhfTFgbrJXntCVoHROhWf.jpg		auto		o=xx ja=- zh=- en=- xx=-		
@@ -19980,7 +19980,7 @@
 522335	movie/881211	/7tJSulnvERJn6R9Ih2C2Uvpm8zy.jpg	movie/881211	auto		o=en ja=/mHKiQRWpvqcALHLbsH1as2KALXy.png:1.958 zh=/y8CLmumL52kE6MNcSe5L9mrgHR8.png:1.354 en=/dTwbNpyYDJq7aqJYT1I6innQb4s.png:2.902		tw=史努比開心呈獻：祝我們友誼長存|hk=史諾比開心呈獻：祝友誼萬歲
 522359	tv/21731	/484TQnWzNSm2iGj6XMY66VBDr6g.jpg	tv/21731	auto		o=ja ja=/7d7ucGyLU4izeKsUDw3GU5hLhtN.png:1.176 zh=/1Y6a7o14Wh0jhN4bmffDZCSOWsO.png:2.111 en=/kIUhbYPLl4Kn27JpYmEG6JmKLnK.png:1.707		tw=機動戰士鋼彈|hk=機動戰士高達
 522370	tv/284495	/fgESwlxIp0XTgjwKjdxaNQJmh2q.jpg	tv/284495	auto	S1E1 SP13:S0E1	o=ja ja=/13xT3faXxJLnTTCqENUSyy7cxwE.png:3.104 zh=/6EvkDw84jhTqhwq5ALOIUxFDomv.png:3.378 en=/ft4JNF1ngZmvgDACtXrcCaszUov.png:2.45	19507	tw=異世界的處置依社畜而定
-522411	movie/1695893	/z6HZ6lLu37UEz6cYmbD3dF1Wo7Z.jpg	movie/1695893	auto				
+522411	movie/1695893	/z6HZ6lLu37UEz6cYmbD3dF1Wo7Z.jpg	movie/1695893	auto		o=ja ja=/7N4Fe8kTy3ZDQIwNUhtATLvQYx6.png:3.152 zh=- en=/cpAMlMsDKQj8HBRw9lxINKoXbbt.png:3.205		
 522414	tv/275902	/vcHzF9NHQLM8dCW1OOBhezsFRiO.jpg	tv/275902	auto	S1E1	o=ja ja=/dKNhStJErVbTmNjHHdBSbeSyWX5.png:0.429 zh=/oOARTqoh67TArn44E8coohjChR5.png:1.502 en=/qVFZV65YBuGnorPmTRGjiCv7MdD.png:2.963	18956	tw=神八小妹不可怕
 522531	tv/318735	/lpAgNxocz759fw5vzQT11fK7nYJ.jpg	tv/318735	auto	1-3:S1E1	o=ja ja=- zh=- en=-		
 522543	tv/12140	/e2w1GtUUqAkkjedoHO9UIYsuVRa.jpg	tv/12140	auto	S1E1	o=en ja=- zh=- en=/mhrAQahP7chnEbdupkmO3FiTLxr.png:3.031		hk=黑星
@@ -20063,7 +20063,7 @@
 524486	tv/91801	/d8bAI2EDM7L2q94wDZfjb82KRoh.jpg	tv/91801	auto	1-23:S4E1	o=ja ja=/o2rDWy5M4Q2RFEyqdKJm9pjK6ri.png:1.921 zh=/yigX8FrvOm5U8h0Kzwj2FXPcvnv.png:1.5 en=/lLTmuVREXrM4AQbpYeLvpHmXhok.png:2.806	18995	tw=入間同學入魔了
 524542	movie/634672	/jjZx5rUm5aEWcMAWWS9mVFOGDHU.jpg	movie/634672	auto		o=fr ja=- zh=- en=- fr=-		
 524593	tv/286434	/fHaqmhk74upqcM6BnRwSXeIrLoV.jpg	tv/286434	auto	S1E1	o=ja ja=/AqqQ7tQknuILDh6MWxzGmNqnywx.png:1.556 zh=/yAc8kPEd9yEua1O54ulmY9XAmuq.png:2.531 en=/vpniEkpRhWyU3ntu4z0Yb9bNvp3.png:1.95	18996	tw=醜男真戰士
-524643	tv/73108	/lmiXcAdHTKdKyeUjAO5guwZsH8I.jpg	tv/73108	auto				
+524643	tv/73108	/lmiXcAdHTKdKyeUjAO5guwZsH8I.jpg	tv/73108	auto		o=ja ja=/iAcuCjUYnLK3ywDCIxDH4vkOqth.png:2.277 zh=- en=/fRiEG7pzN1A61IvMpZK844ecyTI.png:2.042		tw=秋日天空～在夢中～
 524707	tv/277513	/xMn1Fc4Go36WxZTgx4txH1Lkn3B.jpg	tv/277513	auto	S1E1	o=ja ja=/eZUegiCI0koYe6Z2b1fEpO7h8Wg.png:2.011 zh=- en=/bwwB78UyVTk5W678fPVNFQtexUP.png:1.571	19001	tw=我們不可能成為戀人！絕對不行。（※似乎可行？）|hk=我們不可能成為戀人！絕對不行。
 524750	movie/79443	/yFm1YSF33dvDDb9qPKwgFSAMPgx.jpg	movie/79443	auto		o=en ja=- zh=- en=/5EfLPHypJfzZk6LumLli17HGQCn.png:2.358		tw=藍精靈：聖誕頌歌
 524801	tv/277665	/wu36nyFmJVZOHjV2MNhFMmmA8ja.jpg	tv/277665	auto	S1E1	o=ja ja=/4aFM7aFZZouMHJP5SnoAoQu1D2q.png:4.106 zh=- en=/ybyVOuNLhOgKH98SuZsX6y2QoDq.png:3.546	19002	tw=安妮・雪利|hk=安妮的童話
@@ -20666,7 +20666,7 @@
 547528	tv/1675	/tbQcU8fbcRHRMhyB4uRbQ7i2Yyf.jpg		auto		o=ko ja=- zh=- en=- ko=-		
 547529	tv/239298	/j8JPcU96XmguTPjhEtFf8LkrCi6.jpg	tv/239298	auto		o=ko ja=- zh=- en=- ko=-		
 547532	tv/114798	/vM4s6IG6DSG2m4XWZs2uqjQCXHs.jpg	tv/114798	auto	1:S0E1	o=ko ja=- zh=- en=/xlpGA03GCeL3rHquTdz9BQvzvpJ.png:1.566 ko=-		hk=鯊魚寶寶海洋歡樂秀
-547533	movie/1115212	/ciEtAVuM0aeaxxJrWBqOKNIJ3Fr.jpg	movie/1115212	auto				
+547533	movie/1115212	/ciEtAVuM0aeaxxJrWBqOKNIJ3Fr.jpg	movie/1115212	auto		o=ko ja=- zh=- en=- ko=-		
 547538	tv/77918	/76vCf5TAoKBi2ZZdZILgg6RCdpj.jpg	tv/77918	auto		o=ko ja=- zh=- en=- ko=-		
 547539			tv/137633	auto				
 547542	tv/125199	/6UrL6Y79umuNegBHhz9DD0JrhNH.jpg	tv/125199	auto	S1E1	o=fr ja=- zh=- en=- fr=-		hk=小魚和奇普斯
@@ -21225,7 +21225,7 @@
 565279	tv/82509	/qATlpHOMgIWfrdTrGiW9S2DT0zK.jpg	tv/82509	auto	S1E1	o=ja ja=- zh=- en=/l98xmwWlkUizbMyc0YlSVhfrsdA.png:4.626		tw=地上最强新娘|hk=地上最強新娘
 565304	tv/274671	/epPoqwhas9lhZasJ9yVYJod2GQa.jpg	tv/274671	auto	S2E1	o=ja ja=/3Hzmorfb4XCdqJPHfaRzHffuntE.png:1.699 zh=/6ZyJuVnwN0u4MWdMaC7jMFeX4af.png:1.552 en=/5yvQcGno2o29KUMTS8WcRKRHhzD.png:2.179	19381	tw=終末起點
 565325	tv/295362	/a4UAOOdqApj3ZeMh5zJRiusAAkZ.jpg	tv/295362	auto	S1E1	o=ja ja=- zh=- en=-		
-565328	tv/337953	/vVmAilL6EXlYwuuZ0i2rjlODBdQ.jpg	tv/337953	auto				
+565328	tv/337953	/vVmAilL6EXlYwuuZ0i2rjlODBdQ.jpg	tv/337953	auto		o=ja ja=- zh=- en=-		
 565367	tv/305004	/3XqRP6vc9U0MCHpdD5rQBTSLt5D.jpg	tv/305004	auto	S1E1	o=zh ja=- zh=- en=-		
 565400	tv/296127	/g0Y0BZa2hKGKfahbQ1OYOlYM4Kq.jpg	tv/296127	auto		o=zh ja=/78tvW0oMg3AMHEpuWa72xpQTXTA.png:1.658 zh=/dHqG38cmgCz7PjHRxQdjokMkIr4.png:2.393 en=-		
 565411	tv/223694	/aQ8okXoTvnczsN7iUTTwcXkRMzq.jpg	tv/223694	auto		o=zh ja=- zh=- en=-		hk=我是不白吃
@@ -21402,7 +21402,7 @@
 573590	tv/297591	/jAnla9TgB2gPPuNaXBf6q6gMDEj.jpg	tv/297591	auto	S1E1	o=zh ja=- zh=/kvCKwJHRV8kwbtzA555gkcMJeRQ.png:2.906 en=-		tw=縹緲劒僊傳
 573669	tv/299035	/xjf2WyZ20aYlut9JxSXhCPiALgJ.jpg	tv/297625	auto	S1E1	o=ja ja=- zh=- en=-		
 573700	movie/987400	/gyrHvf5b5XoKj9VKibqkRxXLQui.jpg	movie/987400	auto		o=es ja=- zh=/cEivIjfknYaAMy5nKRZVbGDKAJA.png:2.136 en=/nqkoqJQK23Kw8FAI7fPwucvXD55.png:1.557 es=/nVIv9S0sU7hbyfP4yfqdEsn6HyQ.png:2.126		tw=阿茲特克蝙蝠俠：帝國之戰
-573707	tv/289892	/20OP4f0xDbPttORm9OyIbNu3cNN.jpg	tv/289892	auto		o=en ja=- zh=- en=/sZfDefLhvNo64EqbAvhnVUE6TTW.png:1.03		hk=極惡老大
+573707	tv/289892	/20OP4f0xDbPttORm9OyIbNu3cNN.jpg	tv/289892	auto		o=en ja=- zh=/kGIzBPxJ4aPW0JkjJrpKyRoAV7O.png:1.049 en=/sZfDefLhvNo64EqbAvhnVUE6TTW.png:1.03		hk=極惡老大
 573709	tv/219080	/7K7wbQIpkzif4fMhDHsCweXFS42.jpg	tv/219080	auto	S1E1	o=en ja=/i1ba508Djj4TXi98upl6Uo1tCGM.png:1.704 zh=/Q4nhPa03l4plSYcBM6Dag68nb5.png:1.022 en=/tJI9NWgiai2tKK9u8izipif4gBc.png:4.107		tw=魔域九魂
 573786	tv/63463	/6ljZuz9ABmOQDVB58aV5xeKV62A.jpg	tv/63463/season/0	auto		o=ja ja=/e7Lf4okAfsMJyhjlH3nHc0sUnHt.png:5.283 zh=/jG709xBFGQqgjckmMBgDxNvqzI5.png:4.985 en=/gSr6HH18G6x4Wzl3hNYToYaQiA5.png:8.065		tw=偶像大師
 573861	tv/259297	/nBzVpsfts604MT1MyX9s3hPlauk.jpg	tv/259297	auto	S1E1	o=zh ja=- zh=- en=-		
@@ -21494,7 +21494,7 @@
 577158	tv/71194	/1BUHrtSTcDq3Bl3gu3W9b1EacCq.jpg	tv/71194	auto		o=zh ja=- zh=/vj8O8WAlR6GCS0x1nXVVqs3a2p0.png:2.609 en=/j7HhEtxKViMzea8wJ07jjpxc2oS.png:3.216		tw=全職高手
 577189	tv/236034	/ljvI7hrIQn2DSUY8JRMlIRHa32J.jpg	tv/236034	auto		o=zh ja=- zh=/Hmy1sa90ZhRPaiAx5Dkt661ArG.png:2.575 en=-		tw=惡魔法則
 577190	movie/1653994	/shFeiPJ1MBFdkjiWWigvrOOxvMY.jpg	movie/1653994	auto		o=zh ja=- zh=/bTITm2sQbF9FiUQQkTzRWBaWl5f.png:1.787 en=-		tw=遮天劇場版：背棺戰王騰
-577191	movie/1659389	/hUkFUI5wKYAihLOks7RVU0TfzUS.jpg	movie/1659389	auto		o=ja ja=- zh=- en=/2yk9CNrsQoCObvhWjCARmwUPNU6.png:2.159	19524	tw=ONE PIECE HEROINES
+577191	movie/1659389	/hUkFUI5wKYAihLOks7RVU0TfzUS.jpg	movie/1659389	auto		o=ja ja=- zh=- en=/sJspEYyIg02EizDYQgXoc6oQWiQ.png:2.415	19524	tw=ONE PIECE HEROINES
 577192	tv/106251	/xN9waTugj6Kn9sTrFw2buEUyply.jpg	tv/106251	auto		o=zh ja=- zh=- en=/6xrbLNUSisGPHYfpGMI2VNKuEhe.png:6		tw=悟空小俠
 577198	tv/124003	/eoOvPxcMxJDeZsJdM5Ppbprd6OX.jpg	tv/124003	auto	235-247:S1E235 248:S1E249 249-265:S1E249 266:S1E267 267-280:S1E267 281:S0E4 282-285:S1E282	o=zh ja=- zh=/o0crRrhgMcnA3dFLJJwcZ8aR1TG.png:1.912 en=-		tw=完美世界
 577199	movie/1665092	/tKHaRVudYbGlO78UrjkWUtguB8N.jpg	movie/1665092	auto		o=zh ja=- zh=/5wJ4NCiWhhhOOwhHApGhXIcsExz.png:1.749 en=-		tw=吞噬星空劇場版：決戰原始星
@@ -22334,7 +22334,7 @@
 621939	movie/1619315	/qf9KW4uPzu9yYZaHRgsoEOlD0EX.jpg	movie/1619315	auto		o=ja ja=/5tkkIYUFYyXfdzXdCQAGFMinCoi.png:2.363 zh=- en=-		
 621953	tv/68737	/hLAzrXHpXiH9V946QWXGtsSSqk1.jpg	tv/68737	auto		o=it ja=- zh=- en=/6q9ypypd2RHLEf3GtiRzjHsOK1m.png:1.305 it=-		
 621991	tv/312822	/7NiF2Fbio0TlZXznmR5zFjjiIFf.jpg	tv/312822	auto	S1E1	o=ja ja=/pm0U7iyLZuHjm5pUl6DtGiYsrX2.png:1.908 zh=- en=-		
-622045	tv/312047	/wKe3WqUAH8GEpnqFVh1f032gYbK.jpg	tv/312047	auto				
+622045	tv/312047	/wKe3WqUAH8GEpnqFVh1f032gYbK.jpg	tv/312047	auto		o=ja ja=- zh=- en=-		
 622051	movie/1049557	/a0InMqXUnYgXixL0Wc5oxWe0DTI.jpg		auto		o=zh ja=- zh=/rnNg8XG53eMxBRYxFgGIGETUMIo.png:2.449 en=-		hk=好
 622090	tv/43908	/dSZ1IbaWjZfXq1uDy1P66ZU3HM7.jpg	tv/43908	auto	S1E1	o=en ja=- zh=- en=-		
 622097	movie/769649	/soMNKSyJTywAEENSr53uhBlwo55.jpg		auto		o=lv ja=- zh=- en=- lv=-		
@@ -22385,7 +22385,7 @@
 623949	tv/309277	/eGqvwSS7YMWNkAac5TWhHVNakp4.jpg	tv/309277	auto		o=zh ja=- zh=- en=-		
 623959	movie/51349	/zY90gUhF8xKDP63e2g2YW7WKnsS.jpg	movie/51349	auto		o=ru ja=- zh=- en=/47K4LobfIPtapDlClvKGi4BZDVv.png:3.338 ru=/hP9u4gv3jLU6wVibpprLa0sZ0vm.png:2.453		hk=大鼻子小英雄
 623989	movie/718968	/hdWCoRN4ZhemX3ONWrZdIhy4OjK.jpg		auto		o=en ja=- zh=- en=-		
-624085	tv/312850	/aNqi7yWUU1blc8kvtfzrkrrYWEE.jpg	tv/312850	auto	1-2:S1E1	o=ja ja=/2Y7LHMgtgro3sCnRLifwPdOWPs4.png:1.743 zh=/ew2DxUlrBMi7sfnPL3D7h9sbVRB.png:1.937 en=/9wDZQwpm2qd4THRz9CRtvBEpp8p.png:3.88	19865	tw=亂世千金倪亞·利斯頓 轉生為嬌弱千金的弒神武人華麗無雙錄
+624085	tv/312850	/aNqi7yWUU1blc8kvtfzrkrrYWEE.jpg	tv/312850	auto	1-2:S1E1	o=ja ja=/2Y7LHMgtgro3sCnRLifwPdOWPs4.png:1.743 zh=/ew2DxUlrBMi7sfnPL3D7h9sbVRB.png:1.937 en=/riCiNoSEkHZzHtMg1RUXPxgGcgc.png:2.486	19865	tw=亂世千金倪亞·利斯頓 轉生為嬌弱千金的弒神武人華麗無雙錄
 624116	tv/217409	/ftnpMjqv4i8jiOLYIYrpeAcrxBT.jpg	tv/217409/season/0	auto	1-10:S0E1	o=ja ja=/ocpENhKXSrNSHH4dgZIdpAqoTq9.png:3.336 zh=/8Ils09zcstkaxmn8ucHPJaQvivI.png:1.752 en=/eyyPazIXCeekgySrqxAzl7HRheH.png:3.448		tw=為丑女獻上花束|hk=為醜女獻上花束
 624121	tv/253811	/k7h9p81H6X6TGV70TgOp4TmjXco.jpg	tv/253811/season/0	auto		o=ja ja=/AixAlFjVfvlovm7AZ9fbwLfrqii.png:2.891 zh=- en=/5KJjTVvl4ZDFJNHT5NV6etyBHCy.png:7.186		tw=桃源暗鬼
 624165	tv/296864	/fOKAbDFPn6Yq1sjOHI0hrgsXZ1M.jpg	tv/296864	auto		o=zh ja=- zh=- en=-		
@@ -22726,7 +22726,7 @@
 634647	movie/72679	/4PxSEzsp1DPUVNoGMWy9lCmQBux.jpg	movie/72679	auto		o=en ja=- zh=- en=-		tw=小學老鼠
 634679	movie/126208	/rVSGGR5BzywcipRI78n78U1LkZK.jpg	movie/126208	auto		o=en ja=- zh=- en=-		
 634707	movie/1283279	/FVLVcbMlTAtEU16uuIwcVi9sal.jpg		auto		o=en ja=- zh=- en=-		
-634708	tv/316891	/ukHKDQO3ILHEAsZ6uXRCeT7tKlO.jpg	tv/316891	auto	1-2:S1E1	o=ja ja=- zh=/k74fXHipDtGFwsQjZXQ4UPKYt4r.png:1.31 en=/x7SnoIng0q5GyAO9AN8QhX6JPEi.png:1.613	19955	tw=冷淡的佐藤同學只對我撒嬌
+634708	tv/316891	/ukHKDQO3ILHEAsZ6uXRCeT7tKlO.jpg	tv/316891	auto	1-2:S1E1	o=ja ja=/zHAIIUly1RJvx7qLNFMYCMFqxsE.png:1.757 zh=/k74fXHipDtGFwsQjZXQ4UPKYt4r.png:1.31 en=/x7SnoIng0q5GyAO9AN8QhX6JPEi.png:1.613	19955	tw=冷淡的佐藤同學只對我撒嬌
 634715	movie/337077	/xLDopLJ2A34hSx96k4ShZix138z.jpg	movie/337077	auto		o=en ja=- zh=- en=-		
 634763	movie/46842	/mco9OAzczG4AGfStTy2u9Ciw7mZ.jpg	movie/46842	auto		o=en ja=- zh=- en=-		
 634767	movie/74176	/fGAEdCMpTXGHaBer1W9SPWLiO8q.jpg	movie/74176	auto		o=en ja=- zh=- en=-		tw=拿破崙老鼠
@@ -22863,7 +22863,7 @@
 637200	movie/48819	/Aef44l3M5rHpUz2MQ1xzQIowd7.jpg	movie/48819	auto		o=en ja=- zh=- en=/nuEa7xX3FbSVmnoDiEZYJsJS3tu.png:6.402		
 637203	movie/970578	/21oCMK0dJ3G8l7KW6XKSiIGNG3v.jpg	movie/970578	auto		o=hy ja=- zh=- en=/zi950MdfmrC08mgcmNpSJk17mUY.png:6.846 hy=-		hk=歐若拉之晨
 637206	tv/337195	/dlYiEcuj9YSJQ1JKQfFaedVxFtV.jpg	tv/337195	auto	S1E1	o=ja ja=/v1k2JRs5IyzxsFm1A2kiNujmgs.png:2.474 zh=- en=-		
-637228	movie/1779569	/jXAqmAX7rPN2cD73GAYMbEwKmR8.jpg		auto		o=en ja=- zh=- en=-		
+637228	movie/1779569	/jXAqmAX7rPN2cD73GAYMbEwKmR8.jpg		auto		o=ja ja=- zh=- en=-		
 637339	tv/310026	/1YYy81JProstVsNynO465ilMVAx.jpg	tv/310026	auto	13:S1E13	o=ja ja=- zh=- en=-		tw=北斗之拳：拳王軍雜魚們的輓歌
 637402	tv/317686	/yujIVz37vI9tpgwncd6TmbXL5Dl.jpg	tv/317686	auto	S1E1	o=ja ja=- zh=- en=-		
 637408	tv/301127	/eRHHM4jcCd4NmfnaMHSl2fFc8UU.jpg	tv/301127	auto	2:S1E1	o=ja ja=/cboohzlGfdPJOZZRn1cnllrgQQM.png:1.932 zh=- en=-		
@@ -23609,7 +23609,7 @@
 655645	movie/616359	/pDLsOoC2Fu3ntRNLRejbp81rVfp.jpg	movie/616359	auto		o=uk ja=- zh=- en=- uk=-		
 655663	movie/1497017	/q6ySp6g5PC84Q7oBVPslKcrl4up.jpg	movie/1497017	auto		o=en ja=- zh=- en=/qADwkvdMkI1ntm59FAcX45gqVD2.png:4.491		
 655791	tv/94404	/sASxGVO6wioRG6jNM2LHOjBAgWu.jpg	tv/94404	auto		o=ja ja=/smoT4KZ6h2LZLFqjA9Akz8XMkja.png:1.733 zh=/sGIkx2nCeyYhxUBVGLhgTo0OvDU.png:1.629 en=/6sadh6DH71iCp3v8D1Jit3dpO1L.png:3.584		tw=異獸魔都
-656083	tv/337408	/8J5UzGxmWzgvGsF3gU4X5vBjktk.jpg	tv/337408	auto	1-2:S1E1			
+656083	tv/337408	/8J5UzGxmWzgvGsF3gU4X5vBjktk.jpg	tv/337408	auto	1-2:S1E1	o=ja ja=- zh=- en=-		
 656106	tv/138502	/jIyEmnBrZtl6SEWyBoMO2hZnzMa.jpg	tv/138502	auto		o=en ja=- zh=/rqWoaYNKxGDxp1Njm7OdQBX3c4n.png:1.932 en=/i4O2d2EYfBCVFVIQaES16gchiMj.png:1.897		tw=X戰警'97|hk=變種特攻'97
 656156	tv/121083	/gH97OUOJMImnKF5WXkIsfgbVb6l.jpg	tv/121083	auto	S1E1	o=zh ja=- zh=/90CaO0qEah9PjUyFAsXhMzTG9dg.png:2.576 en=-		hk=喜羊羊與灰太狼之懶羊羊當大廚
 656260	tv/324250	/gXGhaYrgZO1RP1jYhvu2qabF2LG.jpg	tv/324250	auto		o=en ja=- zh=- en=-		
@@ -24072,7 +24072,7 @@
 688655	tv/43564	/9eWHrFIfgwSEsbh30SLezsmfBKb.jpg		auto		o=ja ja=- zh=- en=/5T9ppMNboo12WWtOOL0AS2p69tk.png:1.661		hk=魔物獵人妖子
 688671	tv/43564	/9eWHrFIfgwSEsbh30SLezsmfBKb.jpg	tv/43564	auto	S1E5	o=ja ja=- zh=- en=/5T9ppMNboo12WWtOOL0AS2p69tk.png:1.661		hk=魔物獵人妖子
 688686	tv/43564	/9eWHrFIfgwSEsbh30SLezsmfBKb.jpg	tv/43564	auto	S1E6	o=ja ja=- zh=- en=/5T9ppMNboo12WWtOOL0AS2p69tk.png:1.661		hk=魔物獵人妖子
-688797	tv/338314	/e5SXx37xMXZMUrUaEVfB20s1Sr3.jpg	tv/338314	auto				
+688797	tv/338314	/e5SXx37xMXZMUrUaEVfB20s1Sr3.jpg	tv/338314	auto		o=cn ja=- zh=- en=- cn=-		
 688838	tv/219816	/n6uozB4OnJ571yjsgPFcDqqF3nL.jpg	tv/219816	auto	1-7:S4E1	o=ja ja=/uP3xHh6MFVQl5fO3aXFYT8H9Ml9.png:1.593 zh=- en=/2xFDLqU5ZHh419Yoq4leS5TuQ7I.png:3.187		hk=Fate/Grand Order 藤丸立香想不明白
 689050	tv/139060	/t02dITrzFNNFEaogaxSOgibpZfp.jpg	tv/139060	auto		o=ja ja=/oZiM37m7ztlxAX2bhlQzAibTsrT.png:1.895 zh=/7vsz3WZ0xw2XUXQzsWn3HfefJuQ.png:1.848 en=/mhgKQtkbDOjKsRqxU4km32vI1LW.png:3.791		tw=魔都精兵的奴隸
 689381	movie/20592	/fTJgV1BUHdLSPHGiqztLLTU2ObD.jpg	movie/20592	auto		o=en ja=- zh=- en=-		hk=麻辣女孩：罪犯檔案
@@ -24371,59 +24371,59 @@
 709981			tv/227728	auto				
 709989	movie/608404	/2AWn8PTqoC70HKHtRvwKVJHbf2a.jpg		auto		o=ja ja=- zh=- en=-		
 710079	movie/455064	/jTQOSbAzfjFjpve94g9G3gFi6hV.jpg	movie/455064	auto		o=de ja=- zh=- en=- de=-		
-710386	tv/337734	/uBRrdgaQRFOoCvnnKvIMRY13hta.jpg	tv/337734	auto				
+710386	tv/337734	/uBRrdgaQRFOoCvnnKvIMRY13hta.jpg	tv/337734	auto		o=ja ja=- zh=- en=-		
 710487	movie/970355	/xP5dCQLesfqERNbLhIwb2sk7jMK.jpg		auto		o=ja ja=- zh=- en=-		hk=TAKARAZUKA 舞夢！
 710491	movie/449420	/672XeUknFgH2Qr2BiXmTmaip2gK.jpg	movie/449420	auto		o=ja ja=- zh=- en=-		
 710492	tv/22149	/xM27gLXWLk01YbAWEsljDkILlaQ.jpg	tv/22149	auto		o=ja ja=- zh=- en=-		tw=龍王傳說|hk=龍王傳説
 710506	movie/1429359	/qu1rFYUBys7qsX0u0LaoM7PKTGd.jpg	tv/306110	auto		o=xx ja=- zh=- en=- xx=-		tw=暗夜微光
 710625	movie/666306	/AbgutVpvuxU5LkbrUuswcZoiphE.jpg	movie/666306	auto		o=ja ja=- zh=- en=-		hk=片腕
-710730	movie/381739	/yawu6O4MEdAUJY1Xb5laUwNhfZV.jpg		auto				
-710854	tv/338157	/nAoAmzVAk4c68RN7inK4ty6zaK4.jpg	tv/338157	auto	S1E1			
-711063	movie/962104	/hHFhsXAg9wYxfdLcJntAqiQQ2f7.jpg		auto				
+710730	movie/381739	/yawu6O4MEdAUJY1Xb5laUwNhfZV.jpg		auto		o=ja ja=- zh=- en=-		hk=牛頭
+710854	tv/338157	/nAoAmzVAk4c68RN7inK4ty6zaK4.jpg	tv/338157	auto	S1E1	o=ja ja=- zh=- en=-		
+711063	movie/962104	/hHFhsXAg9wYxfdLcJntAqiQQ2f7.jpg		auto		o=fr ja=- zh=- en=- fr=-		
 711079			tv/337960	auto				
-711080	tv/337914	/rQVO5AebLVh6tuwojGuYPe0pEsF.jpg	tv/337857	auto				
-711090	movie/430881	/uY4Te9Hsde6TUEBQPKN8VB7vnBC.jpg		auto				
-711091	movie/1218031	/Av8VHioc6LQNBYY80zTO1ekpxlz.jpg	movie/1218031	auto				
-711277	tv/337957	/3ypuDy6evY46Syx65HmvaIe03Jn.jpg	tv/337957	auto				
-711399	tv/337969	/eJIrJClFmOwZTFVutCKAlzPhkh9.jpg	tv/337969	auto				
-711414	movie/475470	/19eN2EDBHGS3Pr9uhkfWILbObaA.jpg		auto				
-711432	movie/1561001	/ouwxckQAeevsiZpHiroRrUOyeE2.jpg		auto				
-711435	movie/1715479	/oTvcdQuNcIb8AtkxDFeS21D5FHN.jpg	movie/1715479	auto				
+711080	tv/337914	/rQVO5AebLVh6tuwojGuYPe0pEsF.jpg	tv/337857	auto		o=ja ja=- zh=- en=-		
+711090	movie/430881	/uY4Te9Hsde6TUEBQPKN8VB7vnBC.jpg		auto		o=fr ja=- zh=- en=- fr=-		
+711091	movie/1218031	/Av8VHioc6LQNBYY80zTO1ekpxlz.jpg	movie/1218031	auto		o=fr ja=- zh=- en=- fr=-		
+711277	tv/337957	/3ypuDy6evY46Syx65HmvaIe03Jn.jpg	tv/337957	auto		o=ja ja=- zh=- en=-		
+711399	tv/337969	/eJIrJClFmOwZTFVutCKAlzPhkh9.jpg	tv/337969	auto		o=en ja=- zh=- en=-		
+711414	movie/475470	/19eN2EDBHGS3Pr9uhkfWILbObaA.jpg		auto		o=hu ja=- zh=- en=- hu=-		
+711432	movie/1561001	/ouwxckQAeevsiZpHiroRrUOyeE2.jpg		auto		o=fr ja=- zh=- en=- fr=-		
+711435	movie/1715479	/oTvcdQuNcIb8AtkxDFeS21D5FHN.jpg	movie/1715479	auto		o=zh ja=- zh=- en=-		
 711591	tv/86031	/lN13BPAEnc5iXmoxxBQHOZ1ScfZ.jpg	tv/86031	auto		o=ja ja=/mhgcJtT9Om6peH2a0xVZ8IeQevo.png:2.947 zh=/ia4SQuRcuK74plYhiNiiALoxvWW.png:2.674 en=/hnCHjH1xvqDDGLrt7vL7Ur0oy5c.png:3.821		tw=Dr.STONE 新石紀
 711604	tv/72636	/uzp513qTcHsAavlCJ58x5d73bzy.jpg	movie/1526917	auto		o=ja ja=/7hY3Q4GhkiYPBfn4UoVg0AO4Zgk.png:1.102 zh=/7jRhgNCuouR6U8lozrJ38EvYvzZ.png:0.804 en=/fG3SZCkN41076fb0HrDOGNfTR1i.png:3.932		tw=來自深淵
-711679	movie/1744503	/64uMb3Yf6Y5BQp4jLJsbR9lwEGl.jpg		auto				
-711680	movie/1448795	/veiOhLiMoNbHPXkQlXjOAkSICBu.jpg		auto				
-711682	movie/1114403	/fhrIOyIOQfiLpYKLMaU156w52LL.jpg		auto				
+711679	movie/1744503	/64uMb3Yf6Y5BQp4jLJsbR9lwEGl.jpg		auto		o=ja ja=- zh=- en=-		
+711680	movie/1448795	/veiOhLiMoNbHPXkQlXjOAkSICBu.jpg		auto		o=ja ja=- zh=- en=-		
+711682	movie/1114403	/fhrIOyIOQfiLpYKLMaU156w52LL.jpg		auto		o=ja ja=- zh=- en=-		
 711690	tv/138505	/lxQMxqao3vs2ehxESrkQU6acU86.jpg	tv/138505	auto		o=en ja=/ccMqEItrAmuP0sQVgVG7MobiRwd.png:1.703 zh=/aQkln1Fw4w50Wa5LXoIYeaJddcm.png:2.434 en=/xRzlIAMaITwrMUaqgnQTi5dfl16.png:1.69		tw=漫威喪屍|hk=Marvel喪屍大亂鬥 Marvel Zombies
 711691	tv/91363	/jnzoh5qoxRLFRIQAxnl6D3RStPC.jpg		auto		o=en ja=/itBAGN0EpGz1arOhkUW26AzVSLq.png:3.375 zh=/ew6XxAW5HgdRA4oTLeLkMU1XZCr.png:1.241 en=/zWX2sHd0KnRTvIi7nJ5k7ng5EMW.png:2.433		tw=無限可能：假如…？|hk=無限可能: 假如...?
 711692	tv/138505	/lxQMxqao3vs2ehxESrkQU6acU86.jpg	tv/138505	auto		o=en ja=/ccMqEItrAmuP0sQVgVG7MobiRwd.png:1.703 zh=/aQkln1Fw4w50Wa5LXoIYeaJddcm.png:2.434 en=/xRzlIAMaITwrMUaqgnQTi5dfl16.png:1.69		tw=漫威喪屍|hk=Marvel喪屍大亂鬥 Marvel Zombies
-711761	movie/977324	/wJzQOPUxmqIQV18iGGzpgm3eabV.jpg	movie/977324	auto				
-711804	tv/14494	/3BR9QY7HfCu1VmePZ539gxqhiOC.jpg	tv/14494	auto	S1E1			
-711807	movie/791776	/9BZAQa8QsnoC7ySFckjQb88Ve9A.jpg		auto				
+711761	movie/977324	/wJzQOPUxmqIQV18iGGzpgm3eabV.jpg	movie/977324	auto		o=ko ja=- zh=- en=- ko=-		
+711804	tv/14494	/3BR9QY7HfCu1VmePZ539gxqhiOC.jpg	tv/14494	auto	S1E1	o=en ja=- zh=- en=-		
+711807	movie/791776	/9BZAQa8QsnoC7ySFckjQb88Ve9A.jpg		auto		o=fr ja=- zh=- en=- fr=-		
 711811	tv/131660	/qsiYayWAoPEhbCld0m2PpVeiM2Z.jpg	tv/131660	auto		o=ja ja=- zh=- en=-		tw=ShowTime！～唱歌的大姐姐也想做|hk=Show Time！～唱歌的大姐姐也想做～
 711815	tv/28106	/nVc6jnFOn3f17ujCoTdqNx8QliG.jpg	tv/28106	auto		o=ja ja=- zh=- en=-		
-711822	movie/971367	/88oJYqJdmIX6hBN9Q386KexhwVl.jpg		auto				
+711822	movie/971367	/88oJYqJdmIX6hBN9Q386KexhwVl.jpg		auto		o=en ja=- zh=- en=-		
 711904	movie/29131	/tE6ohIkqVJAqvfuu9s3adxCDH7t.jpg	movie/29131	auto		o=en ja=- zh=- en=/cjZKjB2s3TMIEMDVgu1f0FzncuY.png:2.719		
-711905	movie/14307	/uJW9K8dLc0yeMJ61GKvPEoS7Zee.jpg	movie/14307	auto				
-711908	movie/64169	/y84a5jhQaM0tTwwAUwpN82XjtT3.jpg	movie/64169	auto				
-711909	movie/15718	/jwOuebCoS5YwXZI2XvN11sFwG8p.jpg	movie/15718	auto				
-711910	movie/64170	/hOYeDK2dIcAfcpJWTstT3o6ivN2.jpg	movie/64170	auto				
-711912	movie/64154	/l83mlqtifSM0KEGLhp1h7ZZ1khD.jpg	movie/64154	auto				
-711913	movie/13246	/fhIbzN09tgnN741UOQ20LJI7cTn.jpg	movie/13246	auto				
-711914	movie/64152	/t76UA5vFVAG6AWhZYr5CaqitTY2.jpg	movie/64152	auto				
-711920	movie/64168	/eIZjdYuV3KUshTIcYHVKYBYTCaX.jpg	movie/64168	auto				
-711921	movie/44840	/xAHzbnuDpyPEhauEWhta0dZA2rD.jpg	movie/44840	auto				
-711922	movie/64148	/kYtFJecF6l0umt329ZcXVKHOUal.jpg	movie/64148	auto				
-711924	movie/37297	/1zPqcNGrFg1ewPMRjqqB0DFmTFx.jpg	movie/37297	auto				
-711927	tv/123342	/8NX2AKsZnbQLOylTgO1ioziIxpH.jpg	tv/123342	auto	S1E1			
-711928	movie/16460	/6QcoA5IuNCCJKBo5iJNnYX2Zkyp.jpg	movie/16460	auto				
-711932	movie/26728	/wlK3OUI676ozMOkSsnU6bQNOZLB.jpg	movie/26728	auto				
-711933	movie/19508	/50P73nEoHAc6LJpGl4l43hey6RD.jpg	movie/19508	auto				
-711969	movie/466192	/3nac05yycMGSqPNZUJ6e81Qt5qL.jpg		auto				
-711973	movie/697582	/xQaxWyIvTCuVxp8t8lgtWMslV6d.jpg	movie/697582	auto				
-711974	movie/697877	/3SGR4jVt1pcB9is3kHags8lRhSP.jpg	movie/697877	auto				
+711905	movie/14307	/uJW9K8dLc0yeMJ61GKvPEoS7Zee.jpg	movie/14307	auto		o=en ja=- zh=- en=/nF4Gb4R2D18VLigh4oZSg66hcsT.png:2.011		
+711908	movie/64169	/y84a5jhQaM0tTwwAUwpN82XjtT3.jpg	movie/64169	auto		o=en ja=- zh=- en=/zgAOc2nX1wj2BnGAAkkFmYTdXTt.png:3.207		
+711909	movie/15718	/jwOuebCoS5YwXZI2XvN11sFwG8p.jpg	movie/15718	auto		o=en ja=- zh=- en=/fxiUtJhRpeZ7hSoXQ5WgkQ9y2dK.png:3.484		hk=加菲貓的萬聖節冒險
+711910	movie/64170	/hOYeDK2dIcAfcpJWTstT3o6ivN2.jpg	movie/64170	auto		o=en ja=- zh=- en=/g9rMmvltkhoq85dmskgHQFPZUgf.png:2.769		hk=加菲貓在天堂
+711912	movie/64154	/l83mlqtifSM0KEGLhp1h7ZZ1khD.jpg	movie/64154	auto		o=en ja=- zh=- en=/g3o6nDeqlzPdIBaNjkvsOjhTUox.png:2.845		
+711913	movie/13246	/fhIbzN09tgnN741UOQ20LJI7cTn.jpg	movie/13246	auto		o=en ja=- zh=- en=/qmmNtqByQjIOeYxHPZplw0uq1VU.png:2.013		hk=加菲貓聖誕節特別奉獻
+711914	movie/64152	/t76UA5vFVAG6AWhZYr5CaqitTY2.jpg	movie/64152	auto		o=en ja=- zh=- en=/8jkMVpyNw2GSgFpHLsF9aBFNeQA.png:2.404		hk=加菲貓：前世今生
+711920	movie/64168	/eIZjdYuV3KUshTIcYHVKYBYTCaX.jpg	movie/64168	auto		o=en ja=- zh=- en=-		hk=加菲貓的偵探故事
+711921	movie/44840	/xAHzbnuDpyPEhauEWhta0dZA2rD.jpg	movie/44840	auto		o=en ja=- zh=- en=/eJ8Oyoog9LnPYRfBPRguWLG3LwU.png:3.108		
+711922	movie/64148	/kYtFJecF6l0umt329ZcXVKHOUal.jpg	movie/64148	auto		o=en ja=- zh=- en=/k6t7GWQGtJ4sR7YWYIodSXQ7cAh.png:3.16		
+711924	movie/37297	/1zPqcNGrFg1ewPMRjqqB0DFmTFx.jpg	movie/37297	auto		o=en ja=- zh=- en=/6EgJpWn22h8evFWuUASYK4VmRCa.png:2.604		
+711927	tv/123342	/8NX2AKsZnbQLOylTgO1ioziIxpH.jpg	tv/123342	auto	S1E1	o=fr ja=- zh=- en=- fr=-		
+711928	movie/16460	/6QcoA5IuNCCJKBo5iJNnYX2Zkyp.jpg	movie/16460	auto		o=en ja=- zh=- en=/wAHqMIJYs0eWnGQQTzBHqsprBLH.png:2.557		hk=加菲貓：現實世界歷險記
+711932	movie/26728	/wlK3OUI676ozMOkSsnU6bQNOZLB.jpg	movie/26728	auto		o=en ja=- zh=- en=-		hk=加菲貓的狂歡節
+711933	movie/19508	/50P73nEoHAc6LJpGl4l43hey6RD.jpg	movie/19508	auto		o=en ja=- zh=- en=-		hk=加菲貓的寵物特攻隊
+711969	movie/466192	/3nac05yycMGSqPNZUJ6e81Qt5qL.jpg		auto		o=en ja=- zh=- en=-		
+711973	movie/697582	/xQaxWyIvTCuVxp8t8lgtWMslV6d.jpg	movie/697582	auto		o=fr ja=- zh=- en=- fr=-		
+711974	movie/697877	/3SGR4jVt1pcB9is3kHags8lRhSP.jpg	movie/697877	auto		o=fr ja=- zh=- en=- fr=-		
 712000	tv/236534	/3XYx3pQh2sKRnc9CI9tY7UU2SPv.jpg	tv/236534	auto	105:S1E105	o=zh ja=- zh=/tOkAzPWsLZe5lWHXKqFvgIU3k1u.png:2.266 en=-		tw=牧神記
-712066	tv/338251	/g97pCpllFCtKvPJs7XJG3Ak2txR.jpg	tv/338251	auto				
-712106	movie/8779	/eO3CchK1dKfuzSrYAnV5xsV6754.jpg		auto				
-712139	movie/84897	/w78d5aJmG8Qwo79Ent6zImfisNR.jpg	movie/84897	auto				
-712381	movie/1541524	/gXj0tpKovC0FQAX7MXXty2OuuRb.jpg	movie/1541524	auto				
+712066	tv/338251	/g97pCpllFCtKvPJs7XJG3Ak2txR.jpg	tv/338251	auto		o=ja ja=- zh=- en=-		
+712106	movie/8779	/eO3CchK1dKfuzSrYAnV5xsV6754.jpg		auto		o=cs ja=- zh=- en=/6swvvgUllp3CdfgvTiLo9AbNhZj.png:2.43 cs=/gbuGrAvUlldzdq3Vl6jxQ2gY0j.png:3.315		tw=史前探險記
+712139	movie/84897	/w78d5aJmG8Qwo79Ent6zImfisNR.jpg	movie/84897	auto		o=en ja=- zh=- en=-		
+712381	movie/1541524	/gXj0tpKovC0FQAX7MXXty2OuuRb.jpg	movie/1541524	auto		o=en ja=- zh=- en=-		
