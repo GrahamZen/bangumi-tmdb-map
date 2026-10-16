@@ -95,6 +95,14 @@ details.cand-list summary { cursor: pointer; color: var(--muted); font-size: 12p
 .status.busy { color: var(--muted); }
 .status.ok { color: var(--ok); }
 .status.bad { color: var(--bad); }
+dialog#reject { width: min(460px, calc(100vw - 32px)); border: 1px solid var(--line); border-radius: 10px; padding: 16px;
+  background: var(--panel); color: var(--text); }
+dialog#reject::backdrop { background: rgba(0, 0, 0, .35); }
+dialog#reject h2 { margin: 0 0 4px; font-size: 16px; }
+dialog#reject textarea { display: block; width: 100%; min-height: 92px; margin-top: 10px; resize: vertical; font: inherit; color: inherit;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 7px 10px; }
+dialog#reject textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+dialog#reject .actions { justify-content: flex-end; }
 @media (max-width: 560px) {
   .compare { grid-template-columns: minmax(0, 1fr); }
   .compare .arrow { transform: rotate(90deg); }
@@ -125,6 +133,17 @@ details.cand-list summary { cursor: pointer; color: var(--muted); font-size: 12p
     <div id="list" style="margin-top:14px"></div>
   </div>
 </main>
+<dialog id="reject">
+  <form method="dialog">
+    <h2 id="reject-title">不采纳</h2>
+    <div class="small muted">理由可以不写。写了会在 issue 里回复，提交的人能看到；不写就只说没有采纳。</div>
+    <textarea id="reject-reason" maxlength="1000" placeholder="例如：这张 logo 是另一季的；TMDB 上的条目对错了"></textarea>
+    <div class="actions">
+      <button value="cancel" class="ghost" formnovalidate>取消</button>
+      <button value="ok" class="danger" id="reject-ok">不采纳</button>
+    </div>
+  </form>
+</dialog>
 <script>
 "use strict";
 // 待审的修正请求 = 开着的、分支名是 correction/issue-<n> 的 PR (由 correction 工作流生成). 每个 PR 说明末尾的
@@ -132,6 +151,7 @@ details.cand-list summary { cursor: pointer; color: var(--muted); font-size: 12p
 // 另有「等补图」: 标题 logo 填了「列表里没有」的 issue (app 里该用的那张不在候选里, 多是 TMDB 接口不列的 SVG logo), 没有 PR;
 // 在这里贴上 TMDB 上那张图的链接 = 改 issue 的「标题 logo」一项, 工作流随即生成正常的修正 PR.
 // 合并 / 不采纳 / 换一张 都直接调 GitHub 接口, 要一个只给本仓库的 token; 之后关 issue、删分支、写进对应表照旧由工作流做.
+// 不采纳时写了理由: 这一页先在 issue 里回复理由、把 issue 以 not planned 关掉, 再关 PR —— 工作流见 issue 已关就不再回那句固定的话.
 // 没有 token 也能看 (未登录的接口每小时 60 次).
 const REPO = "GrahamZen/bangumi-tmdb-map";
 const API = "https://api.github.com";
@@ -145,7 +165,7 @@ const TOKEN_URL = "https://github.com/settings/personal-access-tokens/new?name=b
   "&target_name=GrahamZen&expires_in=90&contents=write&pull_requests=write&issues=write";
 const TOKENS_URL = "https://github.com/settings/personal-access-tokens";
 // 各操作要的 token 权限 (fine-grained token 缺权限时 GitHub 只回「Resource not accessible by personal access token」)
-const NEEDS = { merge: "Contents", close: "Pull requests", pick: "Issues", fill: "Issues", dismiss: "Issues" };
+const NEEDS = { merge: "Contents", close: "Pull requests", pick: "Issues", fill: "Issues", dismiss: "Issues", reason: "Issues" };
 // 「列表里没有」的写法 (同 scripts/logo_correction.py 的 NOT_LISTED_WORDS)
 const NOT_LISTED_WORDS = ["列表里没有", "列表裡沒有", "待补", "待补图", "not listed"];
 const LABEL = "修正请求";
@@ -545,6 +565,25 @@ function entryBody(r) {
 // ---- 操作 ----
 function setStatus(p, text, cls) { p.status = { text, cls }; render(); }
 
+/** 问不采纳的理由: 取消回 null, 否则回理由 (可以是空串). */
+function askReject(title) {
+  const dialog = $("reject");
+  $("reject-title").textContent = title;
+  $("reject-reason").value = "";
+  dialog.returnValue = "";
+  dialog.showModal();
+  $("reject-reason").focus();
+  return new Promise((resolve) => {
+    dialog.addEventListener("close", () => resolve(dialog.returnValue === "ok" ? $("reject-reason").value.trim() : null), { once: true });
+  });
+}
+
+/** 在 issue 里回复不采纳的理由, 并把 issue 以 not planned 关掉. */
+async function rejectIssue(issue, reason) {
+  await gh(`/repos/${REPO}/issues/${issue}/comments`, { method: "POST", body: { body: `维护者没有采纳这个修正：${reason}\n\n有疑问可以在这里回复。` } });
+  await gh(`/repos/${REPO}/issues/${issue}`, { method: "PATCH", body: { state: "closed", state_reason: "not_planned" } });
+}
+
 function failure(e, action) {
   if (e.tokenPermission) {
     if (me) me.writeOk = action === "close" ? false : me.writeOk;
@@ -570,18 +609,27 @@ async function mergePr(p) {
   }
 }
 
-async function act(p, action) {
+async function act(p, action, reason = "") {
   p.busy = true;
   setStatus(p, action === "merge" ? "合并中…" : "关闭中…", "busy");
+  let step = action;
   try {
     if (action === "merge") await mergePr(p);
-    else await gh(`/repos/${REPO}/pulls/${p.number}`, { method: "PATCH", body: { state: "closed" } });
+    else {
+      // 有理由: 先回复并关 issue, 再关 PR (先关 PR 的话工作流可能抢先回那句固定的话)
+      if (reason) {
+        step = "reason";
+        await rejectIssue(p.issue, reason);
+        step = action;
+      }
+      await gh(`/repos/${REPO}/pulls/${p.number}`, { method: "PATCH", body: { state: "closed" } });
+    }
     p.done = true;
     selected.delete(p.number);
     setStatus(p, action === "merge" ? "已合并，几分钟内写进对应表" : "已关闭，issue 会跟着关掉", "ok");
   } catch (e) {
     const conflict = /not mergeable/i.test(e.message);
-    setStatus(p, conflict ? "合不了：和已合并的修正冲突 (多半是同一处已经合了别的)" : failure(e, action), "bad");
+    setStatus(p, conflict ? "合不了：和已合并的修正冲突 (多半是同一处已经合了别的)" : failure(e, step), "bad");
   } finally {
     p.busy = false;
     render();
@@ -600,9 +648,14 @@ async function batch(action) {
       return;
     }
   }
-  const verb = action === "merge" ? "合并" : "不采纳 (关闭)";
-  if (!confirm(`${verb}选中的 ${list.length} 个修正请求？`)) return;
-  for (const p of list) await act(p, action);
+  let reason = "";
+  if (action === "merge") {
+    if (!confirm(`合并选中的 ${list.length} 个修正请求？`)) return;
+  } else {
+    reason = await askReject(`不采纳选中的 ${list.length} 个修正请求`);
+    if (reason === null) return;
+  }
+  for (const p of list) await act(p, action, reason);
   setTimeout(loadPrs, 2000);
 }
 
@@ -640,11 +693,13 @@ async function fill(a) {
 }
 
 async function dismiss(a) {
-  if (!confirm(`不采纳 issue #${a.issue} (关掉它)？`)) return;
+  const reason = await askReject(`不采纳 issue #${a.issue}`);
+  if (reason === null) return;
   a.busy = true;
   setStatus(a, "关闭中…", "busy");
   try {
-    await gh(`/repos/${REPO}/issues/${a.issue}`, { method: "PATCH", body: { state: "closed", state_reason: "not_planned" } });
+    if (reason) await rejectIssue(a.issue, reason);
+    else await gh(`/repos/${REPO}/issues/${a.issue}`, { method: "PATCH", body: { state: "closed", state_reason: "not_planned" } });
     a.done = true;
     setStatus(a, "已关闭", "ok");
   } catch (e) {
@@ -719,9 +774,11 @@ $("list").addEventListener("click", (event) => {
   if (action === "select") {
     if (target.checked) selected.add(p.number); else selected.delete(p.number);
     render();
-  } else if (action === "merge" || action === "close") {
-    if (!confirm(`${action === "merge" ? "合并" : "不采纳 (关闭)"} #${p.number}？`)) return;
+  } else if (action === "merge") {
+    if (!confirm(`合并 #${p.number}？`)) return;
     act(p, action);
+  } else if (action === "close") {
+    askReject(`不采纳 #${p.number}`).then((reason) => { if (reason !== null) act(p, action, reason); });
   } else if (action === "pick") {
     pick(p, target.dataset.logo || "");
   }
