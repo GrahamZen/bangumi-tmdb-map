@@ -11,7 +11,8 @@
 // POST /status        app 查自己报告过的修正请求处理得怎样 (「检查回复」与每天一次): {"issues": [12, 30]} (最多 MAX_STATUS 个)
 //   → 200 {"issues": [{"issue": 12, "state": "open" | "closed", "reason": "completed" | "not_planned" | null,
 //                      "note": "审核页写的不采纳理由", "note_at": "2026-10-16T06:20:00Z"}, {"issue": 30, "error": "not_found" | "upstream"}]}
-//   只认本仓库的修正请求 issue, 别的当 not_found; 一个出错只标那一个. 不计每天的次数 (只读), 限频同报告.
+//   只认本仓库的修正请求 issue (最近的 STATUS_PAGES 百个), 别的当 not_found. 不计每天的次数 (只读), 限频同报告.
+//   答案来自整个修正请求列表 (Worker 实例里记 STATUS_TTL), 不采纳理由按 issue 记 NOTE_TTL —— 拿脚本反复查、乱填编号都不会放大成 GitHub 请求.
 //
 // 同一处 (同一条目的标题 logo 的同一种语言 / 同一条目对应的作品) 已经有开着的修正请求 (= 维护者还没处理: PR 合并或关掉时 issue 跟着关),
 // 就不再开新的, 也不写任何东西: 内容一样回 duplicate, 不一样回 pending —— 同一处不堆互相冲突的 PR. 核对页提交的条目修正也算.
@@ -37,6 +38,10 @@ const LOGO_RE = /^\/[A-Za-z0-9_-]{1,64}\.png$/;
 const BACKDROP_RE = /^\/[A-Za-z0-9_-]{1,64}\.(jpg|jpeg|png|webp)$/;
 const APP_RE = /^[\w.+\- ]{1,40}$/;
 const MAX_STATUS = 20;
+const STATUS_TTL = 2 * 60 * 1000;
+const NOTE_TTL = 60 * 60 * 1000;
+const STATUS_PAGES = 10;
+const NOTES_MAX = 500;
 // 审核页不采纳时回复理由的开头 (docs/review.html 的 rejectIssue)
 const NOTE_PREFIX = "维护者没有采纳这个修正：";
 const NOTE_END = "\n\n有疑问可以在这里回复。";
@@ -160,35 +165,54 @@ async function github(env, path, init = {}) {
   return response.json();
 }
 
-/** 同 [github], 但 issue 不在 (404) 或被删 (410) 时回 null. */
-async function githubOrNull(env, path) {
-  try {
-    return await github(env, path);
-  } catch (e) {
-    if (/^GitHub (404|410) /.test(String(e.message))) return null;
-    throw e;
+// /status 的记忆 (同一个 Worker 实例里跨请求留着): 整个修正请求列表, 与各 issue 的不采纳理由
+let requests = null; // {until, byNumber}
+const notes = new Map(); // "编号@更新时间" → {until, note} (note 没有为 null)
+
+/** 修正请求 issue (各种状态, 最近的 STATUS_PAGES 百个), 按编号; 记 STATUS_TTL. */
+async function allRequests(env) {
+  if (requests && requests.until > Date.now()) return requests.byNumber;
+  const byNumber = new Map();
+  for (let page = 1; page <= STATUS_PAGES; page++) {
+    const batch = await github(env, `/repos/${env.REPO}/issues?state=all&labels=${encodeURIComponent(LABEL)}&per_page=100&page=${page}`);
+    for (const i of batch) if (!i.pull_request) byNumber.set(i.number, i);
+    if (batch.length < 100) break;
   }
+  requests = { until: Date.now() + STATUS_TTL, byNumber };
+  return byNumber;
+}
+
+/** 没采纳的 issue 里审核页写的理由 (最近的一条); 没写为 null. 按更新时间记 NOTE_TTL. */
+async function noteOf(env, issue) {
+  const key = `${issue.number}@${issue.updated_at}`;
+  const hit = notes.get(key);
+  if (hit && hit.until > Date.now()) return hit.note;
+  const comments = await github(env, `/repos/${env.REPO}/issues/${issue.number}/comments?per_page=100`);
+  const found = comments.reverse().find((c) => String(c.body || "").startsWith(NOTE_PREFIX));
+  const note = found ? { text: found.body.slice(NOTE_PREFIX.length).split(NOTE_END)[0].trim().slice(0, 1000), at: found.created_at } : null;
+  notes.delete(key);
+  notes.set(key, { until: Date.now() + NOTE_TTL, note });
+  if (notes.size > NOTES_MAX) notes.delete(notes.keys().next().value);
+  return note;
 }
 
 /** 一个修正请求的处理结果 (见开头 /status). */
-async function issueStatus(env, number) {
-  try {
-    const issue = await githubOrNull(env, `/repos/${env.REPO}/issues/${number}`);
-    if (!issue || issue.pull_request || !(issue.labels || []).some((l) => l.name === LABEL)) return { issue: number, error: "not_found" };
-    const out = { issue: number, state: issue.state, reason: issue.state_reason || null };
-    // 没采纳: 带上审核页写的理由 (最近的一条); 没写理由的没有这一条
-    if (issue.state === "closed" && issue.state_reason === "not_planned" && issue.comments > 0) {
-      const comments = await github(env, `/repos/${env.REPO}/issues/${number}/comments?per_page=100`);
-      const note = comments.reverse().find((c) => String(c.body || "").startsWith(NOTE_PREFIX));
+async function issueStatus(env, byNumber, number) {
+  const issue = byNumber.get(number);
+  if (!issue) return { issue: number, error: "not_found" };
+  const out = { issue: number, state: issue.state, reason: issue.state_reason || null };
+  if (issue.state === "closed" && issue.state_reason === "not_planned" && issue.comments > 0) {
+    try {
+      const note = await noteOf(env, issue);
       if (note) {
-        out.note = note.body.slice(NOTE_PREFIX.length).split(NOTE_END)[0].trim().slice(0, 1000);
-        out.note_at = note.created_at;
+        out.note = note.text;
+        out.note_at = note.at;
       }
+    } catch {
+      // 理由这次没取到: 状态照回
     }
-    return out;
-  } catch {
-    return { issue: number, error: "upstream" };
   }
+  return out;
 }
 
 /** 请求体 → 去重后的 issue 编号; 不合法返回 null. */
@@ -214,13 +238,20 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-/** KV 里的计数到了 [limit] 就返回 true; 没到就加一 (先查后加, 并发时可能多放过一两次, 够用). 没绑 KV 时不限. */
+/**
+ * KV 里的计数到了 [limit] 就返回 true; 没到就加一 (先查后加, 并发时可能多放过一两次, 够用). 没绑 KV 时不限;
+ * KV 读写不了 (每天的写入额度用完之类) 按到了算: 宁可今天不收, 也别不设防.
+ */
 async function overLimit(env, key, limit) {
   if (!env.REPORTS) return false;
-  const count = parseInt((await env.REPORTS.get(key)) || "0", 10);
-  if (count >= limit) return true;
-  await env.REPORTS.put(key, String(count + 1), { expirationTtl: 2 * 24 * 3600 });
-  return false;
+  try {
+    const count = parseInt((await env.REPORTS.get(key)) || "0", 10);
+    if (count >= limit) return true;
+    await env.REPORTS.put(key, String(count + 1), { expirationTtl: 2 * 24 * 3600 });
+    return false;
+  } catch {
+    return true;
+  }
 }
 
 export default {
@@ -244,7 +275,13 @@ export default {
         numbers = null;
       }
       if (!numbers) return json({ error: "bad_request" }, 400);
-      return json({ issues: await Promise.all(numbers.map((n) => issueStatus(env, n))) });
+      let byNumber;
+      try {
+        byNumber = await allRequests(env);
+      } catch {
+        return json({ issues: numbers.map((n) => ({ issue: n, error: "upstream" })) });
+      }
+      return json({ issues: await Promise.all(numbers.map((n) => issueStatus(env, byNumber, n))) });
     }
     let report;
     try {
