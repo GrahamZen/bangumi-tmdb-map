@@ -5,6 +5,8 @@ Izuko TV 详情页的「反馈」里报告的两类问题经这里转成本仓�
 - `POST /logo-report`：标题 logo 不对 (表单 `.github/ISSUE_TEMPLATE/logo.yml`)；
 - `POST /entry-report`：对应的 TMDB 条目不对，选的是核对页里的备选或「TMDB 上没有对应」(表单 `.github/ISSUE_TEMPLATE/correction.yml`)。
 
+app 的「检查回复」与每天一次的检查经 `POST /status` 查报告过的修正请求处理得怎样 (开着 / 采纳 / 没采纳)；没采纳时带上审核页写的理由。
+
 电视上没法登录 GitHub，令牌也不能放进 app，所以经这里转一道。
 
 Worker 只做这几件事：

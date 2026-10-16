@@ -8,6 +8,10 @@
 //   {"bgm_id": 135275, "tmdb": "tv/65844" 或 null (= TMDB 上没有对应), "backdrop": "/x.jpg" 或 null, "app": "1.0.4"}
 // 请求要带 X-Izuko-Client 头 (app 填版本号), 没有的 403 —— 挡掉随手乱发的, 不算防护 (头谁都能伪造).
 // → 200 {"status": "created" | "duplicate" | "pending", "issue": 12}; 格式不对 400, 没带头 403, 太频繁 429, GitHub 出错 502.
+// POST /status        app 查自己报告过的修正请求处理得怎样 (「检查回复」与每天一次): {"issues": [12, 30]} (最多 MAX_STATUS 个)
+//   → 200 {"issues": [{"issue": 12, "state": "open" | "closed", "reason": "completed" | "not_planned" | null,
+//                      "note": "审核页写的不采纳理由", "note_at": "2026-10-16T06:20:00Z"}, {"issue": 30, "error": "not_found" | "upstream"}]}
+//   只认本仓库的修正请求 issue, 别的当 not_found; 一个出错只标那一个. 不计每天的次数 (只读), 限频同报告.
 //
 // 同一处 (同一条目的标题 logo 的同一种语言 / 同一条目对应的作品) 已经有开着的修正请求 (= 维护者还没处理: PR 合并或关掉时 issue 跟着关),
 // 就不再开新的, 也不写任何东西: 内容一样回 duplicate, 不一样回 pending —— 同一处不堆互相冲突的 PR. 核对页提交的条目修正也算.
@@ -32,6 +36,10 @@ const LANG_RE = /^[a-z]{2}$/;
 const LOGO_RE = /^\/[A-Za-z0-9_-]{1,64}\.png$/;
 const BACKDROP_RE = /^\/[A-Za-z0-9_-]{1,64}\.(jpg|jpeg|png|webp)$/;
 const APP_RE = /^[\w.+\- ]{1,40}$/;
+const MAX_STATUS = 20;
+// 审核页不采纳时回复理由的开头 (docs/review.html 的 rejectIssue)
+const NOTE_PREFIX = "维护者没有采纳这个修正：";
+const NOTE_END = "\n\n有疑问可以在这里回复。";
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json; charset=utf-8" } });
@@ -152,6 +160,45 @@ async function github(env, path, init = {}) {
   return response.json();
 }
 
+/** 同 [github], 但 issue 不在 (404) 或被删 (410) 时回 null. */
+async function githubOrNull(env, path) {
+  try {
+    return await github(env, path);
+  } catch (e) {
+    if (/^GitHub (404|410) /.test(String(e.message))) return null;
+    throw e;
+  }
+}
+
+/** 一个修正请求的处理结果 (见开头 /status). */
+async function issueStatus(env, number) {
+  try {
+    const issue = await githubOrNull(env, `/repos/${env.REPO}/issues/${number}`);
+    if (!issue || issue.pull_request || !(issue.labels || []).some((l) => l.name === LABEL)) return { issue: number, error: "not_found" };
+    const out = { issue: number, state: issue.state, reason: issue.state_reason || null };
+    // 没采纳: 带上审核页写的理由 (最近的一条); 没写理由的没有这一条
+    if (issue.state === "closed" && issue.state_reason === "not_planned" && issue.comments > 0) {
+      const comments = await github(env, `/repos/${env.REPO}/issues/${number}/comments?per_page=100`);
+      const note = comments.reverse().find((c) => String(c.body || "").startsWith(NOTE_PREFIX));
+      if (note) {
+        out.note = note.body.slice(NOTE_PREFIX.length).split(NOTE_END)[0].trim().slice(0, 1000);
+        out.note_at = note.created_at;
+      }
+    }
+    return out;
+  } catch {
+    return { issue: number, error: "upstream" };
+  }
+}
+
+/** 请求体 → 去重后的 issue 编号; 不合法返回 null. */
+function parseStatus(body) {
+  const list = body && body.issues;
+  if (!Array.isArray(list) || list.length === 0 || list.length > MAX_STATUS) return null;
+  if (!list.every((n) => Number.isInteger(n) && n > 0 && n < 10000000)) return null;
+  return [...new Set(list)];
+}
+
 /** 开着的修正请求 issue (不含 PR), 最多三页. */
 async function openRequests(env) {
   const issues = [];
@@ -180,13 +227,24 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === "/bgm/callback") return bgmCallback(request);
-    if (!KINDS[url.pathname]) return json({ error: "not_found" }, 404);
+    const isStatus = url.pathname === "/status";
+    if (!isStatus && !KINDS[url.pathname]) return json({ error: "not_found" }, 404);
     if (request.method !== "POST") return json({ error: "method_not_allowed" }, 405);
     if (!APP_RE.test(request.headers.get(CLIENT_HEADER) || "")) return json({ error: "forbidden" }, 403);
     const ip = request.headers.get("cf-connecting-ip") || "unknown";
     if (env.REPORT_LIMITER) {
       const { success } = await env.REPORT_LIMITER.limit({ key: ip });
       if (!success) return json({ error: "rate_limited" }, 429);
+    }
+    if (isStatus) {
+      let numbers;
+      try {
+        numbers = parseStatus(await request.json());
+      } catch {
+        numbers = null;
+      }
+      if (!numbers) return json({ error: "bad_request" }, 400);
+      return json({ issues: await Promise.all(numbers.map((n) => issueStatus(env, n))) });
     }
     let report;
     try {
