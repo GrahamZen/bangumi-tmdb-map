@@ -10,7 +10,7 @@
 #   match     构建并运行匹配器, 结果逐条写进 $WORK/results.jsonl
 #   merge     合并结果与人工修正 (scripts/merge.py); 没有结果时跳过
 #   apply     只应用人工修正 (推送 overrides/ 或 logo-overrides/ 后的那一轮用); 修正文件不合法时失败
-#   logos     按 TMDB 条目查标题 logo (scripts/logos.py), 再按新结果重写对应表; 要 TMDB_API_TOKEN
+#   logos     按 TMDB 条目查标题 logo 与 hero 背景图 (scripts/logos.py), 再按新结果重写对应表; 要 TMDB_API_TOKEN
 #   anidb     从 bangumi-data 取 AniDB 条目编号 (scripts/anidb.py), 写 state/anidb.tsv; 放在 logos / merge / apply 之前
 #   local     本地验证: download plan matcher match merge 依次跑, 不提交
 #
@@ -126,7 +126,7 @@ step_merge() {
     --state "$ROOT/state/state.tsv" --map "$ROOT/map/bgm-tmdb.tsv" --meta "$ROOT/map/meta.json" \
     --site "$ROOT/docs" --overrides "$ROOT/overrides" \
     --logo-overrides "$ROOT/logo-overrides" --logos "$ROOT/state/logos.tsv" --anidb "$ROOT/state/anidb.tsv" \
-    --names "$ROOT/state/names.tsv" \
+    --names "$ROOT/state/names.tsv" --backdrops "$ROOT/state/backdrops.tsv" \
     --dump-name "$(cat "$WORK/dump.name")" --matcher "$(cat "$WORK/matcher.sha" 2>/dev/null || true)" \
     --summary-out "$WORK/summary.txt"
 }
@@ -135,7 +135,7 @@ step_apply() {
   python3 "$ROOT/scripts/merge.py" --apply-only --state "$ROOT/state/state.tsv" --map "$ROOT/map/bgm-tmdb.tsv" \
     --meta "$ROOT/map/meta.json" --site "$ROOT/docs" --overrides "$ROOT/overrides" \
     --logo-overrides "$ROOT/logo-overrides" --logos "$ROOT/state/logos.tsv" --anidb "$ROOT/state/anidb.tsv" \
-    --names "$ROOT/state/names.tsv" --summary-out "$WORK/summary.txt"
+    --names "$ROOT/state/names.tsv" --backdrops "$ROOT/state/backdrops.tsv" --summary-out "$WORK/summary.txt"
 }
 
 step_anidb() {
@@ -146,8 +146,9 @@ step_anidb() {
 step_logos() {
   : "${TMDB_API_TOKEN:?缺少 TMDB_API_TOKEN}"
   python3 "$ROOT/scripts/logos.py" --map "$ROOT/map/bgm-tmdb.tsv" --logos "$ROOT/state/logos.tsv" \
-    --names "$ROOT/state/names.tsv" --minutes "${LOGO_MINUTES:-40}" --summary-out "$WORK/logos-summary.txt"
-  # 按新查到的重写对应表的 logo 列与 names 列 (修正一并应用, 与 apply 同一套)
+    --names "$ROOT/state/names.tsv" --backdrops "$ROOT/state/backdrops.tsv" --minutes "${LOGO_MINUTES:-40}" \
+    --backdrop-quota "${LOGO_BACKDROP_QUOTA:-0}" --summary-out "$WORK/logos-summary.txt"
+  # 按新查到的重写对应表的 logo、names 与 backdrop_path 列 (修正一并应用, 与 apply 同一套)
   step_apply
   cp "$WORK/logos-summary.txt" "$WORK/summary.txt"
 }

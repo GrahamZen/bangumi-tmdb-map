@@ -8,6 +8,10 @@ TMDB 不标 logo 属于哪一季, 多季的剧自动挑的可能是别的季的 
 查详情时顺带取条目的翻译 (`append_to_response=translations`, 不多发请求), 港台中文名存进 state/names.tsv (merge.py 写进对应表的 names 列);
 还没取过译名的条目也算到期.
 
+hero 背景图 (state/backdrops.tsv, merge.py 据此改写对应表的 backdrop_path 列): 查 logo 的 `/images` 请求顺带取排第一的无字幕背景图
+(TMDB 按投票排序, 排名会变, 而且投票不进变更列表). 当天不查 logo 的条目两周轮一遍, 只发一个只要无字幕图的 `/images`, 每轮至多
+条目数 / 14 个 (从最久没查的起).
+
 到期 (logo 是社区陆续上传的, 新番开播后几周里常常一种语言一种语言地补上):
   - 没查过的;
   - TMDB 上最近两天有改动的 (`/tv/changes`、`/movie/changes`, 与表求交集; 今天查过的不再查) —— 新传的 logo 第二天就进表;
@@ -16,7 +20,8 @@ TMDB 不标 logo 属于哪一季, 多季的剧自动挑的可能是别的季的 
 prepare.py 把背景图是它的条目排进当天的重新匹配; 14 天后还在表里就再查一次.
 请求失败的条目不改, 下一轮再查. 按时间预算跑, 剩下的下一轮接着.
 
-用法: python3 scripts/logos.py --map map/bgm-tmdb.tsv --logos state/logos.tsv [--names state/names.tsv] [--minutes 40] [--summary-out f]
+用法: python3 scripts/logos.py --map map/bgm-tmdb.tsv --logos state/logos.tsv [--names state/names.tsv] [--backdrops state/backdrops.tsv]
+      [--minutes 40] [--summary-out f]
 环境变量: TMDB_API_TOKEN
 """
 import argparse
@@ -31,11 +36,14 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from common import LOGO_LANGS, load_logos, load_names, names_from_translations, save_logos, save_names
+from common import (LOGO_LANGS, hero_backdrop, load_backdrops, load_logos, load_names, names_from_translations, save_backdrops, save_logos,
+                    save_names)
 
 API = "https://api.tmdb.org/3"
 RECHECK_COMPLETE_DAYS = 60
 RECHECK_MISSING_DAYS = 14
+# hero 背景图多久轮一遍
+BACKDROP_RECHECK_DAYS = 14
 # 变更列表看最近几天 (含今天): 每天跑一次, 留一天余量
 CHANGES_DAYS = 2
 # 变更列表最多翻几页 (一页 100 条; 两天约剧集 50 页、电影 150 页)
@@ -103,7 +111,7 @@ def pick(logos, lang):
 
 
 def check(ref, fetch):
-    """一个条目的 (原语言, {语言: logo}, {地区: 港台译名}); 条目在 TMDB 上没了返回 None."""
+    """一个条目的 (原语言, {语言: logo}, {地区: 港台译名}, hero 背景图 (见 hero_backdrop)); 条目在 TMDB 上没了返回 None."""
     kind, tid = ref.split("/")
     detail = fetch(f"/{kind}/{tid}", {"append_to_response": "translations"})
     if detail is None:
@@ -112,9 +120,29 @@ def check(ref, fetch):
     # 合集没有原语言字段; 动画条目绝大多数是日文
     original = (detail.get("original_language") or "").lower() or "ja"
     langs = sorted(set(LOGO_LANGS) | {original})
-    images = fetch(f"/{kind}/{tid}/images", {"include_image_language": ",".join(langs)}) or {}
+    # null = 不带语言的图: 只为顺带取 hero 背景图, 不带语言的 logo 不挑 (见 pick)
+    images = fetch(f"/{kind}/{tid}/images", {"include_image_language": ",".join(langs + ["null"])}) or {}
     logos = images.get("logos") or []
-    return original, {lang: pick(logos, lang) or {"none": True} for lang in langs}, names
+    return original, {lang: pick(logos, lang) or {"none": True} for lang in langs}, names, hero_backdrop(images)
+
+
+def check_backdrop(ref, fetch):
+    """只查 hero 背景图: (条目还在吗, 背景图). 条目在 TMDB 上没了是 (False, None)."""
+    kind, tid = ref.split("/")
+    images = fetch(f"/{kind}/{tid}/images", {"include_image_language": "null"})
+    if images is None:
+        return False, None
+    return True, hero_backdrop(images)
+
+
+def backdrop_due(entry, today):
+    if entry is None:
+        return True
+    try:
+        checked = datetime.date.fromisoformat(entry["checked"])
+    except ValueError:
+        return True
+    return (today - checked).days >= BACKDROP_RECHECK_DAYS
 
 
 def due(entry, today, changed=False):
@@ -172,6 +200,8 @@ def main():
     ap.add_argument("--map", required=True)
     ap.add_argument("--logos", required=True)
     ap.add_argument("--names", help="港台译名存这里 (state/names.tsv); 不给就不取")
+    ap.add_argument("--backdrops", help="hero 背景图存这里 (state/backdrops.tsv); 不给就不取")
+    ap.add_argument("--backdrop-quota", type=int, default=0, help="每轮只查背景图的条目至多几个; 0 = 条目数 / BACKDROP_RECHECK_DAYS")
     ap.add_argument("--minutes", type=float, default=40)
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--rps", type=float, default=30)
@@ -186,24 +216,44 @@ def main():
     today = datetime.date.fromisoformat(args.today)
     logos = load_logos(args.logos)
     names = load_names(args.names) if args.names else None
+    backdrops = load_backdrops(args.backdrops) if args.backdrops else None
     refs = map_refs(args.map)
     # 表里没有了的条目不再留
     for ref in [r for r in logos if r not in refs]:
         del logos[ref]
     for ref in [r for r in (names or {}) if r not in refs]:
         del names[ref]
+    for ref in [r for r in (backdrops or {}) if r not in refs]:
+        del backdrops[ref]
     fetch = make_fetch(token, RateLimiter(args.rps))
     changed = changed_refs(fetch, today) & refs
     # 从没查过的排前面, 再是最近有改动的, 其余按上次查的日期
     todo = sorted((r for r in refs if due(logos.get(r), today, r in changed) or (names is not None and r not in names)),
                   key=lambda r: (r in logos, r not in changed, logos[r]["checked"] if r in logos else "", r))
-    print(f"条目 {len(refs)}, 最近有改动 {len(changed)}, 到期 {len(todo)}")
+    # 当天不查 logo 的条目只查背景图: 从最久没查的起, 每轮至多条目数 / BACKDROP_RECHECK_DAYS 个 (约两周轮完一遍)
+    backdrop_todo = []
+    if backdrops is not None:
+        quota = args.backdrop_quota or -(-len(refs) // BACKDROP_RECHECK_DAYS)
+        todo_set = set(todo)
+        backdrop_todo = sorted((r for r in refs if r not in todo_set and backdrop_due(backdrops.get(r), today)),
+                               key=lambda r: ((backdrops.get(r) or {}).get("checked", ""), r))[:quota]
+    print(f"条目 {len(refs)}, 最近有改动 {len(changed)}, 到期 {len(todo)}, 只查背景图 {len(backdrop_todo)}")
 
     deadline = time.monotonic() + args.minutes * 60
-    stats = {"checked": 0, "found": 0, "none": 0, "err": 0, "named": 0, "gone": 0}
+    stats = {"checked": 0, "found": 0, "none": 0, "err": 0, "named": 0, "gone": 0, "backdrops": 0, "backdrops_changed": 0}
     gone = []
     errors = []
     lock = threading.Lock()
+
+    def record_backdrop(ref, path):
+        """在 lock 里调."""
+        if backdrops is None:
+            return
+        old = backdrops.get(ref)
+        if old is not None and old["path"] != path:
+            stats["backdrops_changed"] += 1
+        backdrops[ref] = {"checked": args.today, "path": path}
+        stats["backdrops"] += 1
 
     def work(ref):
         if time.monotonic() > deadline:
@@ -221,28 +271,52 @@ def main():
                 logos[ref] = {"checked": args.today, "original": "", "logos": {}, "gone": True}
                 if names is not None:
                     names[ref] = {"checked": args.today, "names": {}}
+                record_backdrop(ref, None)
                 stats["checked"] += 1
                 stats["gone"] += 1
                 gone.append(ref)
             return
-        original, entries, ref_names = result
+        original, entries, ref_names, backdrop = result
         with lock:
             logos[ref] = {"checked": args.today, "original": original, "logos": entries}
+            record_backdrop(ref, backdrop)
             if names is not None:
                 names[ref] = {"checked": args.today, "names": ref_names}
                 stats["named"] += 1 if ref_names else 0
             stats["checked"] += 1
             stats["found" if any(not e.get("none") for e in entries.values()) else "none"] += 1
 
+    def work_backdrop(ref):
+        if time.monotonic() > deadline:
+            return
+        try:
+            exists, backdrop = check_backdrop(ref, fetch)
+        except Exception as e:  # noqa: BLE001 — 失败的这一轮不改, 下一轮再查
+            with lock:
+                stats["err"] += 1
+                if len(errors) < 20:
+                    errors.append(f"{ref}: {type(e).__name__}: {e}")
+            return
+        if not exists:
+            # 条目在 TMDB 上没了: 照查 logo 的路子记 gone (对应表的 logo 列与重新匹配都靠它)
+            work(ref)
+            return
+        with lock:
+            record_backdrop(ref, backdrop)
+
     with concurrent.futures.ThreadPoolExecutor(args.workers) as pool:
         list(pool.map(work, todo))
+        list(pool.map(work_backdrop, backdrop_todo))
 
     save_logos(args.logos, logos)
     if names is not None:
         save_names(args.names, names)
+    if backdrops is not None:
+        save_backdrops(args.backdrops, backdrops)
     left = len(todo) - stats["checked"] - stats["err"]
     summary = f"{stats['checked']} checked, {stats['found']} with logo, {stats['none']} none, {stats['named']} with tw/hk names, {stats['err']} err" + \
-              (f", {stats['gone']} gone" if stats["gone"] else "") + (f", {left} left" if left else "")
+              (f", {stats['gone']} gone" if stats["gone"] else "") + (f", {left} left" if left else "") + \
+              (f", {stats['backdrops']} backdrops ({stats['backdrops_changed']} changed)" if backdrops is not None else "")
     print(summary)
     for ref in sorted(gone):
         print(f"   TMDB 上已经没了: {ref} (用到它的条目今天重新匹配)")

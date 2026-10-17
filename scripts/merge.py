@@ -6,6 +6,8 @@
 - 标题 logo (对应表 logos 列): logo 修正 (logo-overrides/<bgm_id>.<语言>.json) 优先, 其次按背景图条目自动挑的 (state/logos.tsv, 由 logos.py 查).
 - AniDB 条目编号 (对应表 anidb 列): state/anidb.tsv (由 anidb.py 从 bangumi-data 取); 只写进表里已有的行, 不为它单加行.
 - 港台译名 (对应表末列 names): 按背景图条目取的 TMDB 港台中文名 (state/names.tsv, 由 logos.py 查).
+- hero 背景图 (对应表 backdrop_path 列): 自动匹配的换成背景图条目现在排第一的无字幕图 (state/backdrops.tsv, 由 logos.py 查),
+  人工修正指定的图不动 (见 common.map_backdrop_path).
 - 对应表 (map/bgm-tmdb.tsv): 给客户端用, 收有对应的条目与人工确认没有对应的条目, 末列注明来源 (auto / manual).
 - 页面索引 (docs/data/index.tsv): 全部动画条目一行, 列表与搜索用.
 - 状态表 (state/state.tsv): 决定下一轮什么时候再查 (见 prepare.py).
@@ -20,8 +22,8 @@ import json
 import os
 import sys
 
-from common import (format_names, load_anidb, load_logo_overrides, load_logos, load_names, load_overrides, load_state, logo_cell,
-                    save_state)
+from common import (format_names, load_anidb, load_backdrops, load_logo_overrides, load_logos, load_names, load_overrides, load_state,
+                    logo_cell, map_backdrop_path, save_state)
 
 SHARD = 2000
 MAP_HEADER = ("# bangumi-tmdb-map v1. 列: bgm_id, backdrop (TMDB 条目), backdrop_path (图片路径), "
@@ -112,6 +114,7 @@ def main():
     ap.add_argument("--logos", default="state/logos.tsv", help="logos.py 按 TMDB 条目自动挑的标题 logo")
     ap.add_argument("--anidb", default="state/anidb.tsv", help="anidb.py 从 bangumi-data 取的 AniDB 条目编号")
     ap.add_argument("--names", default="state/names.tsv", help="logos.py 按 TMDB 条目取的港台译名")
+    ap.add_argument("--backdrops", default="state/backdrops.tsv", help="logos.py 按 TMDB 条目取的 hero 背景图")
     ap.add_argument("--apply-only", action="store_true")
     ap.add_argument("--dump-name", default="")
     ap.add_argument("--matcher", default="", help="izuko-tv 的提交, 记进 meta")
@@ -130,6 +133,7 @@ def main():
     auto_logos = load_logos(args.logos)
     anidb, anidb_version = load_anidb(args.anidb)
     names = load_names(args.names)
+    hero_backdrops = load_backdrops(args.backdrops)
     stats = {"processed": 0, "hit": 0, "miss": 0, "err": 0, "tmdb_requests": 0}
     errors = []
 
@@ -241,6 +245,7 @@ def main():
                     stale_logos.append((f"{sid}.{lang}", override["tmdb"], backdrop))
             aid = anidb.get(sid)
             name_cell = format_names((names.get(backdrop) or {}).get("names")) if backdrop else ""
+            path = map_backdrop_path(source, path, (hero_backdrops.get(backdrop) or {}).get("path") if backdrop else None)
             f.write("\t".join([str(sid), backdrop or "", path or "", stills or "", source, episodes or "", logo,
                                str(aid) if aid else "", name_cell]) + "\n")
             map_rows += 1

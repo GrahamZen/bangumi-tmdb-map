@@ -258,7 +258,9 @@ class LogoColumnTest(unittest.TestCase):
                         "--overrides", os.path.join(root, "overrides"),
                         "--logo-overrides", os.path.join(root, "logo-overrides"),
                         "--logos", os.path.join(root, "state", "logos.tsv"),
-                        "--anidb", os.path.join(root, "state", "anidb.tsv")],
+                        "--anidb", os.path.join(root, "state", "anidb.tsv"),
+                        "--names", os.path.join(root, "state", "names.tsv"),
+                        "--backdrops", os.path.join(root, "state", "backdrops.tsv")],
                        check=True, capture_output=True)
         with open(map_path, encoding="utf-8") as f:
             return [line.rstrip("\n").split("\t") for line in f if not line.startswith("#")]
@@ -267,7 +269,7 @@ class LogoColumnTest(unittest.TestCase):
         repo = Repo({"ja": {"tmdb": "tv/65844", "logo": "/base.png", "aspect": 2.112},
                      "en": {"tmdb": "tv/65844", "logo": "/en.png", "aspect": 4.1}})
         self.assertEqual([["135275", "tv/65844", "/k.jpg", "tv/65844", "auto", "S1E1",
-                           "o=ja ja=/base.png:2.112 zh=- en=/en.png:4.1", ""]],
+                           "o=ja ja=/base.png:2.112 zh=- en=/en.png:4.1", "", ""]],
                          self.merge_rows(repo))
 
     def test_merge_writes_the_anidb_column(self):

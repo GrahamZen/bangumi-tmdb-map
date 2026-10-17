@@ -303,6 +303,55 @@ def logo_cell(ref, overrides, auto) -> str:
     return format_logos((auto or {}).get("original"), entries)
 
 
+# ---- hero 背景图 ----
+# state/backdrops.tsv: 按 TMDB 条目记 `/images` 里排第一的无字幕背景图与查的日期 (logos.py 查 logo 时同一个请求顺带取,
+# 其余的两周轮一遍), merge.py 据此改写对应表的 backdrop_path 列. TMDB 的背景图排序随投票变, 自动匹配时选的那张会过时.
+BACKDROPS_HEADER = "# ref\tchecked\tbackdrop (/images 里排第一的无字幕背景图; - = 没有无字幕的)"
+BACKDROP_PATH_RE = re.compile(r"^/[A-Za-z0-9_\-]+\.(jpg|jpeg|png|webp)$")
+
+
+def hero_backdrop(images):
+    """`/images` 响应里 hero 用的背景图: TMDB 按评分排好序, 取第一张不带语言的 (hero 上要叠字), 同 app 的 heroBackdropPath; 没有为 None."""
+    for backdrop in (images or {}).get("backdrops") or []:
+        path = backdrop.get("file_path") or ""
+        if not backdrop.get("iso_639_1") and BACKDROP_PATH_RE.match(path):
+            return path
+    return None
+
+
+def load_backdrops(path):
+    """{ref: {checked, path}}; path 为 None = 这个条目没有无字幕的背景图."""
+    backdrops = {}
+    if not os.path.isfile(path):
+        return backdrops
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            if not line.strip() or line.startswith("#"):
+                continue
+            ref, checked, text = (line.rstrip("\n").split("\t") + ["", ""])[:3]
+            if text != "-" and not BACKDROP_PATH_RE.match(text):
+                continue
+            backdrops[ref] = {"checked": checked, "path": None if text == "-" else text}
+    return backdrops
+
+
+def save_backdrops(path, backdrops):
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(BACKDROPS_HEADER + "\n")
+        for ref in sorted(backdrops):
+            r = backdrops[ref]
+            f.write(f"{ref}\t{r['checked']}\t{r['path'] or '-'}\n")
+
+
+def map_backdrop_path(source, path, hero):
+    """对应表 backdrop_path 列: 自动匹配的跟着 [hero] (state/backdrops.tsv 里这个条目现在排第一的无字幕图) 走;
+    人工修正指定了图的不动, 只给条目没给图的补上. [hero] 为 None (没查过或没有无字幕的) 时照旧."""
+    if hero and (source == "auto" or not path):
+        return hero
+    return path
+
+
 # ---- 港台译名 ----
 # 对应表 names 列与 state/names.tsv 里的写法: | 分隔的几段 <地区>=<译名>, 地区小写 (tw 台湾, hk 香港); 与台湾相同的香港译名不重复写.
 # 译名取自 TMDB 条目的中文翻译 (logos.py 查详情时顺带取), 给只认繁体名的站点搜索与比对番名用.

@@ -17,7 +17,7 @@ https://raw.githubusercontent.com/GrahamZen/bangumi-tmdb-map/main/map/bgm-tmdb.t
 |---|---|---|
 | `bgm_id` | Bangumi 条目 id | `425998` |
 | `backdrop` | 整部背景图所属的 TMDB 条目：`tv/<id>`、`movie/<id>` 或 `collection/<id>`；空表示只有分集剧照 | `tv/65942` |
-| `backdrop_path` | 背景图路径，拼在 `https://image.tmdb.org/t/p/w1280` 之类的尺寸前缀后面；人工修正可能只给条目不给图，此时为空 | `/abc.jpg` |
+| `backdrop_path` | 背景图路径，拼在 `https://image.tmdb.org/t/p/w1280` 之类的尺寸前缀后面：`backdrop` 那个 TMDB 条目现在排第一的无字幕背景图 (见下)；人工修正指定了图的照修正；人工修正只给条目不给图、又还没查过的，此时为空 | `/abc.jpg` |
 | `stills` | 分集数据 (剧照、时长、分集简介) 的出处，是 TMDB API 路径：`tv/<id>` 整部剧，按同样的规则全量索引；`tv/<id>/season/0` 只取 S0 (衍生作挂在本篇特别篇下的情形)；`movie/<id>` 单集电影；`collection/<id>` 合集 (客户端照旧自己搜) | `tv/65942` |
 | `source` | `auto` 自动匹配，`manual` 人工修正 | `auto` |
 | `episodes` | 每一集对应 TMDB 第几季第几集 (见下)；空表示没算出来，照 `stills` 全量索引、自己对集 | `S3E1` |
@@ -105,6 +105,8 @@ app 里该用的那张不在候选里时 (多是 TMDB 接口不列的 SVG 格式
 
 自动挑的 logo 由 `logos` 工作流每天查一轮 (`scripts/logos.py`，按 TMDB 条目存在 `state/logos.tsv`)：没查过的条目先查；TMDB 上最近两天有改动的条目当天重查，新传的 logo 第二天就进表；其余的各语言都有 logo 的 60 天、缺某种语言的 14 天后再查。查的时候发现条目在 TMDB 上已经没了 (详情 404) 的记成 `gone`，14 天后还在表里就再查一次。
 
+`backdrop_path` 跟着 TMDB 的排序走：TMDB 的背景图按投票排序，排名会变 (投票不进 TMDB 的变更列表)，自动匹配时选的那张会过时。`logos` 工作流查 logo 的 `/images` 请求顺带取排第一的无字幕背景图 (与客户端自己搜到时的选法一样)；当天不查 logo 的条目只为背景图发一个 `/images`，从最久没查的起每天至多条目数的 1/14，两周轮完一遍。结果按 TMDB 条目存在 `state/backdrops.tsv`，重写对应表时换掉自动匹配的那张 (人工修正指定的图不动)。
+
 推送修正后，`apply-overrides` 工作流几分钟内把它并进对应表与页面；客户端经 jsDelivr 取表，它的部分节点不认主动刷新、最长缓存 12 小时，加上客户端每天查一次表，一般一天内用上。**有修正的条目不再自动匹配，自动结果也不会覆盖它**；删掉修正文件（页面上的「撤销人工修正」）就回到自动匹配，下一轮重新查。修正文件格式不对时那一轮会失败并通知，不会提交任何东西。
 
 ## 怎么来的
@@ -131,6 +133,7 @@ state/state.tsv        每个条目上次检查的日期、结果与输入指纹
 state/logos.tsv        每个 TMDB 条目自动挑的标题 logo 与查的日期
 state/anidb.tsv        Bangumi 条目 → AniDB 条目 (来自 bangumi-data)
 state/names.tsv        每个 TMDB 条目的港台译名与查的日期
+state/backdrops.tsv    每个 TMDB 条目排第一的无字幕背景图与查的日期
 scripts/               ci.sh 每日更新的全部步骤 (工作流与本地共用), prepare.py 挑任务, merge.py 合并结果与人工修正,
                        correction.py / logo_correction.py / correction_pr.sh 处理修正请求, logos.py 挑标题 logo 并取港台译名,
                        anidb.py 取 AniDB 条目 id
