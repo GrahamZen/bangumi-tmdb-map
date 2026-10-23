@@ -1,24 +1,24 @@
 {
-  "generated": "2026-10-22",
-  "overrides_applied": "2026-10-22",
+  "generated": "2026-10-23",
+  "overrides_applied": "2026-10-23",
   "bangumi_dump": "dump-2026-10-20.210332Z.zip",
   "matcher": "5f5cf52d30ea6b193ac23b5f8c731df1586ec1c6",
   "anime": 31215,
   "checked": 31215,
-  "entries": 24495,
+  "entries": 24515,
   "manual": 3,
   "logo_manual": 25,
   "anidb": 7984,
   "names": 16448,
   "bangumi_data": "0.3.232",
-  "hit": 24495,
-  "miss": 6720,
+  "hit": 24515,
+  "miss": 6700,
   "err": 0,
   "last_run": {
-    "processed": 16,
-    "hit": 15,
-    "miss": 1,
+    "processed": 2524,
+    "hit": 45,
+    "miss": 2479,
     "err": 0,
-    "tmdb_requests": 161
+    "tmdb_requests": 22247
   }
 }
