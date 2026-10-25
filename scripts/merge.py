@@ -10,6 +10,7 @@
   人工修正指定的图不动 (见 common.map_backdrop_path).
 - 对应表 (map/bgm-tmdb.tsv): 给客户端用, 收有对应的条目与人工确认没有对应的条目, 末列注明来源 (auto / manual).
 - 页面索引 (docs/data/index.tsv): 全部动画条目一行, 列表与搜索用.
+- 更新记录 (docs/data/changes/): 这次对应表比上一版变了哪些条目 (见 changes.py).
 - 状态表 (state/state.tsv): 决定下一轮什么时候再查 (见 prepare.py).
 
 结果里请求失败的条目 (ok=false) 不改自动结果: 旧结果照用, 下一轮重跑.
@@ -22,6 +23,7 @@ import json
 import os
 import sys
 
+import changes
 from common import (format_names, load_anidb, load_backdrops, load_logo_overrides, load_logos, load_names, load_overrides, load_state,
                     logo_cell, map_backdrop_path, save_state)
 
@@ -119,6 +121,7 @@ def main():
     ap.add_argument("--dump-name", default="")
     ap.add_argument("--matcher", default="", help="izuko-tv 的提交, 记进 meta")
     ap.add_argument("--summary-out", help="一行本轮摘要 (给提交说明用)")
+    ap.add_argument("--kind", choices=changes.KINDS, help="记进更新记录的来源; 默认 update, --apply-only 时 apply")
     ap.add_argument("--today", default=datetime.datetime.now(datetime.timezone.utc).date().isoformat())
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
@@ -126,6 +129,9 @@ def main():
     state = load_state(args.state)
     records = load_records(args.site)
     index = load_index(args.site)
+    # 更新记录要比的上一版: 下面会就地改记录 (换键、删条目), 先浅拷一份表里有的
+    old_rows = changes.read_map(args.map)
+    old_records = {sid: dict(rec) for sid, rec in records.items() if sid in old_rows}
     overrides, override_errors = load_overrides(args.overrides)
     logo_overrides, logo_errors = load_logo_overrides(args.logo_overrides)
     override_errors += [(os.path.join(os.path.basename(args.logo_overrides), name), message)
@@ -231,6 +237,7 @@ def main():
     map_rows = 0
     anidb_rows = 0
     named_rows = 0
+    new_rows = {}
     stale_logos = []  # logo 修正针对的条目与现在的背景图条目对不上 (条目被改过): 不生效, 报出来
     with open(args.map, "w", encoding="utf-8", newline="\n") as f:
         f.write(MAP_HEADER + "\n")
@@ -248,6 +255,7 @@ def main():
             path = map_backdrop_path(source, path, (hero_backdrops.get(backdrop) or {}).get("path") if backdrop else None)
             f.write("\t".join([str(sid), backdrop or "", path or "", stills or "", source, episodes or "", logo,
                                str(aid) if aid else "", name_cell]) + "\n")
+            new_rows[sid] = (backdrop or "", path or "", stills or "", source, episodes or "")
             map_rows += 1
             anidb_rows += 1 if aid else 0
             named_rows += 1 if name_cell else 0
@@ -273,6 +281,11 @@ def main():
                                                   status, source, ref, title, checked]) + "\n")
     save_records(args.site, records)
     save_state(args.state, state)
+    kind = args.kind or ("apply" if args.apply_only else "update")
+    run = changes.make_run(args.today, kind, args.matcher[:10] if kind == "update" else "", old_rows, new_rows,
+                           old_records.get, records.get)
+    if run:
+        changes.record(args.site, run)
 
     old_meta = {}
     if os.path.isfile(args.meta):

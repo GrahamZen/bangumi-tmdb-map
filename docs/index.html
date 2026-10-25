@@ -72,13 +72,17 @@ pre { background: var(--code); padding: 10px; border-radius: 7px; overflow-x: au
 #page-input { width: 4.5em; background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 5px 6px; text-align: center; }
 .overview { white-space: pre-wrap; }
 .scroll { overflow-x: auto; }
+.run { margin-top: 16px; }
+.run-head { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; margin-bottom: 6px; }
+.run-head b { font-size: 15px; }
+details summary { cursor: pointer; color: var(--muted); }
 </style>
 </head>
 <body>
 <header>
   <h1>Bangumi → TMDB 对应表</h1>
   <div class="meta" id="meta">加载中…</div>
-  <div class="meta small"><a href="review.html">待审的修正请求</a></div>
+  <div class="meta small"><a href="#changes">更新记录</a> · <a href="review.html">待审的修正请求</a></div>
 </header>
 <main>
   <div id="detail"></div>
@@ -135,6 +139,10 @@ function refLink(ref) {
   return url ? `<a class="mono" href="${url}" target="_blank" rel="noopener">${esc(ref)}</a>` : `<span class="mono">${esc(ref)}</span>`;
 }
 function chip(text, cls) { return `<span class="chip ${cls || ""}">${esc(text)}</span>`; }
+// 人工修正的说明: 里面的 #编号 是修正请求的 issue / PR
+function noteHtml(note) {
+  return esc(note).replace(/#(\d+)/g, (m, n) => `<a href="https://github.com/${REPO}/issues/${n}" target="_blank" rel="noopener">#${n}</a>`);
+}
 function statusChips(status, source) {
   const [label, cls] = STATUS[status] || STATUS[""];
   let out = chip(source === "manual" && status === "miss" ? "确认没有对应" : label, cls);
@@ -231,12 +239,94 @@ async function shardOf(id) {
 }
 
 async function route() {
+  if (location.hash === "#changes") { renderChanges(); return; }
   const id = parseInt(location.hash.slice(1), 10);
   if (!id) { $("detail").innerHTML = ""; return; }
   $("detail").innerHTML = `<div class="panel muted">加载 ${id}…</div>`;
   const rec = (await shardOf(id))[String(id)] || {};
   renderDetail(id, rec);
   $("detail").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// ---- 更新记录 (data/changes/, 由 scripts/changes.py 在每次重写对应表时记下) ----
+const KIND = { update: ["每日匹配", "auto"], apply: ["人工修正", "manual"], logos: ["背景图 / logo 更新", ""] };
+const changeLog = { months: null, loaded: [], runs: [] };
+
+async function loadChangeMonth() {
+  if (!changeLog.months) {
+    changeLog.months = await fetch("data/changes/index.json", { cache: "no-cache" }).then((r) => r.ok ? r.json() : []).catch(() => []);
+  }
+  const next = changeLog.months[changeLog.loaded.length];
+  if (!next) return;
+  const runs = await fetch(`data/changes/${next.month}.json`, { cache: "no-cache" }).then((r) => r.ok ? r.json() : []).catch(() => []);
+  changeLog.loaded.push(next.month);
+  changeLog.runs.push(...runs);
+}
+
+function changeLabel(c) {
+  const a = c.old, b = c.new;
+  if (!a) return chip("新增", "hit");
+  if (!b) return chip("移出对应表", "miss");
+  if (a.ref !== b.ref) return chip("换了条目", "err");
+  if (a.stills !== b.stills) return chip("换了分集出处", "err");
+  if (a.source !== b.source) return chip(b.source === "manual" ? "改成人工" : "改回自动", "manual");
+  return chip("逐集对位", "");
+}
+
+function changeSide(s) {
+  if (!s) return `<span class="muted">—</span>`;
+  let html = "";
+  if (!s.ref && !s.stills) html += chip(s.source === "manual" ? "确认没有对应" : "没有对应", "miss");
+  if (s.ref) html += refLink(s.ref);
+  if (s.title) html += ` <span class="small">${esc(s.title)}</span>`;
+  html += " " + chip(s.source === "manual" ? "人工" : "自动", s.source === "manual" ? "manual" : "auto");
+  if (s.stills && s.stills !== s.ref) html += `<div class="small muted">分集 ${refLink(s.stills)}</div>`;
+  if (s.episodes !== undefined) html += `<div class="small muted">逐集 <span class="mono">${esc(s.episodes || "—")}</span></div>`;
+  if (s.note) html += `<div class="small muted">${noteHtml(s.note)}</div>`;
+  return html;
+}
+
+function runHtml(run) {
+  const [label, cls] = KIND[run.kind] || [run.kind, ""];
+  let html = `<div class="run"><div class="run-head"><b>${esc(run.date)}</b>${chip(label, cls)}` +
+    `<span class="muted small">${run.changes.length} 条条目变化${run.images.length ? ` · ${run.images.length} 条只换了背景图` : ""}</span>` +
+    (run.matcher ? `<span class="muted small">· 匹配器 <a class="mono" href="https://github.com/GrahamZen/izuko-tv/commit/${esc(run.matcher)}" target="_blank" rel="noopener">${esc(run.matcher.slice(0, 7))}</a></span>` : "") +
+    `</div>`;
+  if (run.changes.length) {
+    html += `<div class="scroll"><table><thead><tr><th>id</th><th>Bangumi</th><th></th><th>改前</th><th>改后</th></tr></thead><tbody>`;
+    for (const c of run.changes) {
+      html += `<tr><td class="mono"><a href="#${c.id}">${c.id}</a></td>` +
+        `<td>${esc(c.cn || c.name)}${c.cn && c.name ? `<div class="muted small">${esc(c.name)}</div>` : ""}</td>` +
+        `<td>${changeLabel(c)}</td><td>${changeSide(c.old)}</td><td>${changeSide(c.new)}</td></tr>`;
+    }
+    html += `</tbody></table></div>`;
+  }
+  if (run.images.length) {
+    html += `<details class="small" style="margin-top:6px"><summary>只换了背景图的 ${run.images.length} 条</summary>` +
+      run.images.map((id) => `<a class="mono" href="#${id}">${id}</a>`).join(" ") + `</details>`;
+  }
+  return html + `</div>`;
+}
+
+async function renderChanges() {
+  $("detail").innerHTML = `<div class="panel muted">加载更新记录…</div>`;
+  if (!changeLog.loaded.length) await loadChangeMonth();
+  const draw = () => {
+    const all = $("c-all") && $("c-all").checked;
+    const runs = changeLog.runs.filter((r) => all || r.changes.length);
+    const more = changeLog.months && changeLog.loaded.length < changeLog.months.length;
+    let html = `<div class="panel"><h2>更新记录</h2>` +
+      `<div class="muted small" style="margin-top:4px">对应表每次改动 (每日匹配、人工修正、背景图 / logo 更新) 里变了哪些条目。点 id 看这个条目现在的详情。</div>` +
+      `<div class="bar small" style="margin-top:8px"><label><input type="checkbox" id="c-all" ${all ? "checked" : ""}> 也列出只换了背景图的几轮</label>` +
+      `<span class="muted">已载入 ${changeLog.loaded.join("、") || "—"}</span></div>`;
+    html += runs.map(runHtml).join("") || `<div class="muted" style="margin-top:12px">${changeLog.months && changeLog.months.length ? "这段时间没有条目变化" : "还没有更新记录"}</div>`;
+    if (more) html += `<div class="pager"><button class="ghost" id="c-more">更早一个月</button></div>`;
+    html += `</div>`;
+    $("detail").innerHTML = html;
+    $("c-all").addEventListener("change", draw);
+    if (more) $("c-more").onclick = async () => { $("c-more").disabled = true; await loadChangeMonth(); draw(); };
+  };
+  draw();
 }
 
 function entityBlock(e) {
@@ -303,8 +393,7 @@ function renderDetail(id, rec) {
         `<div>名称</div><div>${esc(manual.title || "—")}</div>` +
         `<div>分集数据</div><div>${(manual.stills || []).map(refLink).join("<br>") || "跟着背景图条目"}</div></div></div></div>`;
     html += `<div class="kv small" style="margin-top:8px">` +
-      (manual.note ? `<div>说明</div><div>${esc(manual.note).replace(/#(\d+)/g, (m, n) =>
-        `<a href="https://github.com/${REPO}/issues/${n}" target="_blank" rel="noopener">#${n}</a>`)}</div>` : "") +
+      (manual.note ? `<div>说明</div><div>${noteHtml(manual.note)}</div>` : "") +
       (manual.updated ? `<div>修改日期</div><div>${esc(manual.updated)}</div>` : "") +
       (manual.auto_was ? `<div>当时的自动结果</div><div class="mono">${esc(manual.auto_was)}</div>` : "") + `</div>`;
   }

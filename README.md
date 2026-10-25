@@ -129,6 +129,7 @@ map/meta.json          生成信息
 overrides/             人工修正, 每个条目一个 <bgm_id>.json
 logo-overrides/        标题 logo 的人工修正, 每个条目每种语言一个 <bgm_id>.<语言>.json
 docs/                  核对页面 (GitHub Pages) 与它的数据: data/index.tsv 全部条目一览, data/s/*.json 条目详情
+                       data/changes/ 更新记录 (每次改表变了哪些条目, 按月一个文件; 核对页「更新记录」)
 state/state.tsv        每个条目上次检查的日期、结果与输入指纹 (决定下次什么时候查)
 state/logos.tsv        每个 TMDB 条目自动挑的标题 logo 与查的日期
 state/anidb.tsv        Bangumi 条目 → AniDB 条目 (来自 bangumi-data)
@@ -136,7 +137,7 @@ state/names.tsv        每个 TMDB 条目的港台译名与查的日期
 state/backdrops.tsv    每个 TMDB 条目排第一的无字幕背景图与查的日期
 scripts/               ci.sh 每日更新的全部步骤 (工作流与本地共用), prepare.py 挑任务, merge.py 合并结果与人工修正,
                        correction.py / logo_correction.py / correction_pr.sh 处理修正请求, logos.py 挑标题 logo 并取港台译名,
-                       anidb.py 取 AniDB 条目 id
+                       anidb.py 取 AniDB 条目 id, changes.py 记更新记录
 runner/                匹配器入口; 工作流把它拷进 izuko-tv 的测试源码里运行
 worker/                标题 logo 报告的中转 (Cloudflare Worker), 部署见 worker/README.md
 report-endpoints.json  中转地址清单 (Izuko TV 每天拉一次; 部署时 worker 工作流补上)

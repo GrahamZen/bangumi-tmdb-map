@@ -132,7 +132,8 @@ step_merge() {
 }
 
 step_apply() {
-  python3 "$ROOT/scripts/merge.py" --apply-only --state "$ROOT/state/state.tsv" --map "$ROOT/map/bgm-tmdb.tsv" \
+  # $1: 记进更新记录的来源 (apply / logos)
+  python3 "$ROOT/scripts/merge.py" --apply-only --kind "${1:-apply}" --state "$ROOT/state/state.tsv" --map "$ROOT/map/bgm-tmdb.tsv" \
     --meta "$ROOT/map/meta.json" --site "$ROOT/docs" --overrides "$ROOT/overrides" \
     --logo-overrides "$ROOT/logo-overrides" --logos "$ROOT/state/logos.tsv" --anidb "$ROOT/state/anidb.tsv" \
     --names "$ROOT/state/names.tsv" --backdrops "$ROOT/state/backdrops.tsv" --summary-out "$WORK/summary.txt"
@@ -149,7 +150,7 @@ step_logos() {
     --names "$ROOT/state/names.tsv" --backdrops "$ROOT/state/backdrops.tsv" --minutes "${LOGO_MINUTES:-40}" \
     --backdrop-quota "${LOGO_BACKDROP_QUOTA:-0}" --summary-out "$WORK/logos-summary.txt"
   # 按新查到的重写对应表的 logo、names 与 backdrop_path 列 (修正一并应用, 与 apply 同一套)
-  step_apply
+  step_apply logos
   cp "$WORK/logos-summary.txt" "$WORK/summary.txt"
 }
 
