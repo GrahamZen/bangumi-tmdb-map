@@ -1,6 +1,6 @@
 {
   "generated": "2026-10-27",
-  "overrides_applied": "2026-10-27",
+  "overrides_applied": "2026-10-28",
   "bangumi_dump": "dump-2026-10-20.210332Z.zip",
   "matcher": "9d9cba2ad0ef7e443ffa3542cee91fba345edafa",
   "anime": 31215,
@@ -9,7 +9,7 @@
   "manual": 20,
   "logo_manual": 25,
   "anidb": 7999,
-  "names": 16434,
+  "names": 16452,
   "bangumi_data": "0.3.234",
   "hit": 24491,
   "miss": 6724,
