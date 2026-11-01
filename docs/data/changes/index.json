@@ -1,5 +1,10 @@
 [
  {
+  "month": "2026-11",
+  "runs": 1,
+  "changes": 15
+ },
+ {
   "month": "2026-10",
   "runs": 18,
   "changes": 247
