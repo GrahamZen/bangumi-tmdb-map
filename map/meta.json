@@ -1,24 +1,24 @@
 {
-  "generated": "2026-11-06",
+  "generated": "2026-11-07",
   "overrides_applied": "2026-11-07",
   "bangumi_dump": "dump-2026-11-03.210402Z.zip",
   "matcher": "b77f8688f28836681514ecd6363bb7945a1f3bfd",
   "anime": 31297,
   "checked": 31297,
-  "entries": 24572,
+  "entries": 24573,
   "manual": 20,
   "logo_manual": 25,
   "anidb": 8001,
   "names": 16488,
   "bangumi_data": "0.3.235",
-  "hit": 24563,
-  "miss": 6734,
+  "hit": 24564,
+  "miss": 6733,
   "err": 0,
   "last_run": {
-    "processed": 2469,
-    "hit": 27,
-    "miss": 2442,
+    "processed": 30,
+    "hit": 30,
+    "miss": 0,
     "err": 0,
-    "tmdb_requests": 21735
+    "tmdb_requests": 312
   }
 }
