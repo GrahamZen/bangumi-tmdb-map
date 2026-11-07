@@ -1,4 +1,4 @@
-# bgm_id	anidb_id (来自 bangumi-data 0.3.234, CC BY 4.0: https://github.com/bangumi-data/bangumi-data)
+# bgm_id	anidb_id (来自 bangumi-data 0.3.235, CC BY 4.0: https://github.com/bangumi-data/bangumi-data)
 8	5373
 12	12
 50	715
@@ -7988,6 +7988,7 @@
 549657	19271
 550937	19276
 551123	19277
+551304	19280
 551455	19283
 551918	19287
 552533	19290
@@ -8155,6 +8156,7 @@
 633836	19242
 634587	19942
 634708	19955
+636058	19953
 636067	19954
 636512	19957
 637124	19961
