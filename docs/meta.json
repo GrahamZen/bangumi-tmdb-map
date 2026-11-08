@@ -1,6 +1,6 @@
 {
-  "generated": "2026-11-07",
-  "overrides_applied": "2026-11-07",
+  "generated": "2026-11-08",
+  "overrides_applied": "2026-11-08",
   "bangumi_dump": "dump-2026-11-03.210402Z.zip",
   "matcher": "b77f8688f28836681514ecd6363bb7945a1f3bfd",
   "anime": 31297,
@@ -15,10 +15,10 @@
   "miss": 6733,
   "err": 0,
   "last_run": {
-    "processed": 30,
-    "hit": 30,
-    "miss": 0,
+    "processed": 41,
+    "hit": 35,
+    "miss": 6,
     "err": 0,
-    "tmdb_requests": 312
+    "tmdb_requests": 492
   }
 }
