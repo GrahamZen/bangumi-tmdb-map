@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-14",
+  "generated": "2026-11-15",
   "overrides_applied": "2026-11-15",
   "bangumi_dump": "dump-2026-11-10.210405Z.zip",
   "matcher": "b77f8688f28836681514ecd6363bb7945a1f3bfd",
@@ -9,16 +9,16 @@
   "manual": 20,
   "logo_manual": 25,
   "anidb": 8002,
-  "names": 16502,
+  "names": 16503,
   "bangumi_data": "0.3.236",
   "hit": 24587,
   "miss": 6678,
   "err": 0,
   "last_run": {
-    "processed": 31,
-    "hit": 29,
-    "miss": 2,
+    "processed": 41,
+    "hit": 35,
+    "miss": 6,
     "err": 0,
-    "tmdb_requests": 331
+    "tmdb_requests": 500
   }
 }
